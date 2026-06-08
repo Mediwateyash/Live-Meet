@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Production build outputs
+frontend/dist/
+
+# Local uploads and logs
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/out.log
+backend/out.txt
+backend/log.txt
+backend/server_output.txt
+frontend/build_err.txt
+frontend/vite_err.txt
+*.log
+
+# Environment variables & secrets (CRITICAL)
+.env
+backend/.env
+frontend/.env
+*.env
+*.env.local
+
+# Large project documents (already exists in your folder)
+*.pptx
+*.pdf
+
+# System & OS Files
+.DS_Store
+Thumbs.db
