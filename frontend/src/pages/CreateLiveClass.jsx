@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Video, Calendar, Clock, BookOpen, FileText, ArrowLeft } from 'lucide-react';
+import { Video, Calendar, Clock, BookOpen, FileText, ArrowLeft, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const CreateLiveClass = () => {
@@ -13,6 +13,8 @@ const CreateLiveClass = () => {
     const [scheduledYear, setScheduledYear] = useState('');
     const [scheduledTime, setScheduledTime] = useState('');
     const [duration, setDuration] = useState(10);
+    const [classVal, setClassVal] = useState('10th');
+    const [batch, setBatch] = useState('Batch A');
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
@@ -110,7 +112,9 @@ const CreateLiveClass = () => {
                 description: description.trim(),
                 subject: subject.trim(),
                 scheduledAt,
-                duration: Number(duration)
+                duration: Number(duration),
+                class: classVal,
+                batch
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -178,6 +182,39 @@ const CreateLiveClass = () => {
                             className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                             placeholder="e.g. Machine Learning, Data Structures"
                         />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                <Users className="w-4 h-4" /> Class *
+                            </label>
+                            <select
+                                value={classVal}
+                                onChange={e => setClassVal(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white cursor-pointer"
+                                required
+                            >
+                                <option value="10th">10th</option>
+                                <option value="11th">11th</option>
+                                <option value="12th">12th</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                <Users className="w-4 h-4" /> Batch *
+                            </label>
+                            <select
+                                value={batch}
+                                onChange={e => setBatch(e.target.value)}
+                                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white cursor-pointer"
+                                required
+                            >
+                                <option value="Batch A">Batch A</option>
+                                <option value="Batch B">Batch B</option>
+                                <option value="Batch C">Batch C</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

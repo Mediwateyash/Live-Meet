@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { BookOpen, LogOut, User as UserIcon, Video } from 'lucide-react';
+import { BookOpen, LogOut, User as UserIcon, Video, Calendar } from 'lucide-react';
 
 const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
@@ -44,7 +44,19 @@ const Navbar = () => {
                                         <Link to="/teacher/live-classes" className="text-gray-600 hover:text-primary font-medium flex items-center gap-1"><Video className="w-4 h-4" />Live</Link>
                                     )}
                                     {(user.role === 'student' || user.role === 'admin') && (
-                                        <Link to="/student" className="text-gray-600 hover:text-primary font-medium">Student</Link>
+                                        <Link to="/student" className="text-gray-600 hover:text-primary font-medium">Dashboard</Link>
+                                    )}
+                                    {(user.role === 'student' || user.role === 'admin') && (
+                                        <Link to="/schedules" className="text-gray-600 hover:text-primary font-medium flex items-center gap-1">
+                                            <BookOpen className="w-4 h-4" />
+                                            My Lectures
+                                        </Link>
+                                    )}
+                                    {(user.role === 'teacher' || user.role === 'admin') && (
+                                        <Link to="/schedules" className="text-gray-600 hover:text-primary font-medium flex items-center gap-1">
+                                            <Calendar className="w-4 h-4" />
+                                            Schedules
+                                        </Link>
                                     )}
                                     {user.role === 'admin' && (
                                         <Link to="/admin" className="text-indigo-600 hover:text-indigo-800 font-bold">Admin Panel</Link>

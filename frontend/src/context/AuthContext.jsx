@@ -3,6 +3,15 @@ import axios from 'axios';
 
 export const AuthContext = createContext();
 
+const getBaseUrl = () => {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:5000';
+    }
+    return '';
+};
+
+const baseUrl = getBaseUrl();
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -12,7 +21,7 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const res = await axios.get('http://localhost:5000/api/auth/profile', {
+                    const res = await axios.get(`${baseUrl}/api/auth/profile`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     setUser({ ...res.data, token });
@@ -27,14 +36,21 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (email, password) => {
-        const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+        const res = await axios.post(`${baseUrl}/api/auth/login`, { email, password });
         setUser(res.data);
         localStorage.setItem('token', res.data.token);
         return res;
     };
 
-    const register = async (name, email, password, role) => {
-        const res = await axios.post('http://localhost:5000/api/auth/register', { name, email, password, role });
+    const register = async (name, email, password, role, classVal, batch) => {
+        const res = await axios.post(`${baseUrl}/api/auth/register`, { 
+            name, 
+            email, 
+            password, 
+            role,
+            class: classVal,
+            batch
+        });
         if (res.data.isApproved) {
             setUser(res.data);
             localStorage.setItem('token', res.data.token);

@@ -1,17 +1,26 @@
 import LiveClass from '../models/LiveClass.js';
 import Attendance from '../models/Attendance.js';
 import ChatMessage from '../models/ChatMessage.js';
+import User from '../models/User.js';
 
 export const createLiveClass = async (req, res) => {
     try {
-        const { title, description, subject, scheduledAt, duration } = req.body;
+        const { title, description, subject, scheduledAt, duration, class: classVal, batch, teacher } = req.body;
 
-        if (!title || !scheduledAt || !duration) {
-            return res.status(400).json({ message: 'Please provide title, scheduled date/time, and duration' });
+        if (!title || !scheduledAt || !duration || !classVal || !batch) {
+            return res.status(400).json({ message: 'Please provide title, scheduled date/time, duration, class, and batch' });
         }
 
         if (new Date(scheduledAt) < new Date()) {
             return res.status(400).json({ message: 'Scheduled date/time must be in the future' });
+        }
+
+        // Validate teacher if provided
+        if (teacher) {
+            const teacherUser = await User.findOne({ _id: teacher, role: 'teacher', isApproved: true });
+            if (!teacherUser) {
+                return res.status(400).json({ message: 'Invalid or unapproved teacher' });
+            }
         }
 
         const liveClass = await LiveClass.create({
@@ -20,10 +29,17 @@ export const createLiveClass = async (req, res) => {
             subject: subject || '',
             scheduledAt,
             duration,
-            createdBy: req.user._id
+            createdBy: req.user._id,
+            teacher: teacher || req.user._id,
+            class: classVal,
+            batch
         });
 
-        res.status(201).json(liveClass);
+        const populatedClass = await LiveClass.findById(liveClass._id)
+            .populate('createdBy', 'name email')
+            .populate('teacher', 'name email');
+
+        res.status(201).json(populatedClass);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -33,11 +49,19 @@ export const getLiveClasses = async (req, res) => {
     try {
         let filter = {};
         if (req.user.role === 'teacher') {
-            filter = { createdBy: req.user._id };
+            // Teachers see classes they created OR are assigned to
+            filter = { $or: [{ createdBy: req.user._id }, { teacher: req.user._id }] };
+        } else if (req.user.role === 'student') {
+            // Students only see classes matching their class + batch
+            filter = {
+                class: req.user.class || '__no_match__',
+                batch: req.user.batch || '__no_match__'
+            };
         }
-        // Students & admins see all classes
+        // Admins see all classes (filter remains empty)
         const classes = await LiveClass.find(filter)
             .populate('createdBy', 'name email')
+            .populate('teacher', 'name email')
             .sort({ scheduledAt: -1 });
         res.json(classes);
     } catch (error) {
@@ -48,12 +72,29 @@ export const getLiveClasses = async (req, res) => {
 export const getLiveClassById = async (req, res) => {
     try {
         const liveClass = await LiveClass.findById(req.params.id)
-            .populate('createdBy', 'name email');
-        if (liveClass) {
-            res.json(liveClass);
-        } else {
-            res.status(404).json({ message: 'Live class not found' });
+            .populate('createdBy', 'name email')
+            .populate('teacher', 'name email');
+        if (!liveClass) {
+            return res.status(404).json({ message: 'Live class not found' });
         }
+
+        // Access control: students can only view their own class/batch
+        if (req.user.role === 'student') {
+            if (liveClass.class !== req.user.class || liveClass.batch !== req.user.batch) {
+                return res.status(403).json({ message: 'Access denied. This class is not assigned to your division.' });
+            }
+        }
+
+        // Access control: teachers can only view classes they created or are assigned to
+        if (req.user.role === 'teacher') {
+            const isOwner = liveClass.createdBy?._id?.toString() === req.user._id.toString();
+            const isAssigned = liveClass.teacher?._id?.toString() === req.user._id.toString();
+            if (!isOwner && !isAssigned) {
+                return res.status(403).json({ message: 'Access denied. This class is not assigned to you.' });
+            }
+        }
+
+        res.json(liveClass);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -72,7 +113,7 @@ export const updateLiveClass = async (req, res) => {
             return res.status(400).json({ message: 'Can only edit scheduled classes' });
         }
 
-        const { title, description, subject, scheduledAt, duration } = req.body;
+        const { title, description, subject, scheduledAt, duration, class: classVal, batch, teacher } = req.body;
         if (title) liveClass.title = title;
         if (description !== undefined) liveClass.description = description;
         if (subject !== undefined) liveClass.subject = subject;
@@ -83,6 +124,15 @@ export const updateLiveClass = async (req, res) => {
             liveClass.scheduledAt = scheduledAt;
         }
         if (duration) liveClass.duration = duration;
+        if (classVal) liveClass.class = classVal;
+        if (batch) liveClass.batch = batch;
+        if (teacher) {
+            const teacherUser = await User.findOne({ _id: teacher, role: 'teacher', isApproved: true });
+            if (!teacherUser) {
+                return res.status(400).json({ message: 'Invalid or unapproved teacher' });
+            }
+            liveClass.teacher = teacher;
+        }
 
         await liveClass.save();
         res.json(liveClass);
@@ -222,5 +272,50 @@ export const getChatHistory = async (req, res) => {
         res.json(messages);
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Validate if user can join a live class (pre-join gate)
+// @route   POST /api/live-class/:id/validate-join
+// @access  Private
+export const validateJoinClass = async (req, res) => {
+    try {
+        const liveClass = await LiveClass.findById(req.params.id);
+        if (!liveClass) {
+            return res.status(404).json({ allowed: false, message: 'Class not found' });
+        }
+
+        // Admin always allowed
+        if (req.user.role === 'admin') {
+            return res.json({ allowed: true });
+        }
+
+        // Teacher: must be creator or assigned teacher
+        if (req.user.role === 'teacher') {
+            const isOwner = liveClass.createdBy?.toString() === req.user._id.toString();
+            const isAssigned = liveClass.teacher?.toString() === req.user._id.toString();
+            if (!isOwner && !isAssigned) {
+                return res.status(403).json({ allowed: false, message: 'You are not assigned to this class.' });
+            }
+            return res.json({ allowed: true });
+        }
+
+        // Student: must match class + batch, and class must not be ended
+        if (req.user.role === 'student') {
+            if (liveClass.class !== req.user.class || liveClass.batch !== req.user.batch) {
+                return res.status(403).json({
+                    allowed: false,
+                    message: 'Access denied. This lecture belongs to a different class/division.'
+                });
+            }
+            if (liveClass.status === 'ended') {
+                return res.status(403).json({ allowed: false, message: 'This class has already ended.' });
+            }
+            return res.json({ allowed: true });
+        }
+
+        return res.status(403).json({ allowed: false, message: 'Unknown role.' });
+    } catch (error) {
+        res.status(500).json({ allowed: false, message: error.message });
     }
 };

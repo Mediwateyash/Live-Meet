@@ -23,6 +23,14 @@ const userSchema = new mongoose.Schema({
     isApproved: {
         type: Boolean,
         default: true
+    },
+    class: {
+        type: String,
+        default: ''
+    },
+    batch: {
+        type: String,
+        default: ''
     }
 }, { timestamps: true });
 

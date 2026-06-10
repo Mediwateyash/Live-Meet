@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
-const liveClassSchema = new mongoose.Schema({
-    title: {
+const lectureScheduleSchema = new mongoose.Schema({
+    topic: {
         type: String,
         required: true
     },
@@ -11,29 +11,25 @@ const liveClassSchema = new mongoose.Schema({
     },
     subject: {
         type: String,
-        default: ''
+        required: true
     },
     scheduledAt: {
         type: Date,
         required: true
     },
     duration: {
-        type: Number, // duration in minutes
-        required: true
+        type: Number, // In minutes
+        required: true,
+        default: 60
     },
-    status: {
+    meetingUrl: {
         type: String,
-        enum: ['scheduled', 'live', 'ended'],
-        default: 'scheduled'
-    },
-    createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
         required: true
     },
     teacher: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
     },
     class: {
         type: String,
@@ -43,13 +39,12 @@ const liveClassSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    startedAt: {
-        type: Date
-    },
-    endedAt: {
-        type: Date
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 }, { timestamps: true });
 
-const LiveClass = mongoose.model('LiveClass', liveClassSchema);
-export default LiveClass;
+const LectureSchedule = mongoose.model('LectureSchedule', lectureScheduleSchema);
+export default LectureSchedule;

@@ -12,6 +12,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import TeacherLiveClasses from './pages/TeacherLiveClasses';
 import CreateLiveClass from './pages/CreateLiveClass';
 import LiveClassRoom from './pages/LiveClassRoom';
+import LectureSchedules from './pages/LectureSchedules';
 
 function App() {
   return (
@@ -57,6 +58,12 @@ function App() {
               <Route path="/live/:classId" element={
                 <PrivateRoute allowedRoles={['teacher', 'student', 'admin']}>
                   <LiveClassRoom />
+                </PrivateRoute>
+              } />
+              
+              <Route path="/schedules" element={
+                <PrivateRoute allowedRoles={['teacher', 'student', 'admin']}>
+                  <LectureSchedules />
                 </PrivateRoute>
               } />
               

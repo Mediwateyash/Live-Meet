@@ -87,6 +87,37 @@ const initLiveClassSocket = (io) => {
                     return;
                 }
 
+                // ─── Access Control Gate ───
+                if (socket.user.role === 'student') {
+                    if (liveClass.class !== socket.user.class || liveClass.batch !== socket.user.batch) {
+                        socket.emit('error-message', 'Access denied. This class is not assigned to your division.');
+                        socket.emit('access-denied', {
+                            message: 'You are not authorized to join this class. It belongs to a different division.'
+                        });
+                        return;
+                    }
+                    if (liveClass.status === 'ended') {
+                        socket.emit('error-message', 'This class has already ended.');
+                        socket.emit('access-denied', {
+                            message: 'This class has already ended.'
+                        });
+                        return;
+                    }
+                }
+
+                if (socket.user.role === 'teacher') {
+                    const isOwner = liveClass.createdBy?.toString() === socket.user._id.toString();
+                    const isAssigned = liveClass.teacher?.toString() === socket.user._id.toString();
+                    if (!isOwner && !isAssigned) {
+                        socket.emit('error-message', 'You are not assigned to this class.');
+                        socket.emit('access-denied', {
+                            message: 'You are not authorized to join this class.'
+                        });
+                        return;
+                    }
+                }
+                // ─── End Access Control ───
+
                 currentClassId = classId;
                 socket.join(classId);
 

@@ -8,7 +8,7 @@ const generateToken = (id) => {
 };
 
 export const registerUser = async (req, res) => {
-    let { name, email, password, role } = req.body;
+    let { name, email, password, role, class: classVal, batch } = req.body;
     try {
         email = email?.toLowerCase().trim();
         const userExists = await User.findOne({ email });
@@ -22,7 +22,9 @@ export const registerUser = async (req, res) => {
             email,
             password,
             role: role || 'student',
-            isApproved: (role === 'teacher') ? false : true
+            isApproved: (role === 'teacher') ? false : true,
+            class: classVal || '',
+            batch: batch || ''
         });
 
         if (user) {
@@ -32,6 +34,8 @@ export const registerUser = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 isApproved: user.isApproved,
+                class: user.class,
+                batch: user.batch,
                 token: generateToken(user._id)
             });
         } else {

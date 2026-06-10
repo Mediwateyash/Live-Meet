@@ -381,6 +381,8 @@ const TeacherLiveClasses = () => {
                                             {cls.description && <p className="text-sm text-gray-500 mb-2">{cls.description}</p>}
                                             <div className="text-sm text-gray-500 flex flex-wrap items-center gap-4">
                                                 {cls.subject && <span className="bg-indigo-50 text-primary px-2 py-0.5 rounded text-xs font-medium">{cls.subject}</span>}
+                                                {cls.class && <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded text-xs font-medium">Class: {cls.class}</span>}
+                                                {cls.batch && <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-xs font-medium">{cls.batch}</span>}
                                                 <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(cls.scheduledAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                 <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {new Date(cls.scheduledAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
                                                 <span>{cls.duration} mins</span>

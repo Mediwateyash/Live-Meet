@@ -72,6 +72,10 @@ const LiveClassRoom = () => {
     const [classInfo, setClassInfo] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Access control
+    const [accessDenied, setAccessDenied] = useState(false);
+    const [accessDeniedMessage, setAccessDeniedMessage] = useState('');
+
     // Socket
     const socketRef = useRef(null);
 
@@ -720,6 +724,23 @@ const LiveClassRoom = () => {
             try {
                 const token = localStorage.getItem('token');
                 const headers = { Authorization: `Bearer ${token}` };
+
+                // Pre-join validation: check if user is allowed to join this class
+                try {
+                    const validateRes = await axios.post(`/api/live-class/${classId}/validate-join`, {}, { headers });
+                    if (!validateRes.data.allowed) {
+                        setAccessDenied(true);
+                        setAccessDeniedMessage(validateRes.data.message || 'You are not authorized to join this class.');
+                        setLoading(false);
+                        return;
+                    }
+                } catch (validateError) {
+                    setAccessDenied(true);
+                    setAccessDeniedMessage(validateError.response?.data?.message || 'Access denied. You are not authorized to join this class.');
+                    setLoading(false);
+                    return;
+                }
+
                 const [classRes, chatRes] = await Promise.all([
                     axios.get(`/api/live-class/${classId}`, { headers }),
                     axios.get(`/api/live-class/${classId}/chat`, { headers })
@@ -1159,6 +1180,12 @@ const LiveClassRoom = () => {
 
         socket.on('error-message', (msg) => {
             alert(msg);
+        });
+
+        socket.on('access-denied', (data) => {
+            setAccessDenied(true);
+            setAccessDeniedMessage(data.message || 'You are not authorized to join this class.');
+            socket.disconnect();
         });
 
         // Track teacher stream IDs for proper WebRTC mapping
@@ -2713,6 +2740,26 @@ const LiveClassRoom = () => {
     );
 
     if (loading) return <div className="fixed inset-0 z-50 flex justify-center items-center bg-gray-900 text-gray-500">Loading classroom...</div>;
+
+    if (accessDenied) {
+        return (
+            <div className="fixed inset-0 z-50 flex justify-center items-center bg-gray-900">
+                <div className="bg-gray-800 border border-gray-700 rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
+                        <Shield className="w-8 h-8 text-red-400" />
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
+                    <p className="text-gray-400 text-sm mb-6">{accessDeniedMessage}</p>
+                    <button
+                        onClick={() => navigate('/student/dashboard')}
+                        className="w-full py-3 bg-primary hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         // z-50 and fixed inset-0 completely hides the navbar and footer and locks user in

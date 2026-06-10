@@ -30,3 +30,5 @@ frontend/.env
 # System & OS Files
 .DS_Store
 Thumbs.db
+
+mongodb-data/

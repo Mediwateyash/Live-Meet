@@ -7,6 +7,8 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('student');
+    const [classVal, setClassVal] = useState('10th');
+    const [batch, setBatch] = useState('Batch A');
     const [errorMsg, setErrorMsg] = useState('');
     
     const { register, user } = useContext(AuthContext);
@@ -23,7 +25,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await register(name, email, password, role);
+            const res = await register(name, email, password, role, role === 'student' ? classVal : '', role === 'student' ? batch : '');
             // If it's a teacher, the backend might return them as unapproved
             // but the context might have already set the user.
             // Let's check the role from the form since we know it.
@@ -70,6 +72,26 @@ const Register = () => {
                                 <option value="teacher">Teacher</option>
                             </select>
                         </div>
+                        {role === 'student' && (
+                            <>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                                    <select value={classVal} onChange={(e) => setClassVal(e.target.value)} className="mt-1 block w-full py-3 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+                                        <option value="10th">10th</option>
+                                        <option value="11th">11th</option>
+                                        <option value="12th">12th</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Batch</label>
+                                    <select value={batch} onChange={(e) => setBatch(e.target.value)} className="mt-1 block w-full py-3 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+                                        <option value="Batch A">Batch A</option>
+                                        <option value="Batch B">Batch B</option>
+                                        <option value="Batch C">Batch C</option>
+                                    </select>
+                                </div>
+                            </>
+                        )}
                     </div>
                     <div>
                         <button type="submit" className="group relative w-full flex justify-center py-3 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">

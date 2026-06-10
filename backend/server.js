@@ -10,6 +10,7 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import liveClassRoutes from './routes/liveClassRoutes.js';
+import lectureRoutes from './routes/lectureRoutes.js';
 import initLiveClassSocket from './socket/liveClassSocket.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,6 +36,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/live-class', liveClassRoutes);
+app.use('/api/lectures', lectureRoutes);
 
 // Initialize Socket.io for live classes
 initLiveClassSocket(io);
