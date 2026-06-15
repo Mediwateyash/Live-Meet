@@ -1,0 +1,20 @@
+import { Router } from 'express'
+import {
+  browse, getFeatured, getBySlug, createCourse, updateCourse, deleteCourse, enroll, getLearn, addReview
+} from '../controllers/courseController.js'
+import { authMiddleware } from '../middleware/auth.js'
+import { requireRole }   from '../middleware/role.js'
+
+const router = Router()
+
+router.get ('/',              browse)
+router.get ('/featured',      getFeatured)
+router.get ('/:slug',         getBySlug)
+router.post('/',              authMiddleware, requireRole('instructor', 'admin'), createCourse)
+router.put ('/:id',           authMiddleware, requireRole('instructor', 'admin'), updateCourse)
+router.delete('/:id',         authMiddleware, requireRole('instructor', 'admin'), deleteCourse)
+router.post('/:id/enroll',    authMiddleware, enroll)
+router.get ('/:id/learn',     authMiddleware, getLearn)
+router.post('/:id/review',    authMiddleware, addReview)
+
+export default router
