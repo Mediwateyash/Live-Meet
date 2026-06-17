@@ -10,7 +10,8 @@ export const liveLecturesAPI = {
   remove:        (id)         => api.delete(`/live-lectures/${id}`),
 
   // Student: lectures for an enrolled course
-  getForCourse:  (courseId)   => api.get('/live-lectures/enrolled', { params: { courseId } }),
+  getForCourse:  (courseId)   => api.get('/live-lectures/enrolled', { params: courseId ? { courseId } : {} }),
+  attend:        (id)         => api.post(`/live-lectures/${id}/attend`),
 
   // Admin: all lectures
   adminGetAll:   (params)     => api.get('/live-lectures/admin/all', { params }),

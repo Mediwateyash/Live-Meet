@@ -1,7 +1,8 @@
-import Course  from '../models/Course.js'
-import User    from '../models/User.js'
-import Review  from '../models/Review.js'
-import Progress from '../models/Progress.js'
+import Course     from '../models/Course.js'
+import User       from '../models/User.js'
+import Review     from '../models/Review.js'
+import Progress   from '../models/Progress.js'
+import Enrollment from '../models/Enrollment.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 
@@ -174,6 +175,9 @@ export async function enroll(req, res, next) {
     await course.save()
 
     await Progress.create({ student: user._id, course: course._id })
+
+    // Record enrollment with price snapshot for revenue analytics
+    await Enrollment.create({ student: user._id, course: course._id, price: course.price || 0 })
 
     res.json(new ApiResponse(200, null, 'Enrolled successfully'))
   } catch (err) { next(err) }

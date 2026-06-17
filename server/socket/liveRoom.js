@@ -90,9 +90,13 @@ export function registerLiveRoomSocket(io) {
         const lecture = await LiveLecture.findById(lectureId).populate('courseId', 'enrolledStudents')
         if (!lecture) return socket.emit('error-message', 'Lecture not found')
 
+        if (lecture.status === 'ended') {
+          return socket.emit('access-denied', { message: 'This session has already ended.' })
+        }
+
         if (socket.user.role === 'student') {
-          if (lecture.status === 'ended') {
-            return socket.emit('access-denied', { message: 'This session has already ended.' })
+          if (lecture.status === 'scheduled') {
+            return socket.emit('access-denied', { message: 'This session has not started yet.' })
           }
           if (lecture.courseId) {
             const enrolled = lecture.courseId.enrolledStudents?.some(
@@ -111,6 +115,26 @@ export function registerLiveRoomSocket(io) {
 
         currentLectureId = lectureId
         socket.join(lectureId)
+
+        if (socket.user.role === 'student') {
+          const studentId = socket.user._id.toString()
+          let attRecord = lecture.attendance?.find(att => att.user?.toString() === studentId)
+          if (!attRecord) {
+            lecture.attendance = lecture.attendance || []
+            lecture.attendance.push({
+              user: socket.user._id,
+              joinedAt: new Date(),
+              sessions: [{ joinedAt: new Date() }]
+            })
+          } else {
+            const activeSession = attRecord.sessions?.find(s => !s.leftAt)
+            if (!activeSession) {
+              attRecord.sessions = attRecord.sessions || []
+              attRecord.sessions.push({ joinedAt: new Date() })
+            }
+          }
+          await lecture.save()
+        }
 
         const participants = await buildParticipants(lectureId)
         io.to(lectureId).emit('participant-update', participants)
@@ -438,7 +462,6 @@ export function registerLiveRoomSocket(io) {
       })
     })
 
-    // ── End session ───────────────────────────────────────────────────────────
     socket.on('end-session', () => {
       if (!currentLectureId || !isHost()) return
       roomHandRaises.delete(currentLectureId)
@@ -447,11 +470,35 @@ export function registerLiveRoomSocket(io) {
       roomCoHosts.delete(currentLectureId)
       roomUnavailableUsers.delete(currentLectureId)
       io.to(currentLectureId).emit('session-ended')
+
+      const rid = currentLectureId
+      setTimeout(() => {
+        io.in(rid).disconnectSockets(true)
+      }, 1000)
     })
 
     // ── Disconnect ────────────────────────────────────────────────────────────
     socket.on('disconnect', async () => {
       if (!currentLectureId) return
+
+      if (socket.user && socket.user.role === 'student') {
+        try {
+          const lecture = await LiveLecture.findById(currentLectureId)
+          if (lecture) {
+            const studentId = socket.user._id.toString()
+            const attRecord = lecture.attendance?.find(att => att.user?.toString() === studentId)
+            if (attRecord && attRecord.sessions) {
+              const activeSession = attRecord.sessions.find(s => !s.leftAt)
+              if (activeSession) {
+                activeSession.leftAt = new Date()
+                await lecture.save()
+              }
+            }
+          }
+        } catch (err) {
+          console.error('[Socket] disconnect attendance log error:', err.message)
+        }
+      }
 
       const queue = roomHandRaises.get(currentLectureId)
       if (queue?.has(socket.user._id.toString())) {

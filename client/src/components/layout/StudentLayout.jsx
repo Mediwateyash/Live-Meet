@@ -1,14 +1,15 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, GraduationCap } from 'lucide-react'
+import { LayoutDashboard, BookOpen, GraduationCap, Video } from 'lucide-react'
 import Navbar from './Navbar.jsx'
 import Footer from './Footer.jsx'
 import { motion } from 'framer-motion'
 import { pageVariants } from '../../utils/animations.js'
 
 const NAV = [
-  { to: '/dashboard',   icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/my-learning', icon: GraduationCap,   label: 'My Learnings' },
+  { to: '/dashboard',             icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/my-learning',           icon: GraduationCap,   label: 'My Learnings' },
+  { to: '/student/live-lectures', icon: Video,           label: 'Live Lectures' },
 ]
 
 export default function StudentLayout({ children }) {

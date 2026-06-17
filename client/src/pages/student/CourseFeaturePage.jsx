@@ -4,6 +4,7 @@ import { ArrowLeft, FileText, ClipboardList, Brain, TrendingUp, Video, Calendar,
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import { coursesAPI } from '../../api/courses.js'
 import { liveLecturesAPI } from '../../api/liveLectures.js'
+import useAuthStore from '../../store/authStore.js'
 
 const FEATURES = {
   notes:    { icon: FileText,      label: 'Notes',          desc: 'Study materials uploaded by your instructor will appear here.' },
@@ -36,6 +37,7 @@ function fmtTime(d) {
 
 function LiveLecturesList({ courseId }) {
   const navigate   = useNavigate()
+  const { user }   = useAuthStore()
   const [lectures, setLectures] = useState([])
   const [loading,  setLoading]  = useState(true)
 
@@ -72,10 +74,15 @@ function LiveLecturesList({ courseId }) {
     <div className="space-y-4 w-full">
       {lectures.map(lec => {
         const s = STATUS_COLORS[lec.status] || STATUS_COLORS.scheduled
+        const isEnded = lec.status === 'ended'
+        const didAttend = lec.attendance?.some(att => {
+          const attUserId = att.user?._id || att.user
+          return attUserId?.toString() === user?._id?.toString()
+        })
         return (
           <div
             key={lec._id}
-            className="rounded-2xl p-5 flex gap-4 items-start"
+            className="rounded-2xl p-5 flex gap-4 items-center"
             style={{ background: 'var(--bg-surface)', border: lec.status === 'live' ? '1.5px solid #BBF7D0' : '1px solid var(--border-default)' }}
           >
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
@@ -83,13 +90,7 @@ function LiveLecturesList({ courseId }) {
               {lec.status === 'live' ? <Radio size={22} color="#10B981" /> : <Video size={22} color="#DC2626" />}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>{lec.title}</h3>
-                <span className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: s.bg, color: s.color }}>
-                  {s.label}
-                </span>
-              </div>
+              <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{lec.title}</h3>
               {lec.description && (
                 <p className="text-sm mb-2 line-clamp-2" style={{ color: 'var(--text-muted)' }}>{lec.description}</p>
               )}
@@ -101,24 +102,64 @@ function LiveLecturesList({ courseId }) {
                 )}
               </div>
             </div>
-            {(lec.status === 'scheduled' || lec.status === 'live') && (
-              lec.type === 'inapp' ? (
-                <button
-                  onClick={() => navigate(`/live/${lec._id}`)}
-                  className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:shadow-md"
-                  style={{ background: lec.status === 'live' ? '#10B981' : '#7C3AED', color: '#FFFFFF' }}>
-                  <Monitor size={14} />
-                  {lec.status === 'live' ? 'Join Live' : 'Join Session'}
-                </button>
+            <div className="flex items-center gap-3 shrink-0">
+              {isEnded ? (
+                didAttend ? (
+                  <span className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full animate-fadeIn"
+                    style={{ background: '#D1FAE5', color: '#065F46' }}>
+                    ✓ Attended
+                  </span>
+                ) : (
+                  <span className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full animate-fadeIn"
+                    style={{ background: '#FEE2E2', color: '#991B1B' }}>
+                    ✗ Missed
+                  </span>
+                )
               ) : (
-                <a href={lec.meetingUrl} target="_blank" rel="noopener noreferrer"
-                  className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:shadow-md"
-                  style={{ background: lec.status === 'live' ? '#10B981' : '#7C3AED', color: '#FFFFFF' }}>
-                  <ExternalLink size={14} />
-                  {lec.status === 'live' ? 'Join Now' : 'Join'}
-                </a>
-              )
-            )}
+                <span className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full"
+                  style={{ background: s.bg, color: s.color }}>
+                  {s.label}
+                </span>
+              )}
+              {(lec.status === 'scheduled' || lec.status === 'live') && (
+                lec.type === 'inapp' ? (
+                  <button
+                    disabled={lec.status === 'scheduled'}
+                    onClick={() => navigate(`/live/${lec._id}`)}
+                    className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      lec.status === 'scheduled' ? 'cursor-not-allowed opacity-70' : 'hover:shadow-md'
+                    }`}
+                    style={{
+                      background: lec.status === 'live' ? '#10B981' : 'var(--bg-muted)',
+                      color: lec.status === 'live' ? '#FFFFFF' : 'var(--text-muted)',
+                      border: lec.status === 'scheduled' ? '1px solid var(--border-default)' : 'none',
+                    }}
+                  >
+                    <Monitor size={14} />
+                    {lec.status === 'live' ? 'Join Live' : 'Join Session'}
+                  </button>
+                ) : (
+                  <button
+                    disabled={lec.status === 'scheduled'}
+                    onClick={() => {
+                      liveLecturesAPI.attend(lec._id).catch(() => {})
+                      window.open(lec.meetingUrl, '_blank', 'noopener,noreferrer')
+                    }}
+                    className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      lec.status === 'scheduled' ? 'cursor-not-allowed opacity-70' : 'hover:shadow-md'
+                    }`}
+                    style={{
+                      background: lec.status === 'live' ? '#10B981' : 'var(--bg-muted)',
+                      color: lec.status === 'live' ? '#FFFFFF' : 'var(--text-muted)',
+                      border: lec.status === 'scheduled' ? '1px solid var(--border-default)' : 'none',
+                    }}
+                  >
+                    <ExternalLink size={14} />
+                    {lec.status === 'live' ? 'Join Now' : 'Join'}
+                  </button>
+                )
+              )}
+            </div>
           </div>
         )
       })}

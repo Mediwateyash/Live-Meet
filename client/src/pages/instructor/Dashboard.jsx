@@ -55,24 +55,27 @@ export default function InstructorDashboard() {
           ))}
         </div>
 
-        {/* Revenue chart placeholder */}
-        <div className="bg-white rounded-2xl p-6 mb-8 shadow-card" style={{ border: '1px solid var(--border-purple)' }}>
+        {/* Revenue chart */}
+        <div className="rounded-2xl p-6 mb-8" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-purple)' }}>
           <h2 className="text-lg font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Revenue — Last 30 days
           </h2>
-          {stats?.revenueChart?.length > 0 ? (
+          {stats?.revenueChart?.some(d => d.revenue > 0) ? (
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={stats.revenueChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EEFF" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#94A3B8' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} />
-                <Tooltip formatter={(v) => [`₹${v}`, 'Revenue']} />
-                <Line type="monotone" dataKey="revenue" stroke="#7C3AED" strokeWidth={2} dot={false} fill="#EDE9FE" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} interval={4} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={v => `₹${v}`} />
+                <Tooltip
+                  formatter={(v) => [`₹${v}`, 'Revenue']}
+                  contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-purple)', borderRadius: 10, color: 'var(--text-primary)', fontSize: 12 }}
+                />
+                <Line type="monotone" dataKey="revenue" stroke="#7C3AED" strokeWidth={2.5} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
             <div className="h-[200px] flex items-center justify-center rounded-xl" style={{ background: 'var(--bg-muted)', color: 'var(--text-muted)' }}>
-              <p className="text-sm">No revenue data yet</p>
+              <p className="text-sm">No revenue data yet — enrollments will appear here</p>
             </div>
           )}
         </div>

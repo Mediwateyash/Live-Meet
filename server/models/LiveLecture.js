@@ -15,6 +15,15 @@ const liveLectureSchema = new mongoose.Schema({
   status:      { type: String, enum: ['scheduled', 'live', 'ended'], default: 'scheduled' },
   startedAt:   { type: Date },
   endedAt:     { type: Date },
+
+  attendance: [{
+    user:     { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    joinedAt: { type: Date, default: Date.now },
+    sessions: [{
+      joinedAt: { type: Date, default: Date.now },
+      leftAt:   { type: Date }
+    }]
+  }],
 }, { timestamps: true })
 
 export default mongoose.model('LiveLecture', liveLectureSchema)

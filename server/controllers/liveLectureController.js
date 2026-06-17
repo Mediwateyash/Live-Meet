@@ -14,25 +14,36 @@ export async function getMyLectures(req, res, next) {
     if (req.query.courseId) filter.courseId = req.query.courseId
     const lectures = await LiveLecture.find(filter)
       .populate('courseId', 'title slug')
+      .populate('attendance.user', 'fullName email')
       .sort({ scheduledAt: -1 })
     res.json({ success: true, data: lectures })
   } catch (err) { next(err) }
 }
 
-// Students: lectures for an enrolled course
+// Students: lectures for an enrolled course (or all enrolled courses if no courseId specified)
 export async function getEnrolledLectures(req, res, next) {
   try {
     const courseId = req.query.courseId
-    if (!courseId) return res.json({ success: true, data: [] })
+    if (courseId) {
+      const course = await Course.findById(courseId)
+      if (!course) throw new ApiError(404, 'Course not found')
 
-    const course = await Course.findById(courseId)
-    if (!course) throw new ApiError(404, 'Course not found')
+      const isEnrolled = course.enrolledStudents.some(id => id.toString() === req.user._id.toString())
+      if (!isEnrolled) throw new ApiError(403, 'Not enrolled in this course')
 
-    const isEnrolled = course.enrolledStudents.some(id => id.toString() === req.user._id.toString())
-    if (!isEnrolled) throw new ApiError(403, 'Not enrolled in this course')
+      const lectures = await LiveLecture.find({ courseId })
+        .populate('instructor', 'fullName avatar')
+        .sort({ scheduledAt: -1 })
+      return res.json({ success: true, data: lectures })
+    }
 
-    const lectures = await LiveLecture.find({ courseId })
+    // Fetch all lectures for all courses the student is enrolled in
+    const enrolledCourses = await Course.find({ enrolledStudents: req.user._id }).select('_id')
+    const courseIds = enrolledCourses.map(c => c._id)
+
+    const lectures = await LiveLecture.find({ courseId: { $in: courseIds } })
       .populate('instructor', 'fullName avatar')
+      .populate('courseId', 'title slug')
       .sort({ scheduledAt: -1 })
     res.json({ success: true, data: lectures })
   } catch (err) { next(err) }
@@ -105,20 +116,56 @@ export async function updateLecture(req, res, next) {
     if (!isOwner && req.user.role !== 'admin') throw new ApiError(403, 'Not authorized')
     if (lecture.status === 'ended') throw new ApiError(400, 'Cannot edit an ended lecture')
 
-    const { title, description, scheduledAt, duration, meetingUrl, status } = req.body
+    const { title, description, scheduledAt, duration, meetingUrl, status, courseId, instructor, type } = req.body
     let wentLive = false
 
     if (title) lecture.title = title.trim()
     if (description !== undefined) lecture.description = description.trim()
     if (scheduledAt) {
-      if (new Date(scheduledAt) <= new Date()) throw new ApiError(400, 'Scheduled date must be in the future')
+      if (new Date(scheduledAt) <= new Date() && new Date(scheduledAt).toISOString() !== new Date(lecture.scheduledAt).toISOString()) {
+        throw new ApiError(400, 'Scheduled date must be in the future')
+      }
       lecture.scheduledAt = scheduledAt
     }
     if (duration) lecture.duration = Number(duration)
     if (meetingUrl !== undefined) lecture.meetingUrl = meetingUrl.trim()
+
+    if (type && ['link', 'inapp'].includes(type)) {
+      lecture.type = type
+      if (type === 'inapp') lecture.meetingUrl = ''
+    }
+
+    if (courseId !== undefined) {
+      if (courseId) {
+        const course = await Course.findById(courseId)
+        if (!course) throw new ApiError(404, 'Course not found')
+        if (req.user.role !== 'admin' && course.instructor.toString() !== req.user._id.toString()) {
+          throw new ApiError(403, 'You can only schedule lectures for your own courses')
+        }
+        lecture.courseId = courseId
+      } else {
+        lecture.courseId = null
+      }
+    }
+
+    if (instructor && req.user.role === 'admin') {
+      lecture.instructor = instructor
+    }
+
     if (status && ['scheduled', 'live', 'ended'].includes(status)) {
       if (status === 'live' && lecture.status !== 'live') { lecture.startedAt = new Date(); wentLive = true }
-      if (status === 'ended' && lecture.status !== 'ended') lecture.endedAt = new Date()
+      if (status === 'ended' && lecture.status !== 'ended') {
+        lecture.endedAt = new Date()
+        if (lecture.attendance) {
+          lecture.attendance.forEach(att => {
+            if (att.sessions) {
+              att.sessions.forEach(sess => {
+                if (!sess.leftAt) sess.leftAt = lecture.endedAt
+              })
+            }
+          })
+        }
+      }
       lecture.status = status
     }
 
@@ -167,6 +214,7 @@ export async function getLectureById(req, res, next) {
     const lecture = await LiveLecture.findById(req.params.id)
       .populate('courseId',   'title slug enrolledStudents')
       .populate('instructor', 'fullName avatar')
+      .populate('attendance.user', 'fullName email')
     if (!lecture) throw new ApiError(404, 'Lecture not found')
 
     // Students must be enrolled in the linked course
@@ -190,7 +238,43 @@ export async function adminGetAllLectures(req, res, next) {
     const lectures = await LiveLecture.find(filter)
       .populate('courseId',  'title slug')
       .populate('instructor', 'fullName email avatar')
+      .populate('attendance.user', 'fullName email')
       .sort({ scheduledAt: -1 })
     res.json({ success: true, data: lectures })
+  } catch (err) { next(err) }
+}
+
+// Student: record attendance
+export async function recordAttendance(req, res, next) {
+  try {
+    const lecture = await LiveLecture.findById(req.params.id)
+    if (!lecture) throw new ApiError(404, 'Lecture not found')
+
+    if (lecture.status === 'scheduled') {
+      throw new ApiError(400, 'This session has not started yet')
+    }
+    if (lecture.status === 'ended') {
+      throw new ApiError(400, 'This session has already ended')
+    }
+
+    if (req.user.role !== 'student') {
+      return res.json({ success: true, message: 'Only students record attendance' })
+    }
+
+    const studentId = req.user._id.toString()
+    let attRecord = lecture.attendance?.find(att => att.user?.toString() === studentId)
+    if (!attRecord) {
+      lecture.attendance = lecture.attendance || []
+      const joined = new Date()
+      const left = new Date(joined.getTime() + (lecture.duration || 60) * 60000)
+      lecture.attendance.push({
+        user: req.user._id,
+        joinedAt: joined,
+        sessions: [{ joinedAt: joined, leftAt: left }]
+      })
+      await lecture.save()
+    }
+
+    res.json({ success: true, message: 'Attendance recorded' })
   } catch (err) { next(err) }
 }

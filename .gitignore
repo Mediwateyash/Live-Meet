@@ -36,12 +36,14 @@ build/
 out/
 .nuxt/
 .vuepress/dist/
+.cache/
+.parcel-cache/
+.eslintcache
 
 # Env files
 .env
-.env.test
-.env.production
-.env.local
+.env.*
+!.env.example
 
 # OS files
 .DS_Store
@@ -56,3 +58,5 @@ Thumbs.db
 *.sln
 *.sw?
 .claude/
+.gemini/
+.antigravity/

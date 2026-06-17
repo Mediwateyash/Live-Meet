@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import useAuthStore from './store/authStore.js'
+import useUIStore from './store/uiStore.js'
 import { authAPI } from './api/auth.js'
+import LoginModal from './components/ui/LoginModal.jsx'
 
 // Public pages
 import Home          from './pages/public/Home.jsx'
@@ -23,6 +25,7 @@ import Certificate        from './pages/student/Certificate.jsx'
 import BecomeInstructor   from './pages/student/BecomeInstructor.jsx'
 import Profile            from './pages/student/Profile.jsx'
 import LiveRoom           from './pages/student/LiveRoom.jsx'
+import StudentLiveLectures from './pages/student/LiveLectures.jsx'
 
 // Shared pages
 import Notifications      from './pages/Notifications.jsx'
@@ -59,8 +62,21 @@ function RequireRole({ children, role }) {
   return children
 }
 
+function LiveLecturesRedirect() {
+  const { user } = useAuthStore()
+  if (user?.role === 'admin') return <Navigate to="/admin/live-lectures" replace />
+  if (user?.role === 'instructor' && user?.isApprovedInstructor) return <Navigate to="/instructor/live-lectures" replace />
+  if (user?.role === 'student') return <Navigate to="/student/live-lectures" replace />
+  return <Navigate to="/dashboard" replace />
+}
+
 export default function App() {
   const { setUser, logout, isAuthenticated } = useAuthStore()
+  const { darkMode, initDarkMode, authModal, authModalTab, authModalHint, closeAuthModal } = useUIStore()
+
+  useEffect(() => {
+    initDarkMode(darkMode)
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -71,6 +87,13 @@ export default function App() {
   }, [])
 
   return (
+    <>
+    <LoginModal
+      isOpen={authModal}
+      onClose={closeAuthModal}
+      defaultTab={authModalTab}
+      hint={authModalHint}
+    />
     <Routes>
       {/* Public */}
       <Route path="/"             element={<Home />} />
@@ -96,6 +119,8 @@ export default function App() {
       <Route path="/course/:slug/progress" element={<RequireAuth><CourseFeaturePage feature="progress" /></RequireAuth>} />
       <Route path="/course/:slug/live"     element={<RequireAuth><CourseFeaturePage feature="live" /></RequireAuth>} />
       <Route path="/live/:id"             element={<RequireAuth><LiveRoom /></RequireAuth>} />
+      <Route path="/student/live-lectures" element={<RequireAuth><StudentLiveLectures /></RequireAuth>} />
+      <Route path="/live-lectures"        element={<RequireAuth><LiveLecturesRedirect /></RequireAuth>} />
       <Route path="/notifications"        element={<RequireAuth><Notifications /></RequireAuth>} />
 
       {/* Instructor */}
@@ -119,5 +144,6 @@ export default function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }

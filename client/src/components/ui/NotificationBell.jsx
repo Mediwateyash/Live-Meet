@@ -5,11 +5,11 @@ import { notificationsAPI } from '../../api/notifications.js'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const TYPE_ICON = {
-  live_scheduled: { Icon: Video,    bg: '#EDE9FE', color: '#7C3AED' },
-  live_started:   { Icon: Radio,    bg: '#F0FDF4', color: '#10B981' },
-  live_updated:   { Icon: Video,    bg: '#EDE9FE', color: '#7C3AED' },
-  course_updated: { Icon: BookOpen, bg: '#FEF2F2', color: '#DC2626' },
-  general:        { Icon: Info,     bg: '#EFF6FF', color: '#3B82F6' },
+  live_scheduled: { Icon: Video,    bg: 'rgba(109,40,217,0.14)', color: '#7C3AED' },
+  live_started:   { Icon: Radio,    bg: 'rgba(5,150,105,0.14)',  color: '#10B981' },
+  live_updated:   { Icon: Video,    bg: 'rgba(109,40,217,0.14)', color: '#7C3AED' },
+  course_updated: { Icon: BookOpen, bg: 'rgba(220,38,38,0.14)',  color: '#DC2626' },
+  general:        { Icon: Info,     bg: 'rgba(59,130,246,0.14)', color: '#3B82F6' },
 }
 
 function timeAgo(dateStr) {
@@ -86,7 +86,9 @@ export default function NotificationBell() {
     <div className="relative" ref={bellRef}>
       <button
         onClick={() => { setOpen(v => !v); if (!open) fetchPreview() }}
-        className="relative p-2 rounded-xl transition-all hover:bg-[#F0EEFF]"
+        className="relative p-2 rounded-xl transition-all"
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         aria-label="Notifications"
       >
         <Bell size={20} color={open ? '#7C3AED' : 'var(--text-secondary)'} />
@@ -139,8 +141,10 @@ export default function NotificationBell() {
                   const { Icon, bg, color } = TYPE_ICON[n.type] || TYPE_ICON.general
                   return (
                     <button key={n._id} onClick={() => handleItemClick(n)}
-                      className="w-full flex items-start gap-3 px-4 py-3 text-left transition-all hover:bg-[#F5F3FF]"
-                      style={{ background: n.read ? 'transparent' : '#FAF5FF', borderBottom: '1px solid var(--border-default)' }}>
+                      className="w-full flex items-start gap-3 px-4 py-3 text-left transition-all"
+                      style={{ background: n.read ? 'transparent' : 'rgba(124,58,237,0.06)', borderBottom: '1px solid var(--border-default)' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                      onMouseLeave={e => e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(124,58,237,0.06)'}>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: bg }}>
                         <Icon size={16} color={color} />
                       </div>
@@ -159,7 +163,9 @@ export default function NotificationBell() {
             {/* Footer */}
             {items.length > 0 && (
               <button onClick={handleViewAll}
-                className="w-full flex items-center justify-center gap-1 py-3 text-xs font-semibold border-t transition-all hover:bg-[#F0EEFF]"
+                className="w-full flex items-center justify-center gap-1 py-3 text-xs font-semibold border-t transition-all"
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 style={{ color: '#7C3AED', borderColor: 'var(--border-default)' }}>
                 View all notifications <ChevronRight size={13} />
               </button>

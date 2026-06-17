@@ -4,15 +4,16 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import PageLayout from '../components/layout/PageLayout.jsx'
 import Button from '../components/ui/Button.jsx'
+import Modal from '../components/ui/Modal.jsx'
 import { notificationsAPI } from '../api/notifications.js'
 import toast from 'react-hot-toast'
 
 const TYPE_ICON = {
-  live_scheduled: { Icon: Video,    bg: '#EDE9FE', color: '#7C3AED', label: 'Live Scheduled' },
-  live_started:   { Icon: Radio,    bg: '#F0FDF4', color: '#10B981', label: 'Now Live' },
-  live_updated:   { Icon: Video,    bg: '#EDE9FE', color: '#7C3AED', label: 'Live Updated' },
-  course_updated: { Icon: BookOpen, bg: '#FEF2F2', color: '#DC2626', label: 'Course Update' },
-  general:        { Icon: Info,     bg: '#EFF6FF', color: '#3B82F6', label: 'Info' },
+  live_scheduled: { Icon: Video,    bg: 'rgba(124,58,237,0.12)', color: '#7C3AED', label: 'Live Scheduled' },
+  live_started:   { Icon: Radio,    bg: 'rgba(16,185,129,0.12)', color: '#10B981', label: 'Now Live' },
+  live_updated:   { Icon: Video,    bg: 'rgba(124,58,237,0.12)', color: '#7C3AED', label: 'Live Updated' },
+  course_updated: { Icon: BookOpen, bg: 'rgba(220,38,38,0.12)',  color: '#DC2626', label: 'Course Update' },
+  general:        { Icon: Info,     bg: 'rgba(59,130,246,0.12)', color: '#3B82F6', label: 'Info' },
 }
 
 function timeAgo(dateStr) {
@@ -36,6 +37,7 @@ export default function Notifications() {
   const [pages,    setPages]   = useState(1)
   const [loading,  setLoading] = useState(true)
   const [clearing, setClearing]= useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   const load = useCallback(async (p = 1, append = false) => {
     setLoading(true)
@@ -62,7 +64,7 @@ export default function Notifications() {
   }
 
   const handleClearAll = async () => {
-    if (!window.confirm('Clear all notifications?')) return
+    setShowClearConfirm(false)
     setClearing(true)
     try {
       await notificationsAPI.clearAll()
@@ -111,13 +113,13 @@ export default function Notifications() {
               {unread > 0 && (
                 <button onClick={handleMarkAllRead}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                  style={{ background: '#EDE9FE', color: '#7C3AED', border: '1px solid #DDD6FE' }}>
+                  style={{ background: 'rgba(124,58,237,0.12)', color: '#7C3AED', border: '1px solid var(--border-purple)' }}>
                   <CheckCheck size={13} /> Mark all read
                 </button>
               )}
-              <button onClick={handleClearAll} disabled={clearing}
+              <button onClick={() => setShowClearConfirm(true)} disabled={clearing}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
+                style={{ background: 'rgba(220,38,38,0.1)', color: '#DC2626', border: '1px solid rgba(220,38,38,0.25)' }}>
                 <Trash2 size={13} /> Clear all
               </button>
             </div>
@@ -134,7 +136,7 @@ export default function Notifications() {
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 rounded-2xl"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: '#EDE9FE' }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'rgba(124,58,237,0.12)' }}>
               <Inbox size={28} color="#7C3AED" />
             </div>
             <p className="text-base font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>No notifications</p>
@@ -151,8 +153,8 @@ export default function Notifications() {
                       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -20 }}
                       onClick={() => handleItemClick(n)}
                       className="flex items-start gap-4 p-4 rounded-2xl cursor-pointer transition-all group"
-                      style={{ background: n.read ? 'var(--bg-surface)' : '#FAF5FF',
-                        border: n.read ? '1px solid var(--border-default)' : '1px solid #DDD6FE' }}>
+                      style={{ background: n.read ? 'var(--bg-surface)' : 'rgba(124,58,237,0.07)',
+                        border: n.read ? '1px solid var(--border-default)' : '1px solid var(--border-purple)' }}>
 
                       <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: bg }}>
                         <Icon size={20} color={color} />
@@ -168,7 +170,9 @@ export default function Notifications() {
                             <p className="text-sm font-semibold mt-1 leading-tight" style={{ color: 'var(--text-primary)' }}>{n.title}</p>
                           </div>
                           <button onClick={e => handleDelete(e, n._id)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-all hover:bg-red-50 shrink-0"
+                            className="p-1.5 rounded-lg transition-colors shrink-0"
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             title="Delete">
                             <Trash2 size={13} color="#EF4444" />
                           </button>
@@ -196,6 +200,18 @@ export default function Notifications() {
           </>
         )}
       </div>
+
+      <Modal isOpen={showClearConfirm} onClose={() => setShowClearConfirm(false)} title="Clear all notifications?" size="sm">
+        <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+          This will permanently remove all your notifications. This action cannot be undone.
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" onClick={() => setShowClearConfirm(false)}>Cancel</Button>
+          <Button variant="danger" onClick={handleClearAll} loading={clearing}>
+            Clear all
+          </Button>
+        </div>
+      </Modal>
     </PageLayout>
   )
 }

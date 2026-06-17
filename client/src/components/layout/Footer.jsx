@@ -29,7 +29,9 @@ export default function Footer() {
             </p>
             <div className="flex gap-3">
               {[MessageSquare, GitFork, Globe].map((Icon, i) => (
-                <a key={i} href="#" className="p-2 rounded-lg transition-colors hover:bg-[#F0EEFF]" style={{ color: 'var(--text-muted)' }}>
+                <a key={i} href="#" className="p-2 rounded-lg transition-colors" style={{ color: 'var(--text-muted)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                   <Icon size={16} />
                 </a>
               ))}

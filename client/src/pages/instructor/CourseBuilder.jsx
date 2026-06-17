@@ -6,7 +6,7 @@ import { z } from 'zod'
 import Cropper from 'react-easy-crop'
 import {
   Plus, Trash2, GripVertical, ChevronDown, Upload, X, Check,
-  PlayCircle, ZoomIn, ZoomOut, Crop, Eye
+  PlayCircle, ZoomIn, ZoomOut, Crop, Eye, Pencil
 } from 'lucide-react'
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors,
@@ -521,7 +521,9 @@ export default function CourseBuilder() {
                       <input value={item} onChange={e => setWhatLearn(a => a.map((x, j) => j === i ? e.target.value : x))}
                         placeholder={`Learning point ${i + 1}`} className="input-field flex-1" />
                       {whatLearn.length > 1 && (
-                        <button onClick={() => setWhatLearn(a => a.filter((_, j) => j !== i))} className="p-2 rounded-lg hover:bg-red-50">
+                        <button onClick={() => setWhatLearn(a => a.filter((_, j) => j !== i))} className="p-2 rounded-lg transition-colors"
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                           <X size={14} color="#EF4444" />
                         </button>
                       )}
@@ -542,7 +544,9 @@ export default function CourseBuilder() {
                       <input value={item} onChange={e => setReqs(a => a.map((x, j) => j === i ? e.target.value : x))}
                         placeholder={`Requirement ${i + 1}`} className="input-field flex-1" />
                       {requirements.length > 1 && (
-                        <button onClick={() => setReqs(a => a.filter((_, j) => j !== i))} className="p-2 rounded-lg hover:bg-red-50">
+                        <button onClick={() => setReqs(a => a.filter((_, j) => j !== i))} className="p-2 rounded-lg transition-colors"
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                           <X size={14} color="#EF4444" />
                         </button>
                       )}
@@ -581,7 +585,7 @@ export default function CourseBuilder() {
                   </div>
                 </div>
                 {/* Card body */}
-                <div className="p-4 bg-white">
+                <div className="p-4" style={{ background: 'var(--bg-surface)' }}>
                   <p className="text-xs font-medium mb-1" style={{ color: '#7C3AED' }}>{watchCategory || 'Category'}</p>
                   <h3 className="font-bold text-sm leading-snug mb-1 line-clamp-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
                     {watchTitle || 'Your Course Title'}
@@ -697,33 +701,76 @@ export default function CourseBuilder() {
 function SortableSection({ section, si, onUpdateSection, onRemoveSection, onAddLesson, onRemoveLesson, onUpdateLesson }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: section.id })
   const style = { transform: CSS.Transform.toString(transform), transition }
-  const [open, setOpen] = useState(true)
+  const [open,    setOpen]    = useState(true)
+  const [editing, setEditing] = useState(false)
+  const inputRef = React.useRef(null)
+
+  const startEdit = () => {
+    setEditing(true)
+    setTimeout(() => { inputRef.current?.focus(); inputRef.current?.select() }, 0)
+  }
 
   return (
-    <div ref={setNodeRef} style={{ ...style, border: '1px solid var(--border-default)' }} className="bg-white rounded-2xl overflow-hidden">
-      <div className="flex items-center gap-3 px-4 py-3" style={{ background: 'var(--bg-muted)', borderBottom: '1px solid var(--border-default)' }}>
-        <span {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
+    <div ref={setNodeRef}
+      style={{ ...style, border: '1px solid var(--border-default)', background: 'var(--bg-surface)' }}
+      className="rounded-2xl overflow-hidden">
+      {/* Section header */}
+      <div className="flex items-center gap-3 px-4 py-3" style={{ background: 'var(--bg-muted)', borderBottom: open ? '1px solid var(--border-default)' : 'none' }}>
+        <span {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none shrink-0">
           <GripVertical size={16} color="var(--text-muted)" />
         </span>
-        <input value={section.title} onChange={e => onUpdateSection(si, 'title', e.target.value)}
-          className="flex-1 bg-transparent outline-none text-sm font-semibold" style={{ color: 'var(--text-primary)' }} />
-        <button onClick={() => setOpen(o => !o)}>
-          <ChevronDown size={16} color="var(--text-secondary)" className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+
+        {/* Editable title */}
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={section.title}
+            onChange={e => onUpdateSection(si, 'title', e.target.value)}
+            onBlur={() => setEditing(false)}
+            onKeyDown={e => e.key === 'Enter' && setEditing(false)}
+            className="flex-1 rounded-lg px-2 py-1 text-sm font-semibold outline-none"
+            style={{ background: 'var(--bg-surface)', border: '1.5px solid #7C3AED', color: 'var(--text-primary)' }}
+          />
+        ) : (
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+              {section.title || 'New Section'}
+            </span>
+            <button
+              onClick={startEdit}
+              className="shrink-0 p-1 rounded-md transition-colors"
+              title="Rename section"
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <Pencil size={13} color="#7C3AED" />
+            </button>
+          </div>
+        )}
+
+        <button onClick={() => setOpen(o => !o)} className="shrink-0 p-1 rounded-md transition-colors"
+          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+          <ChevronDown size={16} color="var(--text-secondary)" className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
         </button>
-        <button onClick={() => onRemoveSection(si)} className="p-1 hover:bg-red-50 rounded-lg">
+        <button onClick={() => onRemoveSection(si)} className="shrink-0 p-1 rounded-md transition-colors"
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
           <Trash2 size={14} color="#EF4444" />
         </button>
       </div>
 
       {open && (
-        <div className="p-3 space-y-2">
+        <div className="p-3 space-y-2" style={{ background: 'var(--bg-surface)' }}>
           {section.lessons.map((lesson, li) => (
             <LessonRow key={lesson.id || li} lesson={lesson} si={si} li={li}
               onUpdateLesson={onUpdateLesson} onRemoveLesson={onRemoveLesson} />
           ))}
           <button onClick={() => onAddLesson(si)}
-            className="w-full py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 transition-colors hover:bg-[#F0EEFF]"
-            style={{ color: '#7C3AED', border: '1px dashed #DDD6FE' }}>
+            className="w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
+            style={{ color: '#7C3AED', border: '1px dashed var(--border-purple)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             <Plus size={14} /> Add Lesson
           </button>
         </div>
@@ -761,7 +808,7 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
   const ytThumb  = savedYt ? getYouTubeThumbnail(lesson.videoUrl) : null
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-default)', background: 'white' }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border-default)', background: 'var(--bg-surface)' }}>
       {/* Title row */}
       <div className="flex items-center gap-3 px-3 py-2.5" style={{ borderBottom: '1px solid var(--border-default)' }}>
         <GripVertical size={14} color="var(--text-muted)" className="shrink-0" />
@@ -773,7 +820,9 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
             style={{ accentColor: '#7C3AED' }} />
           Free preview
         </label>
-        <button onClick={() => onRemoveLesson(si, li)} className="p-1 hover:bg-red-50 rounded shrink-0">
+        <button onClick={() => onRemoveLesson(si, li)} className="p-1 rounded shrink-0 transition-colors"
+          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
           <Trash2 size={13} color="#EF4444" />
         </button>
       </div>

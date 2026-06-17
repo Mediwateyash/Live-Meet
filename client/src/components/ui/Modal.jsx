@@ -29,15 +29,20 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
             initial="initial"
             animate="animate"
             exit="exit"
-            className={`relative bg-white rounded-2xl shadow-glass w-full ${widths[size]} z-10`}
-            style={{ border: '1px solid var(--border-purple)' }}
+            className={`relative rounded-2xl shadow-glass w-full ${widths[size]} z-10`}
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-purple)' }}
           >
             {title && (
               <div className="flex items-center justify-between px-6 py-4 border-b rounded-t-2xl overflow-hidden" style={{ borderColor: 'var(--border-default)' }}>
                 <h3 className="font-semibold text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
                   {title}
                 </h3>
-                <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-lg transition-colors"
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
                   <X size={18} color="var(--text-secondary)" />
                 </button>
               </div>

@@ -44,7 +44,7 @@ export default function Select({
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between gap-2 text-left text-sm font-medium rounded-[10px] border-[1.5px] px-3.5 py-[10px] transition-all"
         style={{
-          background: open ? '#FFFFFF' : 'var(--bg-muted)',
+          background: open ? 'var(--bg-surface)' : 'var(--bg-muted)',
           borderColor: open ? '#7C3AED' : error ? '#EF4444' : 'var(--border-default)',
           boxShadow: open ? '0 0 0 3px rgba(124,58,237,0.12)' : 'none',
           color: selected ? 'var(--text-primary)' : 'var(--text-muted)',
@@ -72,7 +72,7 @@ export default function Select({
             left: 0,
             minWidth: '100%',
             width: 'max-content',
-            background: '#FFFFFF',
+            background: 'var(--bg-surface)',
             border: '1.5px solid var(--border-purple)',
             boxShadow: '0 8px 24px rgba(124,58,237,0.14), 0 2px 8px rgba(0,0,0,0.08)',
           }}

@@ -63,12 +63,12 @@ export default function InstructorCourses() {
             action={{ label: 'Create Course', onClick: () => navigate('/instructor/courses/new') }}
           />
         ) : (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-card" style={{ border: '1px solid var(--border-default)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: '0 2px 8px rgba(109,40,217,0.06)' }}>
             <table className="w-full">
               <thead>
-                <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
+                <tr style={{ background: 'var(--z-purple-100)', borderBottom: '1px solid var(--border-purple)' }}>
                   {['Course', 'Status', 'Students', 'Revenue', 'Rating', 'Manage', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
+                    <th key={h} className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -90,11 +90,11 @@ export default function InstructorCourses() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
                         {[
-                          { icon: FileText,     title: 'Notes',         color: '#7C3AED', bg: '#F0EEFF',  path: null },
-                          { icon: ClipboardList, title: 'Tests',        color: '#2563EB', bg: '#EFF6FF',  path: null },
-                          { icon: Brain,         title: 'MCQ',          color: '#10B981', bg: '#F0FDF4',  path: null },
-                          { icon: Video,         title: 'Live Lectures',color: '#F59E0B', bg: '#FFFBEB',  path: '/instructor/live-lectures' },
-                          { icon: TrendingUp,    title: 'Progress',     color: '#EC4899', bg: '#FDF2F8',  path: null },
+                          { icon: FileText,     title: 'Notes',         color: '#7C3AED', bg: 'rgba(109,40,217,0.12)',  path: null },
+                          { icon: ClipboardList, title: 'Tests',        color: '#2563EB', bg: 'rgba(37,99,235,0.12)',   path: null },
+                          { icon: Brain,         title: 'MCQ',          color: '#10B981', bg: 'rgba(16,185,129,0.12)',  path: null },
+                          { icon: Video,         title: 'Live Lectures',color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  path: '/instructor/live-lectures' },
+                          { icon: TrendingUp,    title: 'Progress',     color: '#EC4899', bg: 'rgba(236,72,153,0.12)',  path: null },
                         ].map(({ icon: Icon, title, color, bg, path }) => (
                           <button key={title} title={title} className="p-1.5 rounded-lg transition-colors" onClick={() => path && navigate(path)}
                             onMouseEnter={e => e.currentTarget.style.background = bg}
@@ -107,9 +107,15 @@ export default function InstructorCourses() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <button onClick={() => navigate(`/instructor/courses/${course._id}/edit`)} className="p-1.5 rounded-lg transition-colors hover:bg-[#F0EEFF]" title="Edit"><Edit size={15} color="#7C3AED" /></button>
-                        <button onClick={() => navigate(`/course/${course.slug}`)} className="p-1.5 rounded-lg transition-colors hover:bg-[#EFF6FF]" title="Preview"><Eye size={15} color="#2563EB" /></button>
-                        <button onClick={() => setConfirmId(course._id)} className="p-1.5 rounded-lg transition-colors hover:bg-red-50" title="Delete"><Trash2 size={15} color="#EF4444" /></button>
+                        <button onClick={() => navigate(`/instructor/courses/${course._id}/edit`)} className="p-1.5 rounded-lg transition-colors" title="Edit"
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(109,40,217,0.12)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}><Edit size={15} color="#7C3AED" /></button>
+                        <button onClick={() => navigate(`/course/${course.slug}`)} className="p-1.5 rounded-lg transition-colors" title="Preview"
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,99,235,0.12)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}><Eye size={15} color="#2563EB" /></button>
+                        <button onClick={() => setConfirmId(course._id)} className="p-1.5 rounded-lg transition-colors" title="Delete"
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.12)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}><Trash2 size={15} color="#EF4444" /></button>
                       </div>
                     </td>
                   </tr>

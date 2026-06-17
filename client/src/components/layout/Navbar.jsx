@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Search, BookOpen, ChevronDown, LogOut, User, LayoutDashboard, GraduationCap, Heart, Bell } from 'lucide-react'
+import { Search, BookOpen, ChevronDown, LogOut, User, LayoutDashboard, GraduationCap, Heart, Bell, Sun, Moon, Video } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import useAuthStore from '../../store/authStore.js'
+import useUIStore from '../../store/uiStore.js'
 import { authAPI } from '../../api/auth.js'
+
 import toast from 'react-hot-toast'
 import Button from '../ui/Button.jsx'
 import Modal from '../ui/Modal.jsx'
@@ -11,6 +13,7 @@ import NotificationBell from '../ui/NotificationBell.jsx'
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore()
+  const { darkMode, toggleDarkMode, openAuthModal } = useUIStore()
   const navigate = useNavigate()
   const location = useLocation()
   const [search, setSearch] = useState('')
@@ -42,7 +45,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="navbar h-16 px-6 flex items-center justify-between gap-6 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b" style={{ borderColor: 'rgba(124, 58, 237, 0.1)' }}>
+      <nav className="navbar h-16 px-6 flex items-center justify-between gap-6 backdrop-blur-md sticky top-0 z-50 border-b" style={{ borderColor: 'rgba(124, 58, 237, 0.1)' }}>
         {/* Left: Logo + Browse */}
         <div className="flex items-center gap-6 shrink-0">
           <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -55,8 +58,10 @@ export default function Navbar() {
           </Link>
           <Link
             to="/browse"
-            className="px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-[#F0EEFF] hover:text-[#7C3AED]"
+            className="px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-[#7C3AED]"
             style={{ color: location.pathname === '/browse' ? '#7C3AED' : 'var(--text-secondary)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             Browse
           </Link>
@@ -72,7 +77,7 @@ export default function Navbar() {
               placeholder="Search courses..."
               className="w-full pl-11 pr-4 py-2 rounded-xl text-sm outline-none transition-all border font-medium placeholder:text-[#94A3B8]"
               style={{
-                background: '#FFFFFF',
+                background: 'var(--bg-surface)',
                 borderColor: 'var(--border-default)',
                 color: 'var(--text-primary)',
                 fontFamily: 'Inter, sans-serif',
@@ -86,15 +91,39 @@ export default function Navbar() {
 
         {/* Right: Auth area */}
         <div className="flex items-center gap-4 shrink-0">
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-xl transition-all"
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <Link
                 to="/my-learning"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-[#F0EEFF] hover:text-[#7C3AED]"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-[#7C3AED]"
                 style={{ color: location.pathname === '/my-learning' ? '#7C3AED' : 'var(--text-secondary)' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 <BookOpen size={16} />
                 My Learning
+              </Link>
+
+              <Link
+                to="/my-learning?tab=wishlist"
+                className="relative p-2 rounded-xl transition-all"
+                title="Wishlist"
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                style={{ color: location.pathname === '/my-learning' && location.search.includes('wishlist') ? '#7C3AED' : 'var(--text-secondary)' }}
+              >
+                <Heart size={20} />
               </Link>
 
               <NotificationBell />
@@ -102,7 +131,9 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setProfileOpen(p => !p)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all hover:bg-[#F0EEFF] border border-transparent"
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all border border-transparent"
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   style={{ borderColor: profileOpen ? 'rgba(124, 58, 237, 0.15)' : 'transparent' }}
                 >
                   {user?.avatar ? (
@@ -125,8 +156,8 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-14 w-56 rounded-xl bg-white shadow-xl z-50 py-1.5 overflow-hidden border"
-                      style={{ borderColor: 'var(--border-purple)' }}
+                      className="absolute right-0 top-14 w-56 rounded-xl shadow-xl z-50 py-1.5 overflow-hidden border"
+                      style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-purple)', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
                       onMouseLeave={() => setProfileOpen(false)}
                     >
                       <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-default)' }}>
@@ -135,6 +166,7 @@ export default function Navbar() {
                       </div>
                       <DropItem to="/my-learning" icon={BookOpen} label="My Learning" onClick={() => setProfileOpen(false)} />
                       <DropItem to="/my-learning?tab=wishlist" icon={Heart} label="Wishlist" onClick={() => setProfileOpen(false)} />
+                      <DropItem to="/live-lectures" icon={Video} label="Live Lectures" onClick={() => setProfileOpen(false)} />
                       <DropItem to="/notifications" icon={Bell} label="Notifications" onClick={() => setProfileOpen(false)} />
                       <DropItem to={getDashboardLink()} icon={LayoutDashboard} label="Dashboard" onClick={() => setProfileOpen(false)} />
                       <DropItem to="/profile" icon={User} label="Profile" onClick={() => setProfileOpen(false)} />
@@ -144,8 +176,10 @@ export default function Navbar() {
                       <div className="border-t mt-1.5 pt-1.5" style={{ borderColor: 'var(--border-default)' }}>
                         <button
                           onClick={() => { setProfileOpen(false); setLogoutModal(true) }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2 text-sm font-semibold transition-colors hover:bg-red-50"
+                          className="w-full flex items-center gap-2.5 px-4 py-2 text-sm font-semibold transition-colors"
                           style={{ color: '#EF4444' }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                         >
                           <LogOut size={15} />
                           Log out
@@ -158,8 +192,8 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-2.5">
-              <Button variant="outline" size="sm" onClick={() => navigate('/login')}>Log in</Button>
-              <Button variant="primary" size="sm" onClick={() => navigate('/register')}>Sign up</Button>
+              <Button variant="outline" size="sm" onClick={() => openAuthModal('login')}>Log in</Button>
+              <Button variant="primary" size="sm" onClick={() => openAuthModal('register')}>Sign up</Button>
             </div>
           )}
         </div>
@@ -184,8 +218,10 @@ function DropItem({ to, icon: Icon, label, onClick }) {
     <Link
       to={to}
       onClick={onClick}
-      className="flex items-center gap-2.5 px-4 py-2 text-sm font-medium transition-colors hover:bg-[#F0EEFF]"
+      className="flex items-center gap-2.5 px-4 py-2 text-sm font-medium transition-colors"
       style={{ color: 'var(--text-secondary)' }}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
       <Icon size={15} />
       {label}
