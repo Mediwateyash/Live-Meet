@@ -1,9 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Play, Sparkles, BrainCircuit, BarChart3, Award } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import HeroRobot from './HeroRobot';
 
 export default function Hero() {
+  const navigate = useNavigate();
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -50,7 +52,7 @@ export default function Hero() {
             </motion.p>
             
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
-              <button className="px-8 py-3.5 bg-brand-600 text-white font-medium rounded-full hover:bg-brand-700 transition-all shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2">
+              <button onClick={() => navigate('/browse')} className="px-8 py-3.5 bg-brand-600 text-white font-medium rounded-full hover:bg-brand-700 transition-all shadow-lg shadow-brand-500/30 flex items-center justify-center gap-2">
                 Explore Courses
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>

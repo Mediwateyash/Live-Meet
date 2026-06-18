@@ -1,7 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import useUIStore from '../../store/uiStore.js';
 
 export default function CTABanner() {
+  const { openAuthModal } = useUIStore();
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,7 +27,7 @@ export default function CTABanner() {
                 Join our community of learners and start your journey to success today. Get 20% off your first course!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <button className="px-8 py-3.5 bg-white text-brand-700 font-bold rounded-full hover:bg-brand-50 transition-colors shadow-lg">
+                <button onClick={() => openAuthModal('register')} className="px-8 py-3.5 bg-white text-brand-700 font-bold rounded-full hover:bg-brand-50 transition-colors shadow-lg">
                   Get Started Now
                 </button>
                 <button className="px-8 py-3.5 bg-brand-500/30 text-white font-medium rounded-full border border-brand-400 hover:bg-brand-500/50 transition-colors backdrop-blur-sm">

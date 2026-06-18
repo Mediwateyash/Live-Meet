@@ -1,8 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Star, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function FeaturedCourses() {
+  const navigate = useNavigate();
   const courses = [
     {
       id: 1,
@@ -59,9 +61,9 @@ export default function FeaturedCourses() {
             <h2 className="text-3xl font-bold text-slate-900 mb-2">Popular Courses</h2>
             <p className="text-slate-600">Expand your knowledge with our top-rated courses.</p>
           </div>
-          <a href="#" className="hidden sm:flex items-center gap-2 text-brand-600 font-medium hover:text-brand-700 transition-colors">
+          <button onClick={() => navigate('/browse')} className="hidden sm:flex items-center gap-2 text-brand-600 font-medium hover:text-brand-700 transition-colors">
             View All Courses <ArrowRight className="h-4 w-4" />
-          </a>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -121,7 +123,7 @@ export default function FeaturedCourses() {
         </div>
         
         <div className="mt-8 sm:hidden flex justify-center">
-          <button className="flex items-center gap-2 text-brand-600 font-medium px-6 py-3 border border-brand-200 rounded-full hover:bg-brand-50 transition-colors">
+          <button onClick={() => navigate('/browse')} className="flex items-center gap-2 text-brand-600 font-medium px-6 py-3 border border-brand-200 rounded-full hover:bg-brand-50 transition-colors">
             View All Courses <ArrowRight className="h-4 w-4" />
           </button>
         </div>
