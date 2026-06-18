@@ -12,7 +12,7 @@ import {
 import useAuthStore from '../../store/authStore.js'
 import { liveLecturesAPI } from '../../api/liveLectures.js'
 
-const SERVER_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')
+const SERVER_URL = import.meta.env.PROD ? '' : 'http://localhost:5000'
 const ICE_SERVERS = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] }
 const REACTIONS   = ['👍','👏','😂','❤️','😮','🎉','🔥','✨']
 const CALC_BTNS   = ['sin(','cos(','tan(','log(','ln(','π','e','^','√(',  '%','7','8','9','(', ')','4','5','6','C','Del','1','2','3','×','÷','0','.','=','+','-']
