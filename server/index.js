@@ -71,7 +71,7 @@ if (process.env.NODE_ENV === 'production') {
   const __dirname = path.dirname(__filename)
   
   app.use(express.static(path.join(__dirname, '../client/dist')))
-  app.get('*', (req, res) => {
+  app.get(/(.*)/, (req, res) => {
     res.sendFile(path.resolve(__dirname, '../client/dist/index.html'))
   })
 } else {
