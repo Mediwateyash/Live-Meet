@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Star, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { coursesAPI } from '../../../api/courses.js';
-import { formatPrice } from '../../../utils/formatters.js';
+import { coursesAPI } from '../../api/courses.js';
+import { formatPrice } from '../../utils/formatters.js';
 
 const fallbackCourses = [
   {
