@@ -223,7 +223,6 @@ export default function CourseDetail() {
             style={{ color: '#7C3AED', border: '1px solid var(--border-purple)' }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            style={{ color: '#7C3AED', border: '1px solid var(--border-purple)' }}
           >
             <Menu size={16} />
             Course Tools
