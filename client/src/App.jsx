@@ -141,6 +141,7 @@ export default function App() {
       <Route path="/admin/instructors/:instructorId/courses/new" element={<RequireAuth><RequireRole role="admin"><CourseBuilder /></RequireRole></RequireAuth>} />
       <Route path="/admin/instructors/:instructorId/courses/:id/edit" element={<RequireAuth><RequireRole role="admin"><CourseBuilder /></RequireRole></RequireAuth>} />
       <Route path="/admin/live-lectures"            element={<RequireAuth><RequireRole role="admin"><AdminLiveLectures /></RequireRole></RequireAuth>} />
+      <Route path="/admin/testimonials"             element={<RequireAuth><RequireRole role="admin"><AdminTestimonials /></RequireRole></RequireAuth>} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
