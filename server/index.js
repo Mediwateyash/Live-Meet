@@ -1,6 +1,8 @@
 import express        from 'express'
 import { createServer } from 'http'
 import { Server }       from 'socket.io'
+import path             from 'path'
+import { fileURLToPath } from 'url'
 import cors            from 'cors'
 import helmet          from 'helmet'
 import cookieParser    from 'cookie-parser'
@@ -64,8 +66,18 @@ app.use('/api/notifications', notificationRoutes)
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))
 
-// 404 handler
-app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }))
+if (process.env.NODE_ENV === 'production') {
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = path.dirname(__filename)
+  
+  app.use(express.static(path.join(__dirname, '../client/dist')))
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../client/dist/index.html'))
+  })
+} else {
+  // 404 handler
+  app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }))
+}
 
 // Global error handler
 app.use((err, req, res, next) => {
