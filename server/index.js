@@ -39,6 +39,7 @@ registerLiveRoomSocket(io)
 // Security middleware
 app.use(helmet({ 
   crossOriginResourcePolicy: { policy: 'cross-origin' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   contentSecurityPolicy: false // Disabled to allow YouTube and external video iframes
 }))
 app.use(cors({
