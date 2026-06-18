@@ -110,7 +110,7 @@ export default function CoursePlayer() {
               <ReactPlayer
                 ref={playerRef}
                 src={currentLesson.videoUrl.includes('youtu') 
-                  ? `${currentLesson.videoUrl}${currentLesson.videoUrl.includes('?') ? '&' : '?'}origin=${window.location.origin}`
+                  ? `https://www.youtube.com/watch?v=${currentLesson.videoUrl.split('youtu.be/')[1]?.split('?')[0] || currentLesson.videoUrl.split('v=')[1]?.split('&')[0]}`
                   : currentLesson.videoUrl
                 }
                 width="100%"
