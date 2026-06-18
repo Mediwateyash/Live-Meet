@@ -44,6 +44,7 @@ import AdminCourses          from './pages/admin/Courses.jsx'
 import AdminInstructors      from './pages/admin/Instructors.jsx'
 import AdminInstructorManage from './pages/admin/InstructorManage.jsx'
 import AdminLiveLectures     from './pages/admin/LiveLectures.jsx'
+import AdminTestimonials     from './pages/admin/Testimonials.jsx'
 
 function RequireAuth({ children }) {
   const { isAuthenticated } = useAuthStore()

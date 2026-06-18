@@ -19,6 +19,7 @@ import instructorRoutes   from './routes/instructor.js'
 import adminRoutes        from './routes/admin.js'
 import liveLectureRoutes  from './routes/liveLecture.js'
 import notificationRoutes from './routes/notification.js'
+import testimonialRoutes  from './routes/testimonial.js'
 
 // Socket handlers
 import { registerLiveRoomSocket } from './socket/liveRoom.js'
@@ -66,6 +67,7 @@ app.use('/api/instructor',    instructorRoutes)
 app.use('/api/admin',         adminRoutes)
 app.use('/api/live-lectures', liveLectureRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/testimonials',  testimonialRoutes)
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))

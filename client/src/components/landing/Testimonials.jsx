@@ -1,31 +1,45 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
+import { testimonialAPI } from '../../api/testimonial.js';
 
 export default function Testimonials() {
-  const testimonials = [
+  const [testimonials, setTestimonials] = useState([
     {
-      id: 1,
+      _id: 'default-1',
       content: "Zenius AI completely transformed how I learn. The AI Tutor is like having a personal mentor available 24/7. I went from zero to full-stack developer in 6 months.",
       author: "Sarah Jenkins",
       role: "Software Engineer at Google",
-      avatar: "S"
+      avatar: "S",
+      rating: 5
     },
     {
-      id: 2,
+      _id: 'default-2',
       content: "The quality of the courses is unmatched. The platform's UI is so clean and distraction-free, making long study sessions enjoyable. Highly recommended!",
       author: "David Chen",
       role: "Product Manager",
-      avatar: "D"
+      avatar: "D",
+      rating: 5
     },
     {
-      id: 3,
+      _id: 'default-3',
       content: "I love the interactive learning approach. The real-world projects and immediate feedback helped me build a portfolio that landed my dream job.",
       author: "Elena Rodriguez",
       role: "Frontend Developer",
-      avatar: "E"
+      avatar: "E",
+      rating: 5
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    testimonialAPI.getAll()
+      .then(({ data }) => {
+        if (data.data && data.data.length > 0) {
+          setTestimonials(data.data.slice(0, 3)); // Only show top 3 for the landing page
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   return (
     <section className="py-24 bg-white relative overflow-hidden">
@@ -41,7 +55,7 @@ export default function Testimonials() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <motion.div
-              key={testimonial.id}
+              key={testimonial._id || testimonial.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -51,7 +65,7 @@ export default function Testimonials() {
               <Quote className="absolute top-6 right-8 h-10 w-10 text-brand-100 group-hover:text-brand-200 transition-colors" />
               
               <div className="flex gap-1 mb-6">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(testimonial.rating || 5)].map((_, i) => (
                   <Star key={i} className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                 ))}
               </div>

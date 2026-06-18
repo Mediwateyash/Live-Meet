@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, BookOpen, GraduationCap, TrendingUp,
-  AlertCircle, ChevronRight, Shield, ClipboardList,
+  AlertCircle, ChevronRight, Shield, ClipboardList, Star
 } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import { SkeletonStat } from '../../components/ui/Skeleton.jsx'
@@ -32,6 +32,7 @@ export default function AdminDashboard() {
     { label: 'All Courses',         desc: 'Review and moderate all courses',            icon: BookOpen,       path: '/admin/courses',             color: '#2563EB', bg: '#EFF6FF' },
     { label: 'Manage Instructors',  desc: 'Manage instructors and their courses',       icon: GraduationCap,  path: '/admin/instructors',         color: '#10B981', bg: '#F0FDF4' },
     { label: 'Instructor Requests', desc: 'Review pending instructor applications',     icon: ClipboardList,  path: '/admin/instructor-requests', color: '#F59E0B', bg: '#FFFBEB' },
+    { label: 'Manage Reviews',      desc: 'Update platform testimonials and reviews',   icon: Star,           path: '/admin/testimonials',        color: '#EC4899', bg: '#FDF2F8' },
   ]
 
   return (
