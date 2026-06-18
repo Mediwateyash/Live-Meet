@@ -109,7 +109,7 @@ export default function CoursePlayer() {
             {currentLesson?.videoUrl ? (
               <ReactPlayer
                 ref={playerRef}
-                url={currentLesson.videoUrl}
+                src={currentLesson.videoUrl}
                 width="100%"
                 height="100%"
                 controls
