@@ -109,10 +109,11 @@ export default function CoursePlayer() {
             {currentLesson?.videoUrl ? (
               <ReactPlayer
                 ref={playerRef}
-                src={currentLesson.videoUrl}
+                url={currentLesson.videoUrl}
                 width="100%"
                 height="100%"
                 controls
+                config={{ youtube: { playerVars: { origin: window.location.origin } } }}
                 onProgress={({ playedSeconds, played }) => {
                   if (course) progressAPI.savePosition(course._id, { lessonId: currentLesson._id, position: Math.floor(playedSeconds) }).catch(() => {})
                   if (played >= 0.9) {
