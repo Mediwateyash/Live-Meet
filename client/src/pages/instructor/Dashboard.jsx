@@ -81,10 +81,11 @@ export default function InstructorDashboard() {
         </div>
 
         {/* Quick links */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
             { label: 'Create New Course', icon: Plus, to: '/instructor/courses/new', variant: 'primary' },
             { label: 'Manage Courses',    icon: BookOpen, to: '/instructor/courses', variant: 'outline' },
+            { label: 'Student Results',   icon: TrendingUp, to: '/instructor/quizzes/results', variant: 'outline' },
             { label: 'View Analytics',    icon: BarChart2, to: '/instructor/courses', variant: 'outline' },
           ].map(({ label, icon: Icon, to, variant }) => (
             <Button key={label} variant={variant} className="w-full justify-center gap-2" onClick={() => navigate(to)}>

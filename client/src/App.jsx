@@ -27,6 +27,14 @@ import Profile            from './pages/student/Profile.jsx'
 import LiveRoom           from './pages/student/LiveRoom.jsx'
 import StudentLiveLectures from './pages/student/LiveLectures.jsx'
 
+// Quiz pages
+import TakeQuiz           from './pages/quizzes/TakeQuiz.jsx'
+import QuizResult         from './pages/quizzes/QuizResult.jsx'
+import CreateQuiz         from './pages/quizzes/CreateQuiz.jsx'
+import ManageQuizzes      from './pages/quizzes/ManageQuizzes.jsx'
+import ManageMCQs         from './pages/quizzes/ManageMCQs.jsx'
+import TeacherResults     from './pages/quizzes/TeacherResults.jsx'
+
 // Shared pages
 import Notifications      from './pages/Notifications.jsx'
 
@@ -124,12 +132,19 @@ export default function App() {
       <Route path="/live-lectures"        element={<RequireAuth><LiveLecturesRedirect /></RequireAuth>} />
       <Route path="/notifications"        element={<RequireAuth><Notifications /></RequireAuth>} />
 
+      <Route path="/quizzes/:quizId/take"   element={<RequireAuth><TakeQuiz /></RequireAuth>} />
+      <Route path="/student/results/:resultId" element={<RequireAuth><QuizResult /></RequireAuth>} />
+
       {/* Instructor */}
       <Route path="/instructor/dashboard" element={<RequireAuth><RequireRole role="instructor"><InstructorDashboard /></RequireRole></RequireAuth>} />
       <Route path="/instructor/courses"   element={<RequireAuth><RequireRole role="instructor"><InstructorCourses /></RequireRole></RequireAuth>} />
       <Route path="/instructor/courses/new"   element={<RequireAuth><RequireRole role="instructor"><CourseBuilder /></RequireRole></RequireAuth>} />
       <Route path="/instructor/courses/:id/edit"    element={<RequireAuth><RequireRole role="instructor"><CourseBuilder /></RequireRole></RequireAuth>} />
       <Route path="/instructor/live-lectures"       element={<RequireAuth><RequireRole role="instructor"><InstructorLiveLectures /></RequireRole></RequireAuth>} />
+      <Route path="/instructor/quizzes"             element={<RequireAuth><RequireRole role="instructor"><ManageQuizzes /></RequireRole></RequireAuth>} />
+      <Route path="/instructor/quizzes/create"      element={<RequireAuth><RequireRole role="instructor"><CreateQuiz /></RequireRole></RequireAuth>} />
+      <Route path="/instructor/quizzes/:quizId/mcqs" element={<RequireAuth><RequireRole role="instructor"><ManageMCQs /></RequireRole></RequireAuth>} />
+      <Route path="/instructor/quizzes/results"     element={<RequireAuth><RequireRole role="instructor"><TeacherResults /></RequireRole></RequireAuth>} />
 
       {/* Admin */}
       <Route path="/admin/dashboard"            element={<RequireAuth><RequireRole role="admin"><AdminDashboard /></RequireRole></RequireAuth>} />

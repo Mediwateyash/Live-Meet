@@ -8,6 +8,7 @@ import ProgressBar from '../../components/ui/ProgressBar.jsx'
 import Spinner from '../../components/ui/Spinner.jsx'
 import toast from 'react-hot-toast'
 import { formatDuration } from '../../utils/formatters.js'
+import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
 
 export default function CoursePlayer() {
   const { slug } = useParams()
@@ -190,22 +191,10 @@ export default function CoursePlayer() {
               </div>
             )}
             {tab === 'tests' && (
-              <div className="flex flex-col items-center py-12 text-center">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(124,58,237,0.15)' }}>
-                  <ClipboardList size={22} color="#A78BFA" />
-                </div>
-                <p className="text-base font-semibold text-white mb-1">Tests & Quizzes</p>
-                <p className="text-sm" style={{ color: '#666' }}>Course tests and quizzes will appear here.</p>
-              </div>
+              <CourseQuizzes courseId={course?._id} />
             )}
             {tab === 'mcq' && (
-              <div className="flex flex-col items-center py-12 text-center">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(124,58,237,0.15)' }}>
-                  <Brain size={22} color="#A78BFA" />
-                </div>
-                <p className="text-base font-semibold text-white mb-1">MCQ Generator</p>
-                <p className="text-sm" style={{ color: '#666' }}>AI-generated multiple choice questions for this course will appear here.</p>
-              </div>
+              <CourseQuizzes courseId={course?._id} />
             )}
             {tab === 'progress' && (
               <div className="flex flex-col items-center py-12 text-center">

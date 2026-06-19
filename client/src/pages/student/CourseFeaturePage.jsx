@@ -5,6 +5,7 @@ import PageLayout from '../../components/layout/PageLayout.jsx'
 import { coursesAPI } from '../../api/courses.js'
 import { liveLecturesAPI } from '../../api/liveLectures.js'
 import useAuthStore from '../../store/authStore.js'
+import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
 
 const FEATURES = {
   notes:    { icon: FileText,      label: 'Notes',          desc: 'Study materials uploaded by your instructor will appear here.' },
@@ -239,8 +240,12 @@ export default function CourseFeaturePage({ feature }) {
               </div>
               <LiveLecturesList courseId={course?._id} />
             </div>
+          ) : feature === 'tests' || feature === 'mcq' ? (
+            <div className="max-w-4xl mx-auto w-full">
+               <CourseQuizzes courseId={course?._id} />
+            </div>
           ) : (
-            <div className="w-full max-w-3xl flex flex-col items-center justify-center py-32 rounded-2xl"
+            <div className="w-full max-w-3xl flex flex-col items-center justify-center py-32 rounded-2xl mx-auto"
               style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
               <div className="w-24 h-24 rounded-2xl flex items-center justify-center mb-6" style={{ background: iconBg }}>
                 {Icon && <Icon size={44} color={iconColor} />}

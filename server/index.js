@@ -19,6 +19,11 @@ import adminRoutes        from './routes/admin.js'
 import liveLectureRoutes  from './routes/liveLecture.js'
 import notificationRoutes from './routes/notification.js'
 import testimonialRoutes  from './routes/testimonial.js'
+import materialRoutes     from './routes/materialRoutes.js'
+import mcqRoutes          from './routes/mcqRoutes.js'
+import quizRoutes         from './routes/quizRoutes.js'
+import resultRoutes       from './routes/resultRoutes.js'
+import analyticsRoutes    from './routes/analyticsRoutes.js'
 
 // Middlewares
 import { errorHandler } from './middleware/errorHandler.js'
@@ -117,6 +122,11 @@ app.use('/api/admin',         adminRoutes)
 app.use('/api/live-lectures', liveLectureRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/testimonials',  testimonialRoutes)
+app.use('/api/material',      materialRoutes)
+app.use('/api/mcq',           mcqRoutes)
+app.use('/api/quiz',          quizRoutes)
+app.use('/api/result',        resultRoutes)
+app.use('/api/analytics',     analyticsRoutes)
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))

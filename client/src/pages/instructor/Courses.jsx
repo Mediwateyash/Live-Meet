@@ -92,7 +92,7 @@ export default function InstructorCourses() {
                         {[
                           { icon: FileText,     title: 'Notes',         color: '#7C3AED', bg: 'rgba(109,40,217,0.12)',  path: null },
                           { icon: ClipboardList, title: 'Tests',        color: '#2563EB', bg: 'rgba(37,99,235,0.12)',   path: null },
-                          { icon: Brain,         title: 'MCQ',          color: '#10B981', bg: 'rgba(16,185,129,0.12)',  path: null },
+                          { icon: Brain,         title: 'MCQ',          color: '#10B981', bg: 'rgba(16,185,129,0.12)',  path: '/instructor/quizzes/create' },
                           { icon: Video,         title: 'Live Lectures',color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  path: '/instructor/live-lectures' },
                           { icon: TrendingUp,    title: 'Progress',     color: '#EC4899', bg: 'rgba(236,72,153,0.12)',  path: null },
                         ].map(({ icon: Icon, title, color, bg, path }) => (
