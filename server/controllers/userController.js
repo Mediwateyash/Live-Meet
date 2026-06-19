@@ -89,3 +89,29 @@ export async function toggleWishlist(req, res, next) {
     res.json(new ApiResponse(200, user.wishlist, 'Wishlist updated'))
   } catch (err) { next(err) }
 }
+
+export async function updatePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body
+    if (!currentPassword || !newPassword) {
+      throw new ApiError(400, 'Current and new passwords are required')
+    }
+    if (newPassword.length < 8) {
+      throw new ApiError(400, 'New password must be at least 8 characters')
+    }
+
+    const user = await User.findById(req.user._id).select('+password')
+    if (!user) throw new ApiError(404, 'User not found')
+
+    const isMatch = await user.comparePassword(currentPassword)
+    if (!isMatch) {
+      throw new ApiError(400, 'Incorrect current password')
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    res.json(new ApiResponse(200, null, 'Password updated successfully'))
+  } catch (err) { next(err) }
+}
+

@@ -8,4 +8,6 @@ export const usersAPI = {
   becomeInstructor:    (data)    => api.post('/users/become-instructor', data),
   getRequestStatus:    ()        => api.get('/users/instructor-request/status'),
   toggleWishlist:      (courseId)=> api.put(`/users/wishlist/${courseId}`),
+  updatePassword:      (passwords)=> api.put('/users/profile/password', passwords),
 }
+
