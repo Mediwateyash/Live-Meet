@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, Users, DollarSign, Star, Plus, BarChart2, TrendingUp } from 'lucide-react'
+import { BookOpen, Users, IndianRupee, Star, Plus, BarChart2, TrendingUp } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import { SkeletonStat } from '../../components/ui/Skeleton.jsx'
@@ -24,7 +24,7 @@ export default function InstructorDashboard() {
   const cards = [
     { label: 'Total Courses',   value: stats?.totalCourses   || 0,    icon: BookOpen,    color: '#7C3AED' },
     { label: 'Total Students',  value: stats?.totalStudents  || 0,    icon: Users,       color: '#2563EB' },
-    { label: 'Total Revenue',   value: formatPrice(stats?.totalRevenue || 0, false), icon: DollarSign, color: '#10B981' },
+    { label: 'Total Revenue',   value: formatPrice(stats?.totalRevenue || 0, false), icon: IndianRupee, color: '#10B981' },
     { label: 'Avg Rating',      value: (stats?.avgRating     || 0).toFixed(1) + ' ★', icon: Star, color: '#F59E0B' },
   ]
 
