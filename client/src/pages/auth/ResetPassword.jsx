@@ -8,7 +8,7 @@ import Input from '../../components/ui/Input.jsx'
 import toast from 'react-hot-toast'
 
 export default function ResetPassword() {
-  const { token } = useParams()
+  const token = new URLSearchParams(window.location.hash.slice(1)).get('token')
   const navigate  = useNavigate()
   const [loading, setLoading] = useState(false)
   const [form,    setForm]    = useState({ password: '', confirmPassword: '' })

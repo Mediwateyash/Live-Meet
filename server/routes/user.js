@@ -14,7 +14,7 @@ router.get ('/instructor-request/status', authMiddleware, getRequestStatus)
 router.put ('/wishlist/:courseId',        authMiddleware, toggleWishlist)
 
 // Wildcard last
-router.get ('/:id',                       getProfile)
+router.get ('/:id',                       authMiddleware, getProfile)
 
 
 export default router

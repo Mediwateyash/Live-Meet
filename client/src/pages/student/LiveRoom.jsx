@@ -391,7 +391,11 @@ export default function LiveRoom() {
   /* ── Socket setup ── */
   useEffect(() => {
     if (!user) return
-    const socket = io(SERVER_URL, { withCredentials:true, transports:['websocket','polling'] })
+    const socket = io(SERVER_URL, { 
+      withCredentials: true, 
+      transports: ['websocket', 'polling'],
+      auth: { token: localStorage.getItem('token') || '' }
+    })
     socketRef.current = socket
 
     socket.on('connect_error', () => setPageState('error'))

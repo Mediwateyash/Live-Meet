@@ -8,8 +8,12 @@ import { sendEmail }   from '../config/nodemailer.js'
 
 export async function register(req, res, next) {
   try {
-    const { fullName, email, password } = req.body
+    let { fullName, email, password } = req.body
     if (!fullName || !email || !password) throw new ApiError(400, 'All fields required')
+
+    fullName = fullName.trim()
+    email = email.trim().toLowerCase()
+    password = password.trim()
 
     const exists = await User.findOne({ email })
     if (exists) throw new ApiError(409, 'Email already registered')
@@ -30,8 +34,11 @@ export async function register(req, res, next) {
 
 export async function login(req, res, next) {
   try {
-    const { email, password } = req.body
+    let { email, password } = req.body
     if (!email || !password) throw new ApiError(400, 'Email and password required')
+
+    email = email.trim().toLowerCase()
+    password = password.trim()
 
     const user = await User.findOne({ email }).select('+password')
     if (!user) throw new ApiError(401, 'Invalid credentials')
@@ -103,7 +110,7 @@ export async function forgotPassword(req, res, next) {
     user.resetPasswordExpires = expires
     await user.save({ validateBeforeSave: false })
 
-    const resetURL = `${process.env.CLIENT_URL}/reset-password/${token}`
+    const resetURL = `${process.env.CLIENT_URL}/reset-password#token=${token}`
     await sendEmail({
       to: email,
       subject: 'Password Reset — Zenius AI',
@@ -116,8 +123,8 @@ export async function forgotPassword(req, res, next) {
 
 export async function resetPassword(req, res, next) {
   try {
-    const { token }    = req.params
-    const { password } = req.body
+    const { token, password } = req.body
+    if (!token) throw new ApiError(400, 'Token required')
     if (!password || password.length < 8) throw new ApiError(400, 'Password must be at least 8 characters')
 
     const hashed = crypto.createHash('sha256').update(token).digest('hex')

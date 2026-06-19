@@ -35,12 +35,16 @@ function isHostSocket(s) {
 }
 
 export function registerLiveRoomSocket(io) {
-  // ── Cookie-based auth ─────────────────────────────────────────────────────
+  // ── Cookie, Auth Handshake, or Header auth ────────────────────────────────
   io.use(async (socket, next) => {
     try {
       const cookies = parseCookies(socket.handshake.headers.cookie || '')
-      const token   = cookies.accessToken
-      if (!token) return next(new Error('Not authenticated'))
+      const token =
+        socket.handshake.auth?.token ||
+        socket.handshake.headers?.authorization?.split(' ')[1] ||
+        cookies.accessToken
+
+      if (!token) return next(new Error('Socket authentication required'))
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
       const user    = await User.findById(decoded.userId).select('-password -refreshToken -resetPasswordToken')
       if (!user) return next(new Error('User not found'))

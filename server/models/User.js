@@ -16,15 +16,15 @@ const userSchema = new mongoose.Schema({
   expertise:  [String],
   linkedin:   String,
   portfolio:  String,
-  phone:      String,
+  phone:      { type: String, select: false },
   department: String,
 
   enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   wishlist:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   refreshToken:    { type: String, select: false },
 
-  resetPasswordToken:   String,
-  resetPasswordExpires: Date,
+  resetPasswordToken:   { type: String, select: false },
+  resetPasswordExpires: { type: Date, select: false },
 }, { timestamps: true })
 
 userSchema.pre('save', async function () {

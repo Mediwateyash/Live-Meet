@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url'
 import cors            from 'cors'
 import helmet          from 'helmet'
 import cookieParser    from 'cookie-parser'
-import rateLimit       from 'express-rate-limit'
 import 'dotenv/config'
 import connectDB from './config/db.js'
 
@@ -21,6 +20,11 @@ import liveLectureRoutes  from './routes/liveLecture.js'
 import notificationRoutes from './routes/notification.js'
 import testimonialRoutes  from './routes/testimonial.js'
 
+// Middlewares
+import { errorHandler } from './middleware/errorHandler.js'
+import { authLimiter } from './middleware/rateLimiter.js'
+import { mongoSanitize } from './middleware/mongoSanitize.js'
+
 // Socket handlers
 import { registerLiveRoomSocket } from './socket/liveRoom.js'
 
@@ -28,34 +32,70 @@ connectDB()
 
 const app        = express()
 const httpServer = createServer(app)
+
+const allowedOrigins = [
+  'https://live-meet.onrender.com',
+  'http://localhost:5173',
+  process.env.CLIENT_URL
+].filter(Boolean)
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}
+
 const io         = new Server(httpServer, {
-  cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials: true,
-  }
+  cors: corsOptions
 })
 
 registerLiveRoomSocket(io)
 
 // Security middleware
-app.use(helmet({ 
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co'],
+      connectSrc: ["'self'", 'wss:', 'https:'],
+      frameSrc: ["'self'", 'https://www.youtube.com', 'https://youtube.com', 'https://player.vimeo.com'],
+      mediaSrc: ["'self'", 'https://res.cloudinary.com', 'data:', 'blob:'],
+    },
+  },
   crossOriginResourcePolicy: { policy: 'cross-origin' },
+  hsts: {
+    maxAge: 31536000,      // 1 year
+    includeSubDomains: true,
+    preload: true,
+  },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-  contentSecurityPolicy: false // Disabled to allow YouTube and external video iframes
-}))
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true,
-}))
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  xssFilter: true,
+}));
+
+app.use(cors(corsOptions))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
-// Auth rate limiting
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  message: { success: false, message: 'Too many requests from this IP. Try again after 15 minutes.' }
+// NoSQL query sanitization
+app.use(mongoSanitize)
+
+// Robots.txt
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain')
+  res.send(`User-agent: *\nDisallow: /api/\nDisallow: /admin/\nDisallow: /dashboard/\nAllow: /`)
 })
 
 // Routes
@@ -86,20 +126,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Global error handler
-app.use((err, req, res, next) => {
-  if (err.name === 'ValidationError') {
-    const messages = Object.values(err.errors).map(e => e.message).join(', ')
-    return res.status(400).json({ success: false, message: messages })
-  }
-  if (err.code === 11000) {
-    const field = Object.keys(err.keyPattern || {})[0] || 'field'
-    return res.status(409).json({ success: false, message: `${field} already exists` })
-  }
-  console.error(err.stack)
-  const status  = err.statusCode || 500
-  const message = err.message    || 'Internal server error'
-  res.status(status).json({ success: false, message })
-})
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000
 httpServer.listen(PORT, () => console.log(`🚀 Zenius AI server running on port ${PORT}`))

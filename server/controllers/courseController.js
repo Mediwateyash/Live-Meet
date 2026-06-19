@@ -42,7 +42,15 @@ export async function browse(req, res, next) {
       Course.countDocuments(filter),
     ])
 
-    res.json(new ApiResponse(200, courses, 'Courses fetched', { total, page: Number(page), totalPages: Math.ceil(total / Number(limit)) }))
+    const coursesJSON = courses.map(c => {
+      const obj = c.toObject()
+      if (obj.enrolledStudents) {
+        obj.enrolledStudents = Array(obj.enrolledStudents.length).fill(null)
+      }
+      return obj
+    })
+
+    res.json(new ApiResponse(200, coursesJSON, 'Courses fetched', { total, page: Number(page), totalPages: Math.ceil(total / Number(limit)) }))
   } catch (err) { next(err) }
 }
 
@@ -52,7 +60,16 @@ export async function getFeatured(req, res, next) {
       .sort({ avgRating: -1, 'enrolledStudents': -1 })
       .limit(6)
       .populate('instructor', 'fullName avatar')
-    res.json(new ApiResponse(200, courses))
+      
+    const coursesJSON = courses.map(c => {
+      const obj = c.toObject()
+      if (obj.enrolledStudents) {
+        obj.enrolledStudents = Array(obj.enrolledStudents.length).fill(null)
+      }
+      return obj
+    })
+
+    res.json(new ApiResponse(200, coursesJSON))
   } catch (err) { next(err) }
 }
 
@@ -71,6 +88,9 @@ export async function getBySlug(req, res, next) {
 
     const courseObj = course.toObject()
     courseObj.reviews = reviews
+    if (courseObj.enrolledStudents) {
+      courseObj.enrolledStudents = Array(courseObj.enrolledStudents.length).fill(null)
+    }
 
     res.json(new ApiResponse(200, courseObj))
   } catch (err) { next(err) }
