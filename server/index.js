@@ -22,7 +22,7 @@ import testimonialRoutes  from './routes/testimonial.js'
 
 // Middlewares
 import { errorHandler } from './middleware/errorHandler.js'
-import { authLimiter } from './middleware/rateLimiter.js'
+import { authLimiter, apiLimiter } from './middleware/rateLimiter.js'
 import { mongoSanitize } from './middleware/mongoSanitize.js'
 
 // Socket handlers
@@ -97,13 +97,14 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
-// NoSQL query sanitization
+// Rate limiting & NoSQL query sanitization
+app.use('/api', apiLimiter)
 app.use(mongoSanitize)
 
 // Robots.txt
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain')
-  res.send(`User-agent: *\nDisallow: /api/\nDisallow: /admin/\nDisallow: /dashboard/\nAllow: /`)
+  res.send(`User-agent: *\nAllow: /\nDisallow:`)
 })
 
 // Routes

@@ -57,4 +57,22 @@ courseSchema.pre('save', function () {
   this.isFree        = this.price === 0
 })
 
+courseSchema.set('toObject', {
+  transform: function (doc, ret) {
+    if (ret.enrolledStudents) {
+      ret.enrolledStudents = Array(ret.enrolledStudents.length).fill(null)
+    }
+    return ret
+  }
+})
+
+courseSchema.set('toJSON', {
+  transform: function (doc, ret) {
+    if (ret.enrolledStudents) {
+      ret.enrolledStudents = Array(ret.enrolledStudents.length).fill(null)
+    }
+    return ret
+  }
+})
+
 export default mongoose.model('Course', courseSchema)

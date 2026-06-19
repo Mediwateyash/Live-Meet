@@ -2,6 +2,7 @@ import User from '../models/User.js'
 import InstructorRequest from '../models/InstructorRequest.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
+import { validatePassword } from '../utils/passwordValidator.js'
 
 export async function getProfile(req, res, next) {
   try {
@@ -99,9 +100,7 @@ export async function updatePassword(req, res, next) {
     if (!currentPassword || !newPassword) {
       throw new ApiError(400, 'Current and new passwords are required')
     }
-    if (newPassword.length < 8) {
-      throw new ApiError(400, 'New password must be at least 8 characters')
-    }
+    validatePassword(newPassword)
 
     const user = await User.findById(req.user._id).select('+password')
     if (!user) throw new ApiError(404, 'User not found')

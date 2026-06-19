@@ -15,3 +15,12 @@ export const forgotPasswordLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 })
+
+export const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 300 : 10000,                  // 300 requests in prod, 10000 in dev
+  message: { success: false, message: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+

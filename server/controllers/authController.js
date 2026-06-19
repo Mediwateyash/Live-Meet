@@ -5,6 +5,7 @@ import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { generateAccessToken, generateRefreshToken, setTokenCookies, clearTokenCookies } from '../utils/generateToken.js'
 import { sendEmail }   from '../config/nodemailer.js'
+import { validatePassword } from '../utils/passwordValidator.js'
 
 export async function register(req, res, next) {
   try {
@@ -14,6 +15,8 @@ export async function register(req, res, next) {
     fullName = fullName.trim()
     email = email.trim().toLowerCase()
     password = password.trim()
+
+    validatePassword(password)
 
     const exists = await User.findOne({ email })
     if (exists) throw new ApiError(409, 'Email already registered')
@@ -125,7 +128,7 @@ export async function resetPassword(req, res, next) {
   try {
     const { token, password } = req.body
     if (!token) throw new ApiError(400, 'Token required')
-    if (!password || password.length < 8) throw new ApiError(400, 'Password must be at least 8 characters')
+    validatePassword(password)
 
     const hashed = crypto.createHash('sha256').update(token).digest('hex')
     const user   = await User.findOne({

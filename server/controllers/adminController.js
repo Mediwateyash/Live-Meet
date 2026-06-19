@@ -53,7 +53,7 @@ export async function getRequests(req, res, next) {
 
 export async function approveRequest(req, res, next) {
   try {
-    const request = await InstructorRequest.findById(req.params.id).populate('user')
+    const request = await InstructorRequest.findById(req.params.id).populate('user', 'fullName email avatar role')
     if (!request) throw new ApiError(404, 'Request not found')
 
     request.status     = 'approved'
