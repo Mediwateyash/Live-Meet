@@ -15,6 +15,7 @@ export default function CourseCard({ course, showProgress = false, compact = fal
   const { user, isAuthenticated, updateUser } = useAuthStore()
   const { openAuthModal } = useUIStore()
   const isWishlisted = user?.wishlist?.some(id => id.toString() === course._id.toString())
+  const isEnrolled = isAuthenticated && user?.enrolledCourses?.some(id => id.toString() === course._id.toString())
   const isComplete = showProgress && progress >= 100
 
   const handleWishlist = async (e) => {
@@ -153,6 +154,10 @@ export default function CourseCard({ course, showProgress = false, compact = fal
             {isComplete ? (
               <span className="text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1" style={{ background: '#10B98120', color: '#10B981' }}>
                 <CheckCircle2 size={13} /> Completed
+              </span>
+            ) : isEnrolled ? (
+              <span className="text-xs px-3 py-1.5 rounded-lg font-semibold" style={{ background: 'var(--z-purple-100)', color: '#7C3AED' }}>
+                Continue →
               </span>
             ) : (
               <span className="text-xs px-3 py-1.5 rounded-lg font-semibold" style={{ background: 'var(--z-purple-100)', color: '#7C3AED' }}>

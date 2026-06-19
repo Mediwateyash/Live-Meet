@@ -69,8 +69,10 @@ export default function FeaturedCourses() {
       .catch(err => console.error("Failed to load featured courses:", err));
   }, []);
 
-  // Use real backend courses if available, otherwise use fallback dummy data
-  const displayCourses = courses.length > 0 ? courses : fallbackCourses;
+  // Use real backend courses only
+  const displayCourses = courses;
+
+  if (displayCourses.length === 0) return null;
 
   return (
     <section className="py-20 bg-slate-50 dark:bg-[var(--bg-surface)] border-t border-b border-slate-100 dark:border-[var(--border-default)]">
