@@ -1,5 +1,5 @@
-export function formatPrice(price) {
-  if (price === 0) return 'Free'
+export function formatPrice(price, showZeroAsFree = true) {
+  if (price === 0 && showZeroAsFree) return 'Free'
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price)
 }
 

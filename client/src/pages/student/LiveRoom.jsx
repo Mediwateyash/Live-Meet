@@ -7,7 +7,7 @@ import {
   UserX, Maximize2, Minimize2, Image, Calculator, FileText,
   Download, Copy, Trash2, Smile, Camera, Shield, Search,
   Coffee, UserPlus, UserMinus, RefreshCw, ChevronLeft,
-  ChevronRight, BookOpen, Check,
+  ChevronRight, BookOpen, Check, GraduationCap,
 } from 'lucide-react'
 import useAuthStore from '../../store/authStore.js'
 import { liveLecturesAPI } from '../../api/liveLectures.js'
@@ -894,8 +894,10 @@ export default function LiveRoom() {
       <div className="ds-classroom-header" style={{ padding:'0 20px', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, height:60 }}>
         <div style={{ display:'flex', alignItems:'center', gap:12, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
-            <BookOpen size={20} color="#7C3AED" />
-            <span style={{ color:'#fff', fontWeight:800, fontSize:17, letterSpacing:'-0.3px' }}>Zenius</span>
+            <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#7C3AED' }}>
+              <GraduationCap size={18} color="white" />
+            </div>
+            <span style={{ color:'#fff', fontWeight:800, fontSize:17, letterSpacing:'-0.3px', fontFamily: 'Outfit, sans-serif' }}>Zenius AI</span>
           </div>
           {!isMobile && (
             <span style={{ color:'#71717A', fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:280 }}>

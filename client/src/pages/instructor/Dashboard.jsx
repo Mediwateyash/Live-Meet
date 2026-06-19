@@ -24,7 +24,7 @@ export default function InstructorDashboard() {
   const cards = [
     { label: 'Total Courses',   value: stats?.totalCourses   || 0,    icon: BookOpen,    color: '#7C3AED' },
     { label: 'Total Students',  value: stats?.totalStudents  || 0,    icon: Users,       color: '#2563EB' },
-    { label: 'Total Revenue',   value: formatPrice(stats?.totalRevenue || 0), icon: DollarSign, color: '#10B981' },
+    { label: 'Total Revenue',   value: formatPrice(stats?.totalRevenue || 0, false), icon: DollarSign, color: '#10B981' },
     { label: 'Avg Rating',      value: (stats?.avgRating     || 0).toFixed(1) + ' ★', icon: Star, color: '#F59E0B' },
   ]
 
