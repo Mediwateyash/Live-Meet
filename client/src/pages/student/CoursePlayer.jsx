@@ -109,21 +109,26 @@ export default function CoursePlayer() {
             {currentLesson?.videoUrl ? (
               <ReactPlayer
                 ref={playerRef}
-                src={currentLesson.videoUrl.includes('youtu') 
-                  ? `https://www.youtube.com/watch?v=${currentLesson.videoUrl.split('youtu.be/')[1]?.split('?')[0] || currentLesson.videoUrl.split('v=')[1]?.split('&')[0]}`
-                  : currentLesson.videoUrl
-                }
+                src={currentLesson.videoUrl}
                 width="100%"
                 height="100%"
                 controls
                 onProgress={({ playedSeconds, played }) => {
                   if (course) progressAPI.savePosition(course._id, { lessonId: currentLesson._id, position: Math.floor(playedSeconds) }).catch(() => {})
-                  if (played >= 0.9) {
+                  if (played >= 0.9 && !videoEnded) {
                     setVideoEnded(true)
+                    if (!isCompleted(currentLesson?._id) && !marking) {
+                      markComplete()
+                    }
                   }
                 }}
                 onEnded={() => {
-                  setVideoEnded(true)
+                  if (!videoEnded) {
+                    setVideoEnded(true)
+                    if (!isCompleted(currentLesson?._id) && !marking) {
+                      markComplete()
+                    }
+                  }
                 }}
               />
             ) : (
@@ -256,9 +261,11 @@ export default function CoursePlayer() {
                   }}
                 >
                   {isCompleted(lesson._id) ? (
-                    <Check size={16} color="#10B981" className="shrink-0" />
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 animate-in fade-in" style={{ background: '#10B981' }}>
+                      <Check size={12} color="white" strokeWidth={3.5} className="shrink-0" />
+                    </div>
                   ) : (
-                    <div className="w-4 h-4 rounded-full border shrink-0" style={{ borderColor: '#555' }} />
+                    <div className="w-5 h-5 rounded-full border shrink-0" style={{ borderColor: '#555' }} />
                   )}
                   <span className="text-sm flex-1 text-left" style={{ color: currentLesson?._id === lesson._id ? '#A78BFA' : '#999', lineHeight: 1.4 }}>
                     {lesson.title}

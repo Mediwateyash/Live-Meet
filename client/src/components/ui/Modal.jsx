@@ -13,7 +13,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  const widths = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-2xl' }
+  const widths = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-2xl', xxl: 'max-w-4xl', '3xl': 'max-w-5xl' }
 
   return (
     <AnimatePresence>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import ReactPlayer from 'react-player'
 import {
   ChevronDown, ChevronRight, CheckCircle2, Lock, Play, Clock, Globe, Award, Heart, PartyPopper,
   FileText, ClipboardList, Brain, TrendingUp, Video, Menu, X
@@ -96,6 +97,15 @@ export default function CourseDetail() {
   const [rating,        setRating]        = useState(5)
   const [comment,       setComment]       = useState('')
   const [drawerOpen,    setDrawerOpen]    = useState(false)
+  const [previewLesson, setPreviewLesson] = useState(null)
+
+  const handlePreviewLesson = (lesson) => {
+    if (!lesson.videoUrl) {
+      toast.error('No video preview available for this lesson')
+      return
+    }
+    setPreviewLesson(lesson)
+  }
 
   const isEnrolled   = course && user?.enrolledCourses?.some(id => id.toString() === course._id.toString())
   const isWishlisted = course && user?.wishlist?.some(id => id.toString() === course._id.toString())
@@ -176,6 +186,7 @@ export default function CourseDetail() {
   if (!course) return null
 
   const totalLessons = course.curriculum?.reduce((a, s) => a + s.lessons.length, 0) || 0
+  const freeLessons = course.curriculum?.flatMap(s => s.lessons || []).filter(l => l.isFree) || []
 
   return (
     <PageLayout>
@@ -312,7 +323,12 @@ export default function CourseDetail() {
                         {open[si] && (
                           <div style={{ background: 'var(--bg-surface)' }}>
                             {section.lessons.map((lesson, li) => (
-                              <div key={li} className="flex items-center gap-3 px-6 py-3 border-t" style={{ borderColor: 'var(--border-default)', paddingLeft: '3rem' }}>
+                              <div
+                                key={li}
+                                className={`flex items-center gap-3 px-6 py-3 border-t transition-colors ${(lesson.isFree || isEnrolled) ? 'cursor-pointer hover:bg-[var(--bg-hover)]' : ''}`}
+                                style={{ borderColor: 'var(--border-default)', paddingLeft: '3rem' }}
+                                onClick={() => (lesson.isFree || isEnrolled) && handlePreviewLesson(lesson)}
+                              >
                                 <div className="w-5 h-5 rounded flex items-center justify-center shrink-0" style={{ background: (lesson.isFree || isEnrolled) ? 'rgba(109,40,217,0.14)' : 'var(--bg-muted)' }}>
                                   {(lesson.isFree || isEnrolled) ? (
                                     <Play size={10} color="#7C3AED" />
@@ -321,7 +337,33 @@ export default function CourseDetail() {
                                   )}
                                 </div>
                                 <span className="flex-1 text-sm" style={{ color: 'var(--text-secondary)' }}>{lesson.title}</span>
-                                {lesson.isFree && <Badge variant="green">FREE</Badge>}
+                                {lesson.isFree && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handlePreviewLesson(lesson)
+                                    }}
+                                    className="px-3.5 py-1 text-xs font-semibold rounded-full border transition-all duration-200 hover:scale-105 shrink-0"
+                                    style={{
+                                      background: 'rgba(16,185,129,0.1)',
+                                      color: '#10B981',
+                                      borderColor: 'rgba(16,185,129,0.3)',
+                                      cursor: 'pointer',
+                                    }}
+                                    onMouseEnter={e => {
+                                      e.currentTarget.style.background = '#10B981'
+                                      e.currentTarget.style.color = 'white'
+                                      e.currentTarget.style.borderColor = '#10B981'
+                                    }}
+                                    onMouseLeave={e => {
+                                      e.currentTarget.style.background = 'rgba(16,185,129,0.1)'
+                                      e.currentTarget.style.color = '#10B981'
+                                      e.currentTarget.style.borderColor = 'rgba(16,185,129,0.3)'
+                                    }}
+                                  >
+                                    Free Preview
+                                  </button>
+                                )}
                                 {lesson.duration > 0 && (
                                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatDuration(lesson.duration)}</span>
                                 )}
@@ -486,6 +528,68 @@ export default function CourseDetail() {
             Start Learning →
           </Button>
         </div>
+      </Modal>
+
+      {/* Video Preview Modal */}
+      <Modal
+        isOpen={!!previewLesson}
+        onClose={() => setPreviewLesson(null)}
+        title={previewLesson ? `Preview: ${previewLesson.title}` : ''}
+        size="3xl"
+      >
+        {previewLesson && (
+          <div className={freeLessons.length > 1 ? "grid grid-cols-1 md:grid-cols-10 gap-6" : "w-full"}>
+            {/* Player Container */}
+            <div className={freeLessons.length > 1 ? "md:col-span-7" : "w-full"}>
+              <div className="relative w-full overflow-hidden rounded-xl bg-black" style={{ aspectRatio: '16/9' }}>
+                <ReactPlayer
+                  src={previewLesson.videoUrl}
+                  width="100%"
+                  height="100%"
+                  controls
+                  playing
+                />
+              </div>
+            </div>
+
+            {/* Free Previews Sidebar List */}
+            {freeLessons.length > 1 && (
+              <div className="md:col-span-3 flex flex-col min-h-0">
+                <h4 className="text-xs font-bold uppercase tracking-wider mb-3 shrink-0" style={{ color: 'var(--text-muted)', fontFamily: 'Outfit, sans-serif' }}>
+                  Free Previews ({freeLessons.length})
+                </h4>
+                <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar" style={{ maxHeight: '350px' }}>
+                  {freeLessons.map((les) => {
+                    const isCurrent = les._id?.toString() === previewLesson._id?.toString();
+                    return (
+                      <button
+                        key={les._id || les.title}
+                        onClick={() => setPreviewLesson(les)}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl text-left border transition-all text-xs"
+                        style={{
+                          background: isCurrent ? 'rgba(109,40,217,0.08)' : 'var(--bg-muted)',
+                          borderColor: isCurrent ? '#7C3AED' : 'var(--border-default)',
+                          color: isCurrent ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors" style={{ background: isCurrent ? '#7C3AED' : 'rgba(109,40,217,0.1)' }}>
+                          <Play size={10} color={isCurrent ? 'white' : '#7C3AED'} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold truncate" style={{ color: isCurrent ? '#7C3AED' : 'inherit' }}>{les.title}</p>
+                          {les.duration > 0 && (
+                            <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{formatDuration(les.duration)}</p>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </PageLayout>
   )
