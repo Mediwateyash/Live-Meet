@@ -3,9 +3,12 @@ import { motion } from 'framer-motion';
 import { Play, Sparkles, BrainCircuit, BarChart3, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import HeroRobot from './HeroRobot';
+import useUIStore from '../../store/uiStore.js';
 
 export default function Hero() {
   const navigate = useNavigate();
+  const { darkMode } = useUIStore();
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -38,16 +41,16 @@ export default function Hero() {
             animate="visible"
             className="mb-12 lg:mb-0"
           >
-            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-sm font-semibold mb-6">
+            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900/30 text-brand-700 dark:text-brand-300 text-sm font-semibold mb-6">
               <Sparkles className="h-4 w-4" />
               <span>AI-Powered Learning</span>
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 mb-6 leading-tight">
+            <motion.h1 variants={itemVariants} className="text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-[var(--text-primary)] mb-6 leading-tight">
               Learn Smarter, <br/> Achieve More with <br/> <span className="text-gradient">Zenius AI</span>
             </motion.h1>
             
-            <motion.p variants={itemVariants} className="text-lg text-slate-600 mb-8 max-w-lg leading-relaxed">
+            <motion.p variants={itemVariants} className="text-lg text-slate-600 dark:text-[var(--text-secondary)] mb-8 max-w-lg leading-relaxed">
               Discover expert-led courses in tech, business, and more. Learn anytime, anywhere with personalized AI guidance.
             </motion.p>
             
@@ -56,8 +59,8 @@ export default function Hero() {
                 Explore Courses
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>
-              <button className="px-8 py-3.5 bg-white text-slate-700 font-medium rounded-full border border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
-                <div className="bg-slate-100 rounded-full p-1"><Play className="h-4 w-4" /></div>
+              <button className="px-8 py-3.5 bg-white dark:bg-[var(--bg-surface)] text-slate-700 dark:text-[var(--text-primary)] font-medium rounded-full border border-slate-200 dark:border-[var(--border-default)] hover:bg-slate-50 dark:hover:bg-[var(--bg-hover)] transition-all flex items-center justify-center gap-2">
+                <div className="bg-slate-100 dark:bg-[var(--bg-muted)] rounded-full p-1"><Play className="h-4 w-4" /></div>
                 Watch Demo
               </button>
             </motion.div>
@@ -76,14 +79,14 @@ export default function Hero() {
             <motion.div 
               animate={{ y: [-10, 10, -10] }}
               transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              className="absolute top-10 left-0 md:-left-10 z-20 glass p-4 rounded-2xl flex items-center gap-3 w-48 shadow-xl"
+              className="absolute top-10 left-0 md:-left-10 z-20 glass dark:glass-dark p-4 rounded-2xl flex items-center gap-3 w-48 shadow-xl"
             >
-              <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-600">
+              <div className="w-10 h-10 bg-brand-100 dark:bg-brand-950/50 rounded-full flex items-center justify-center text-brand-600 dark:text-brand-400">
                 <BrainCircuit className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800">AI Tutor</p>
-                <p className="text-xs text-slate-500 leading-tight">Get personalized support</p>
+                <p className="text-sm font-bold text-slate-800 dark:text-[var(--text-primary)]">AI Tutor</p>
+                <p className="text-xs text-slate-500 dark:text-[var(--text-muted)] leading-tight">Get personalized support</p>
               </div>
             </motion.div>
 
@@ -91,20 +94,20 @@ export default function Hero() {
             <motion.div 
               animate={{ y: [10, -10, 10] }}
               transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
-              className="absolute top-32 right-0 md:-right-8 z-20 glass p-4 rounded-2xl flex items-center gap-4 w-48 shadow-xl"
+              className="absolute top-32 right-0 md:-right-8 z-20 glass dark:glass-dark p-4 rounded-2xl flex items-center gap-4 w-48 shadow-xl"
             >
               <div className="relative w-12 h-12">
                 <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-100" />
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-100 dark:text-slate-800" />
                   <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" strokeDasharray="125.6" strokeDashoffset="31.4" className="text-brand-500" />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-bold text-slate-700">75%</span>
+                  <span className="text-xs font-bold text-slate-700 dark:text-[var(--text-primary)]">75%</span>
                 </div>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800">Progress</p>
-                <p className="text-xs text-slate-500 leading-tight">Keep on track</p>
+                <p className="text-sm font-bold text-slate-800 dark:text-[var(--text-primary)]">Progress</p>
+                <p className="text-xs text-slate-500 dark:text-[var(--text-muted)] leading-tight">Keep on track</p>
               </div>
             </motion.div>
 
@@ -112,14 +115,14 @@ export default function Hero() {
             <motion.div 
               animate={{ y: [-8, 8, -8] }}
               transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 0.5 }}
-              className="absolute bottom-20 right-10 md:-right-4 z-20 glass p-4 rounded-2xl flex items-center gap-3 w-48 shadow-xl"
+              className="absolute bottom-20 right-10 md:-right-4 z-20 glass dark:glass-dark p-4 rounded-2xl flex items-center gap-3 w-48 shadow-xl"
             >
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-950/50 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <Award className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800">Certificate</p>
-                <p className="text-xs text-slate-500 leading-tight">Earn credentials</p>
+                <p className="text-sm font-bold text-slate-800 dark:text-[var(--text-primary)]">Certificate</p>
+                <p className="text-xs text-slate-500 dark:text-[var(--text-muted)] leading-tight">Earn credentials</p>
               </div>
             </motion.div>
 
@@ -129,3 +132,4 @@ export default function Hero() {
     </section>
   );
 }
+

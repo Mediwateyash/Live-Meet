@@ -67,7 +67,9 @@ export default function CourseCard({ course, showProgress = false, compact = fal
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
           />
           {course.isFree && (
-            <span className="absolute top-3 left-3 badge badge-green font-semibold">FREE</span>
+            <span className="absolute top-3 left-3 bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-0.5 rounded shadow-md tracking-wider z-10">
+              FREE
+            </span>
           )}
           {isComplete && (
             <div

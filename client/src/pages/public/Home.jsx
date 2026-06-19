@@ -1,5 +1,6 @@
 import React from 'react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
+import useUIStore from '../../store/uiStore.js'
 
 // New landing components
 import Hero from '../../components/landing/Hero.jsx'
@@ -12,9 +13,10 @@ import FAQ from '../../components/landing/FAQ.jsx'
 import CTABanner from '../../components/landing/CTABanner.jsx'
 
 export default function Home() {
+  const { darkMode } = useUIStore()
   return (
     <PageLayout>
-      <div className="bg-white">
+      <div className={darkMode ? 'dark:bg-[var(--bg-page)]' : 'bg-white'}>
         <Hero />
         <Statistics />
         <FeaturedCourses />
@@ -27,3 +29,4 @@ export default function Home() {
     </PageLayout>
   )
 }
+

@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, GraduationCap, Award, BrainCircuit, Sparkles, Star } from 'lucide-react';
+import useUIStore from '../../store/uiStore.js';
 
 export default function HeroRobot() {
+  const { darkMode } = useUIStore();
+
   return (
     <div className="relative w-full aspect-square max-w-[500px] mx-auto flex items-center justify-center">
       {/* Background Ambient Glow */}
@@ -38,13 +41,13 @@ export default function HeroRobot() {
              <div className="w-0.5 h-10 bg-yellow-400"></div>
              <div className="w-2 h-4 bg-yellow-500 rounded-b-sm"></div>
            </motion.div>
-        </motion.div>
+         </motion.div>
 
-        {/* Head */}
-        <div className="w-48 h-40 bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 flex flex-col items-center justify-center relative overflow-hidden z-20">
+         {/* Head */}
+        <div className="w-48 h-40 bg-[#ffffff]/90 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 flex flex-col items-center justify-center relative overflow-hidden z-20">
            
            {/* Glass reflection */}
-           <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/60 to-transparent rounded-t-[2.5rem]" />
+           <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-[#ffffff]/60 to-transparent rounded-t-[2.5rem]" />
 
            {/* Geeky Glasses & Eyes */}
            <div className="absolute flex items-center justify-center gap-1.5 z-20 top-10">
@@ -92,8 +95,8 @@ export default function HeroRobot() {
            {/* Holding Book Layout */}
            <div className="mt-8 flex items-center justify-center relative">
              {/* Robot Hands */}
-             <div className="absolute -left-6 top-6 w-12 h-10 bg-white rounded-full border border-slate-200 shadow-lg z-30 transform -rotate-12" />
-             <div className="absolute -right-6 top-6 w-12 h-10 bg-white rounded-full border border-slate-200 shadow-lg z-30 transform rotate-12" />
+             <div className="absolute -left-6 top-6 w-12 h-10 bg-[#ffffff] rounded-full border border-slate-200 shadow-lg z-30 transform -rotate-12" />
+             <div className="absolute -right-6 top-6 w-12 h-10 bg-[#ffffff] rounded-full border border-slate-200 shadow-lg z-30 transform rotate-12" />
              
              {/* Glowing Book Component */}
              <motion.div
@@ -118,16 +121,16 @@ export default function HeroRobot() {
         className="absolute inset-0 z-30 pointer-events-none"
       >
         {/* Node 1: AI Brain */}
-        <div className="absolute top-10 left-10 w-12 h-12 rounded-xl bg-white shadow-xl border border-slate-100 flex items-center justify-center transform -rotate-12">
+        <div className={`absolute top-10 left-10 w-12 h-12 rounded-xl ${darkMode ? 'bg-[var(--bg-surface)] border-[var(--border-default)]' : 'bg-[#ffffff] border-slate-100'} shadow-xl border flex items-center justify-center transform -rotate-12`}>
           <motion.div animate={{ rotate: -360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }}>
-            <BrainCircuit className="w-6 h-6 text-brand-600" />
+            <BrainCircuit className="w-6 h-6 text-brand-600 dark:text-brand-400" />
           </motion.div>
         </div>
         
         {/* Node 2: Award / Certificate */}
-        <div className="absolute bottom-20 right-5 w-14 h-14 rounded-full bg-white shadow-[0_0_25px_rgba(234,179,8,0.3)] border border-yellow-100 flex items-center justify-center">
+        <div className={`absolute bottom-20 right-5 w-14 h-14 rounded-full ${darkMode ? 'bg-[var(--bg-surface)] border-[var(--border-default)]' : 'bg-[#ffffff] border-yellow-100'} shadow-[0_0_25px_rgba(234,179,8,0.3)] border flex items-center justify-center`}>
           <motion.div animate={{ rotate: -360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }}>
-            <Award className="w-7 h-7 text-yellow-500" />
+            <Award className="w-7 h-7 text-yellow-500 dark:text-yellow-450" />
           </motion.div>
         </div>
 
@@ -141,3 +144,4 @@ export default function HeroRobot() {
     </div>
   );
 }
+
