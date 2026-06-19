@@ -239,3 +239,52 @@ export async function addReview(req, res, next) {
     res.status(201).json(new ApiResponse(201, review, 'Review added'))
   } catch (err) { next(err) }
 }
+
+function parseISO8601Duration(durationString) {
+  const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/
+  const matches = durationString.match(regex)
+  if (!matches) return 0
+  const hours = parseInt(matches[1] || 0)
+  const minutes = parseInt(matches[2] || 0)
+  const seconds = parseInt(matches[3] || 0)
+  return hours * 3600 + minutes * 60 + seconds
+}
+
+export async function getYoutubeMeta(req, res, next) {
+  try {
+    const { url } = req.query
+    if (!url) throw new ApiError(400, 'YouTube URL required')
+
+    if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+      throw new ApiError(400, 'Invalid YouTube URL')
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+      }
+    })
+    if (!response.ok) throw new ApiError(400, 'Failed to fetch YouTube page')
+    const html = await response.text()
+
+    // Title
+    const titleMatch = html.match(/itemprop="name"\s+content="([^"]+)"/) || html.match(/<title>([^<]+)<\/title>/)
+    let title = titleMatch ? titleMatch[1] : 'YouTube Video'
+    title = title.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+
+    // Duration
+    const durationMatch = html.match(/itemprop="duration"\s+content="([^"]+)"/) || html.match(/meta\s+itemprop="duration"\s+content="([^"]+)"/)
+    const durationISO = durationMatch ? durationMatch[1] : null
+    let durationSeconds = 0
+    if (durationISO) {
+      durationSeconds = parseISO8601Duration(durationISO)
+    }
+
+    // Thumbnail
+    const thumbMatch = html.match(/link\s+itemprop="thumbnailUrl"\s+href="([^"]+)"/) || html.match(/property="og:image"\s+content="([^"]+)"/)
+    const thumbnail = thumbMatch ? thumbMatch[1] : null
+
+    res.json(new ApiResponse(200, { title, duration: durationSeconds, thumbnail }))
+  } catch (err) { next(err) }
+}
+

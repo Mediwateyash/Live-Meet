@@ -10,4 +10,5 @@ export const coursesAPI = {
   enroll:     (id)        => api.post(`/courses/${id}/enroll`),
   getLearn:   (id)        => api.get(`/courses/${id}/learn`),
   addReview:  (id, data)  => api.post(`/courses/${id}/review`, data),
+  getYoutubeMeta: (url)   => api.get(`/courses/youtube-meta?url=${encodeURIComponent(url)}`),
 }

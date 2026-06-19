@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import {
-  browse, getFeatured, getBySlug, createCourse, updateCourse, deleteCourse, enroll, getLearn, addReview
+  browse, getFeatured, getBySlug, createCourse, updateCourse, deleteCourse, enroll, getLearn, addReview, getYoutubeMeta
 } from '../controllers/courseController.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { requireRole }   from '../middleware/role.js'
@@ -9,6 +9,7 @@ const router = Router()
 
 router.get ('/',              browse)
 router.get ('/featured',      getFeatured)
+router.get ('/youtube-meta',  authMiddleware, requireRole('instructor', 'admin'), getYoutubeMeta)
 router.get ('/:slug',         getBySlug)
 router.post('/',              authMiddleware, requireRole('instructor', 'admin'), createCourse)
 router.put ('/:id',           authMiddleware, requireRole('instructor', 'admin'), updateCourse)

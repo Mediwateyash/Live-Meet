@@ -784,6 +784,35 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
   const [ytInput, setYtInput] = useState(lesson.videoUrl || '')
   const [durationInput, setDurationInput] = useState(lesson.duration ? Math.round(lesson.duration / 60) : '')
 
+  const handleYtInput = async (val) => {
+    setYtInput(val)
+    const url = val.trim()
+    if (!url) return
+    if (isYouTubeUrl(url) && url !== lesson.videoUrl) {
+      try {
+        toast.loading('Fetching YouTube metadata...', { id: `yt-meta-${si}-${li}` })
+        const { data } = await coursesAPI.getYoutubeMeta(url)
+        
+        // 1. Update Title (if the current title is empty or "New Lesson")
+        if (!lesson.title || lesson.title.trim() === '' || lesson.title.trim() === 'New Lesson') {
+          onUpdateLesson(si, li, 'title', data.data.title)
+        }
+        
+        // 2. Update Duration
+        const mins = Math.round(data.data.duration / 60)
+        setDurationInput(mins > 0 ? mins.toString() : '0')
+        onUpdateLesson(si, li, 'duration', data.data.duration)
+        
+        // 3. Update videoUrl
+        onUpdateLesson(si, li, 'videoUrl', url)
+        
+        toast.success('YouTube metadata loaded automatically!', { id: `yt-meta-${si}-${li}` })
+      } catch (err) {
+        toast.error('Could not fetch YouTube metadata automatically.', { id: `yt-meta-${si}-${li}` })
+      }
+    }
+  }
+
   const applyYt = () => {
     const url = ytInput.trim()
     if (!url) return
@@ -838,7 +867,7 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
           <div className="flex gap-2">
             <div className="flex-1 flex items-center gap-2 px-2.5 py-1.5 rounded-lg"
               style={{ border: '1px solid var(--border-default)', background: 'var(--bg-muted)' }}>
-              <input value={ytInput} onChange={e => setYtInput(e.target.value)}
+              <input value={ytInput} onChange={e => handleYtInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && applyYt()}
                 placeholder="https://youtube.com/watch?v=..."
                 className="flex-1 bg-transparent outline-none text-xs" style={{ color: 'var(--text-primary)' }} />
