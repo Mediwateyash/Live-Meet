@@ -289,12 +289,36 @@ export default function CoursePlayer() {
               </div>
             )}
             {tab === 'notes' && (
-              <div className="flex flex-col items-center py-12 text-center">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(124,58,237,0.15)' }}>
-                  <FileText size={22} color="#A78BFA" />
-                </div>
-                <p className="text-base font-semibold text-white mb-1">Notes & Study Material</p>
-                <p className="text-sm" style={{ color: '#666' }}>Instructor notes for this course will appear here.</p>
+              <div className="py-6">
+                {currentLesson?.resources?.length > 0 ? (
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-white mb-4">Lesson Resources</h3>
+                    {currentLesson.resources.map((res, i) => (
+                      <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-[rgba(124,58,237,0.3)] bg-[rgba(124,58,237,0.05)]">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[rgba(124,58,237,0.15)]">
+                            <FileText size={20} color="#A78BFA" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-semibold text-white">{res.name || `Notes for ${currentLesson.title}`}</h4>
+                            <p className="text-xs text-gray-400">PDF Document</p>
+                          </div>
+                        </div>
+                        <a href={res.url} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors">
+                          Open Notes
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center py-12 text-center">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: 'rgba(124,58,237,0.15)' }}>
+                      <FileText size={22} color="#A78BFA" />
+                    </div>
+                    <p className="text-base font-semibold text-white mb-1">Notes & Study Material</p>
+                    <p className="text-sm" style={{ color: '#666' }}>No notes have been added to this lesson yet.</p>
+                  </div>
+                )}
               </div>
             )}
             {tab === 'tests' && (
