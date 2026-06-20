@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios.js';
-import { Brain, Play, Clock, FileText, Plus, X, Upload, RefreshCw } from 'lucide-react';
+import { Brain, Play, Clock, FileText, Plus, X, Upload, RefreshCw, CheckCircle2, RotateCcw } from 'lucide-react';
 import Spinner from '../ui/Spinner.jsx';
 import toast from 'react-hot-toast';
 
@@ -32,6 +32,7 @@ export default function CourseQuizzes({ courseId }) {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [completedQuizIds, setCompletedQuizIds] = useState(new Set());
   const navigate = useNavigate();
 
   // Generator state
@@ -43,8 +44,13 @@ export default function CourseQuizzes({ courseId }) {
   const fetchQuizzes = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`/quiz?courseId=${courseId}`);
-      setQuizzes(data);
+      const [quizzesRes, resultsRes] = await Promise.all([
+        api.get(`/quiz?courseId=${courseId}`),
+        api.get('/result/my-results')
+      ]);
+      setQuizzes(quizzesRes.data);
+      const completedIds = new Set(resultsRes.data.map(r => r.quizId?._id || r.quizId));
+      setCompletedQuizIds(completedIds);
     } catch (error) {
       console.error('Failed to fetch quizzes', error);
     } finally {
@@ -129,25 +135,39 @@ export default function CourseQuizzes({ courseId }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {quizzes.map(quiz => (
-            <div key={quiz._id} className="bg-[#1A1A2E] border border-gray-800 rounded-xl p-5 hover:border-[#7C3AED] transition-colors cursor-pointer group" onClick={() => navigate(`/quizzes/${quiz._id}/take`)}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-lg font-semibold text-white mb-2">{quiz.title}</h4>
-                  <div className="flex items-center gap-4 text-sm text-gray-400">
-                    <div className="flex items-center gap-1.5"><Clock size={16} /> {quiz.timer} mins</div>
-                    <div className="flex items-center gap-1.5"><FileText size={16} /> {quiz.mcqIds?.length || 0} Questions</div>
-                    {quiz.visibility === 'private' && (
-                      <span className="bg-gray-800 text-xs px-2 py-0.5 rounded-md text-gray-300">Personal</span>
-                    )}
+          {quizzes.map(quiz => {
+            const isCompleted = completedQuizIds.has(quiz._id);
+            return (
+              <div key={quiz._id} className="bg-[#1A1A2E] border border-gray-800 rounded-xl p-5 hover:border-[#7C3AED] transition-colors cursor-pointer group" onClick={() => navigate(`/quizzes/${quiz._id}/take`)}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="text-lg font-semibold text-white">{quiz.title}</h4>
+                      {isCompleted && <CheckCircle2 size={18} className="text-[#10B981]" />}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <div className="flex items-center gap-1.5"><Clock size={16} /> {quiz.timer} mins</div>
+                      <div className="flex items-center gap-1.5"><FileText size={16} /> {quiz.mcqIds?.length || 0} Questions</div>
+                      {quiz.visibility === 'private' && (
+                        <span className="bg-gray-800 text-xs px-2 py-0.5 rounded-md text-gray-300">Personal</span>
+                      )}
+                    </div>
                   </div>
+                  <button className="flex items-center gap-2 bg-gray-800 group-hover:bg-[#7C3AED] text-gray-400 group-hover:text-white px-3 py-2 rounded-lg transition-colors text-sm font-semibold">
+                    {isCompleted ? (
+                      <>
+                        <RotateCcw size={16} /> Regive
+                      </>
+                    ) : (
+                      <>
+                        <Play size={16} /> Start
+                      </>
+                    )}
+                  </button>
                 </div>
-                <button className="bg-gray-800 group-hover:bg-[#7C3AED] text-gray-400 group-hover:text-white p-2.5 rounded-lg transition-colors">
-                  <Play size={20} />
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
