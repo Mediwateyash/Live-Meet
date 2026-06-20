@@ -1,5 +1,4 @@
 import { generateMCQs } from '../services/aiService.js';
-import fetch from 'node-fetch'; // assuming node-fetch is available, or we can use native fetch in node 18+
 
 export const generateQuickQuiz = async (req, res) => {
     try {
