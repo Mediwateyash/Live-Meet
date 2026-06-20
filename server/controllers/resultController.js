@@ -1,6 +1,8 @@
 import Result from '../models/Result.js';
 import Quiz from '../models/Quiz.js';
 import MCQ from '../models/MCQ.js';
+import Course from '../models/Course.js';
+import Progress from '../models/Progress.js';
 
 export const submitQuiz = async (req, res) => {
     try {
@@ -35,6 +37,20 @@ export const submitQuiz = async (req, res) => {
             answers: evaluatedAnswers
         });
 
+        // Check if this is a final exam and the student passed
+        const course = await Course.findById(quiz.courseId);
+        let passedFinalExam = false;
+        if (course && course.finalExam && course.finalExam.toString() === quizId.toString()) {
+            if (percentage >= 70) {
+                passedFinalExam = true;
+                await Progress.findOneAndUpdate(
+                    { student: req.user._id, course: course._id },
+                    { hasPassedFinalExam: true },
+                    { new: true, upsert: true } // Upsert just in case Progress wasn't explicitly initialized
+                );
+            }
+        }
+
         console.log("[submitQuiz] Created result:", result);
         console.log("[submitQuiz] Sending resultId:", result ? result._id : 'undefined');
 
@@ -42,7 +58,8 @@ export const submitQuiz = async (req, res) => {
             message: 'Quiz submitted successfully',
             score: percentage,
             result: result,
-            resultId: result._id
+            resultId: result._id,
+            passedFinalExam
         });
     } catch (error) {
         console.error("[submitQuiz] Error:", error);

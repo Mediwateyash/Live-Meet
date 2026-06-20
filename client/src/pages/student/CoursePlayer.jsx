@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ReactPlayer from 'react-player'
-import { ArrowLeft, CheckCircle2, ChevronDown, Check, FileText, ClipboardList, Brain, TrendingUp, Video } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, ChevronDown, Check, FileText, ClipboardList, Brain, TrendingUp, Video, Award } from 'lucide-react'
 import { coursesAPI } from '../../api/courses.js'
 import { progressAPI } from '../../api/progress.js'
 import ProgressBar from '../../components/ui/ProgressBar.jsx'
@@ -9,6 +9,7 @@ import Spinner from '../../components/ui/Spinner.jsx'
 import toast from 'react-hot-toast'
 import { formatDuration } from '../../utils/formatters.js'
 import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
+import CertificateTemplate from '../../components/certificate/CertificateTemplate.jsx'
 import api from '../../api/axios.js'
 
 export default function CoursePlayer() {
@@ -33,6 +34,20 @@ export default function CoursePlayer() {
   const [quickQuizAnswers, setQuickQuizAnswers] = useState({})
   const [quickQuizSubmitted, setQuickQuizSubmitted] = useState(false)
   const [quickQuizScore, setQuickQuizScore]     = useState(0)
+
+  // Feedback State
+  const [feedbackContent, setFeedbackContent] = useState('')
+  const [feedbackRating, setFeedbackRating] = useState(5)
+  const [submittingFeedback, setSubmittingFeedback] = useState(false)
+
+  // Polling / Refetch Progress
+  const refetchProgress = async () => {
+    if (!course) return;
+    try {
+      const res = await progressAPI.get(course._id)
+      setProgress(res.data.data)
+    } catch {}
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -118,6 +133,26 @@ export default function CoursePlayer() {
       setQuickQuizSubmitted(true);
   };
 
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    if (!feedbackContent.trim()) return;
+    setSubmittingFeedback(true);
+    try {
+      await api.post('/testimonial/student', {
+        courseId: course._id,
+        content: feedbackContent,
+        rating: feedbackRating,
+        role: 'Student'
+      });
+      toast.success('Feedback submitted successfully!');
+      await refetchProgress();
+    } catch (err) {
+      toast.error('Failed to submit feedback');
+    } finally {
+      setSubmittingFeedback(false);
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: '#0F0F0F' }}>
       <Spinner size={40} color="#7C3AED" />
@@ -131,6 +166,7 @@ export default function CoursePlayer() {
     { id: 'mcq',       label: 'MCQ Generator',  icon: Brain },
     { id: 'progress',  label: 'Progress',       icon: TrendingUp },
     { id: 'live',      label: 'Live Lectures',  icon: Video },
+    { id: 'certificate', label: 'Certificate',  icon: Award },
   ]
 
   return (
@@ -349,6 +385,73 @@ export default function CoursePlayer() {
                 </div>
                 <p className="text-base font-semibold text-white mb-1">Live Scheduled Lectures</p>
                 <p className="text-sm" style={{ color: '#666' }}>Upcoming live sessions scheduled by the instructor will appear here.</p>
+              </div>
+            )}
+            {tab === 'certificate' && (
+              <div className="py-6">
+                {!progress?.hasPassedFinalExam ? (
+                  <div className="flex flex-col items-center py-12 text-center">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(239,68,68,0.1)' }}>
+                      <Award size={32} color="#EF4444" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Certificate Locked</h3>
+                    <p className="text-sm max-w-md text-gray-400 mb-6">
+                      You must complete the course curriculum and pass the Final Exam (70% or higher) to unlock your certificate.
+                    </p>
+                    {course?.finalExam ? (
+                      <button onClick={() => { setTab('tests'); refetchProgress(); }} className="px-6 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg transition-colors">
+                        Go to Final Exam
+                      </button>
+                    ) : (
+                      <p className="text-sm text-yellow-500">Instructor has not assigned a final exam yet.</p>
+                    )}
+                  </div>
+                ) : !progress?.hasGivenFeedback ? (
+                  <div className="max-w-xl mx-auto bg-[#1A1A2E] p-8 rounded-xl border border-[rgba(255,255,255,0.1)] shadow-xl">
+                    <div className="text-center mb-6">
+                      <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto" style={{ background: 'rgba(16,185,129,0.1)' }}>
+                        <CheckCircle2 size={32} color="#10B981" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-white mb-2">You Passed!</h3>
+                      <p className="text-gray-400 text-sm">Please leave a review for the course to unlock your certificate.</p>
+                    </div>
+                    <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Rating</label>
+                        <div className="flex gap-2">
+                          {[1,2,3,4,5].map(star => (
+                            <button key={star} type="button" onClick={() => setFeedbackRating(star)} className={`text-2xl transition-colors ${star <= feedbackRating ? 'text-yellow-400' : 'text-gray-600 hover:text-yellow-200'}`}>
+                              ★
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Your Review</label>
+                        <textarea
+                          required
+                          value={feedbackContent}
+                          onChange={e => setFeedbackContent(e.target.value)}
+                          className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg p-3 text-white focus:outline-none focus:border-[#7C3AED] resize-none"
+                          rows={4}
+                          placeholder="What did you think of this course?..."
+                        />
+                      </div>
+                      <button disabled={submittingFeedback} type="submit" className="w-full py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold rounded-lg transition-colors disabled:opacity-50">
+                        {submittingFeedback ? 'Submitting...' : 'Submit & Claim Certificate'}
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="py-4">
+                    <CertificateTemplate
+                      studentName={course?.enrolledStudents?.find(s => s._id === progress?.student)?.fullName || 'Student'}
+                      courseTitle={course?.title}
+                      instructorName={course?.instructor?.fullName}
+                      issueDate={progress?.certificateIssuedAt}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>

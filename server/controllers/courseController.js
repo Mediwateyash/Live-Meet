@@ -79,6 +79,7 @@ export async function getBySlug(req, res, next) {
     const query = isId ? { _id: req.params.slug } : { slug: req.params.slug }
     const course = await Course.findOne(query)
       .populate('instructor', 'fullName avatar bio')
+      .populate('finalExam')
     if (!course) throw new ApiError(404, 'Course not found')
 
     // Fetch reviews
@@ -130,7 +131,7 @@ export async function updateCourse(req, res, next) {
     if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       throw new ApiError(403, 'Not authorized')
     }
-    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, ...rest } = req.body
+    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, finalExam, ...rest } = req.body
     const finalCurriculum = Array.isArray(curriculum) ? curriculum : course.curriculum
 
     // Recalculate totals (pre('save') doesn't run on findByIdAndUpdate)
@@ -149,9 +150,12 @@ export async function updateCourse(req, res, next) {
       requirements: Array.isArray(requirements) ? requirements : course.requirements,
       curriculum:   finalCurriculum,
       price:        isFree ? 0 : (Number(price) || course.price),
-      isFree:       isFree !== undefined ? !!isFree : course.isFree,
+      isFree:       isFree || price === 0,
       totalDuration,
       totalLessons,
+    }
+    if (finalExam !== undefined) {
+      updateData.finalExam = finalExam || null
     }
     // Regenerate slug if title changed
     if (rest.title && rest.title !== course.title) {
@@ -160,7 +164,9 @@ export async function updateCourse(req, res, next) {
     if (level && ['Beginner', 'Intermediate', 'Advanced'].includes(level)) {
       updateData.level = level
     }
-    const updated = await Course.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true })
+    const updated = await Course.findByIdAndUpdate(req.params.id, updateData, { new: true })
+      .populate('instructor', 'fullName avatar bio')
+      .populate('finalExam')
     res.json(new ApiResponse(200, updated, 'Course updated'))
   } catch (err) { next(err) }
 }
@@ -205,7 +211,9 @@ export async function enroll(req, res, next) {
 
 export async function getLearn(req, res, next) {
   try {
-    const course = await Course.findById(req.params.id).populate('instructor', 'fullName avatar')
+    const course = await Course.findById(req.params.id)
+      .populate('instructor', 'fullName avatar')
+      .populate('finalExam')
     if (!course) throw new ApiError(404, 'Course not found')
 
     const enrolled = isEnrolledIn(req.user, course._id)

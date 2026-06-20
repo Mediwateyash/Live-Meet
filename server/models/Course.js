@@ -32,6 +32,7 @@ const courseSchema = new mongoose.Schema({
   whatYouLearn:  [String],
   requirements:  [String],
   curriculum:    [sectionSchema],
+  finalExam:     { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' },
   enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   totalDuration:  { type: Number, default: 0 },
   totalLessons:   { type: Number, default: 0 },

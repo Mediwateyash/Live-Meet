@@ -14,6 +14,9 @@ const router = Router()
 // Public route for landing page
 router.get('/', getTestimonials)
 
+// Student route for course feedback
+router.post('/student', authMiddleware, createTestimonial)
+
 // Admin routes
 router.use('/admin', authMiddleware, requireRole('admin'))
 router.get('/admin', getAllTestimonials)

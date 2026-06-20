@@ -8,6 +8,9 @@ const progressSchema = new mongoose.Schema({
   lastWatchedPosition: { type: Number, default: 0 },
   percentComplete:     { type: Number, default: 0 },
   isCompleted:         { type: Boolean, default: false },
+  hasPassedFinalExam:  { type: Boolean, default: false },
+  hasGivenFeedback:    { type: Boolean, default: false },
+  certificateIssuedAt: Date,
   completedAt:         Date,
 }, { timestamps: true })
 

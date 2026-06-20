@@ -82,6 +82,10 @@ export default function CourseBuilder() {
   const [requirements, setReqs]        = useState([''])
   const [sections,     setSections]    = useState([])
 
+  // Final Exam
+  const [quizzes, setQuizzes] = useState([])
+  const [finalExam, setFinalExam] = useState('')
+
   // Thumbnail + crop
   const [rawImgSrc,     setRawImgSrc]    = useState('')
   const [cropMode,      setCropMode]     = useState(false)
@@ -149,6 +153,10 @@ export default function CourseBuilder() {
               }
             })
             setSections(mappedSections)
+            
+            if (course.finalExam) {
+              setFinalExam(course.finalExam._id || course.finalExam)
+            }
           }
         } catch (err) {
           console.error('Failed to fetch course details:', err)
@@ -158,6 +166,19 @@ export default function CourseBuilder() {
       fetchCourseDetails()
     }
   }, [isEdit, id, reset])
+
+  // Fetch quizzes for final exam selection
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        const res = await api.get('/quiz')
+        setQuizzes(res.data || [])
+      } catch (err) {
+        console.error('Failed to fetch quizzes', err)
+      }
+    }
+    fetchQuizzes()
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -277,6 +298,7 @@ export default function CourseBuilder() {
           title:   sec.title,
           lessons: sec.lessons.map(({ id: _lid, _uploading, _videoMode, ...l }) => l),
         })),
+        finalExam: finalExam || null,
         thumbnail: thumbDataUrl || undefined,
         status,
       }
@@ -636,7 +658,24 @@ export default function CourseBuilder() {
               <Plus size={16} /> Add Section
             </button>
 
-            <div className="flex justify-between">
+            {/* Final Exam Selection */}
+            <div className="pt-6 mt-6" style={{ borderTop: '1px solid var(--border-default)' }}>
+              <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Final Exam & Certificate</h3>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+                Select a quiz to act as the Final Exam. Students must pass this exam (70% or higher) to unlock the Certificate module.
+              </p>
+              <div className="max-w-md">
+                <Select
+                  label="Select Final Exam"
+                  placeholder="None"
+                  value={finalExam}
+                  onChange={v => setFinalExam(v)}
+                  options={[{ value: '', label: 'None' }, ...quizzes.map(q => ({ value: q._id, label: q.title }))]}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-4">
               <Button variant="outline" onClick={() => setStep(1)}>← Back</Button>
               <Button onClick={() => setStep(3)}>Next →</Button>
             </div>

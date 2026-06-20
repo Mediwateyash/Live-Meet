@@ -1,4 +1,5 @@
 import Testimonial from '../models/Testimonial.js'
+import Progress from '../models/Progress.js'
 
 export const getTestimonials = async (req, res, next) => {
   try {
@@ -20,7 +21,23 @@ export const getAllTestimonials = async (req, res, next) => {
 
 export const createTestimonial = async (req, res, next) => {
   try {
-    const testimonial = await Testimonial.create(req.body)
+    const data = { ...req.body }
+    if (req.user) {
+      data.userId = req.user._id
+      data.author = req.user.fullName
+      data.avatar = req.user.avatar || ''
+    }
+
+    const testimonial = await Testimonial.create(data)
+
+    // If this is feedback for a course, update progress to unlock certificate
+    if (data.courseId && req.user) {
+      await Progress.findOneAndUpdate(
+        { student: req.user._id, course: data.courseId, hasPassedFinalExam: true },
+        { hasGivenFeedback: true, certificateIssuedAt: new Date() }
+      )
+    }
+
     res.status(201).json({ success: true, data: testimonial })
   } catch (error) {
     next(error)
