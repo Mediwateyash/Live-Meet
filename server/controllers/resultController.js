@@ -37,16 +37,27 @@ export const submitQuiz = async (req, res) => {
             answers: evaluatedAnswers
         });
 
-        // Check if this is a final exam and the student passed
+        // Check if student has given all exams for this course
         const course = await Course.findById(quiz.courseId);
         let passedFinalExam = false;
-        if (course && course.finalExam && course.finalExam.toString() === quizId.toString()) {
-            if (percentage >= 70) {
+        
+        if (course) {
+            // Find all public quizzes for this course
+            const courseQuizzes = await Quiz.find({ courseId: course._id, visibility: { $ne: 'private' } });
+            
+            // Find all results for this student
+            const studentResults = await Result.find({ studentId: req.user._id });
+            const attemptedQuizIds = studentResults.map(r => r.quizId.toString());
+            
+            // Check if every course quiz has been attempted
+            const hasGivenAll = courseQuizzes.length > 0 && courseQuizzes.every(q => attemptedQuizIds.includes(q._id.toString()));
+            
+            if (hasGivenAll) {
                 passedFinalExam = true;
                 await Progress.findOneAndUpdate(
                     { student: req.user._id, course: course._id },
                     { hasPassedFinalExam: true },
-                    { new: true, upsert: true } // Upsert just in case Progress wasn't explicitly initialized
+                    { new: true, upsert: true }
                 );
             }
         }

@@ -658,23 +658,6 @@ export default function CourseBuilder() {
               <Plus size={16} /> Add Section
             </button>
 
-            {/* Final Exam Selection */}
-            <div className="pt-6 mt-6" style={{ borderTop: '1px solid var(--border-default)' }}>
-              <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Final Exam & Certificate</h3>
-              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                Select a quiz to act as the Final Exam. Students must pass this exam (70% or higher) to unlock the Certificate module.
-              </p>
-              <div className="max-w-md">
-                <Select
-                  label="Select Final Exam"
-                  placeholder="None"
-                  value={finalExam}
-                  onChange={v => setFinalExam(v)}
-                  options={[{ value: '', label: 'None' }, ...quizzes.map(q => ({ value: q._id, label: q.title }))]}
-                />
-              </div>
-            </div>
-
             <div className="flex justify-between pt-4">
               <Button variant="outline" onClick={() => setStep(1)}>← Back</Button>
               <Button onClick={() => setStep(3)}>Next →</Button>

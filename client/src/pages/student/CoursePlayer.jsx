@@ -396,15 +396,11 @@ export default function CoursePlayer() {
                     </div>
                     <h3 className="text-xl font-bold text-white mb-2">Certificate Locked</h3>
                     <p className="text-sm max-w-md text-gray-400 mb-6">
-                      You must complete the course curriculum and pass the Final Exam (70% or higher) to unlock your certificate.
+                      You must complete the course curriculum and take all exams added by the instructor to unlock your certificate.
                     </p>
-                    {course?.finalExam ? (
-                      <button onClick={() => { setTab('tests'); refetchProgress(); }} className="px-6 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg transition-colors">
-                        Go to Final Exam
-                      </button>
-                    ) : (
-                      <p className="text-sm text-yellow-500">Instructor has not assigned a final exam yet.</p>
-                    )}
+                    <button onClick={() => { setTab('tests'); refetchProgress(); }} className="px-6 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg transition-colors">
+                      Go to Exams
+                    </button>
                   </div>
                 ) : !progress?.hasGivenFeedback ? (
                   <div className="max-w-xl mx-auto bg-[#1A1A2E] p-8 rounded-xl border border-[rgba(255,255,255,0.1)] shadow-xl">
