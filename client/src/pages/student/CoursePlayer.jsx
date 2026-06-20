@@ -138,7 +138,7 @@ export default function CoursePlayer() {
     if (!feedbackContent.trim()) return;
     setSubmittingFeedback(true);
     try {
-      await api.post('/testimonial/student', {
+      await api.post('/testimonials/student', {
         courseId: course._id,
         content: feedbackContent,
         rating: feedbackRating,
