@@ -11,10 +11,14 @@ import Browse        from './pages/public/Browse.jsx'
 import CourseDetail  from './pages/public/CourseDetail.jsx'
 
 // Auth pages
-import Login          from './pages/auth/Login.jsx'
-import Register       from './pages/auth/Register.jsx'
 import ForgotPassword from './pages/auth/ForgotPassword.jsx'
 import ResetPassword  from './pages/auth/ResetPassword.jsx'
+
+function AuthRedirect({ tab }) {
+  const { openAuthModal } = useUIStore()
+  useEffect(() => { openAuthModal(tab) }, [tab, openAuthModal])
+  return <Navigate to="/" replace />
+}
 
 // Student pages
 import StudentDashboard   from './pages/student/Dashboard.jsx'
@@ -56,14 +60,29 @@ import AdminTestimonials     from './pages/admin/Testimonials.jsx'
 
 function RequireAuth({ children }) {
   const { isAuthenticated } = useAuthStore()
-  const location = useLocation()
-  if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />
+  const { openAuthModal } = useUIStore()
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      openAuthModal('login', 'Please log in to access this page')
+    }
+  }, [isAuthenticated, openAuthModal])
+
+  if (!isAuthenticated) return <Navigate to="/" replace />
   return children
 }
 
 function RequireRole({ children, role }) {
   const { user } = useAuthStore()
-  if (!user) return <Navigate to="/login" replace />
+  const { openAuthModal } = useUIStore()
+
+  useEffect(() => {
+    if (!user) {
+      openAuthModal('login', 'Please log in to access this page')
+    }
+  }, [user, openAuthModal])
+
+  if (!user) return <Navigate to="/" replace />
   if (role === 'admin'      && user.role !== 'admin')      return <Navigate to="/dashboard" replace />
   if (role === 'instructor' && (user.role !== 'instructor' || !user.isApprovedInstructor)) {
     return <Navigate to="/become-instructor" replace />
@@ -110,8 +129,8 @@ export default function App() {
       <Route path="/course/:slug" element={<CourseDetail />} />
 
       {/* Auth */}
-      <Route path="/login"              element={<Login />} />
-      <Route path="/register"           element={<Register />} />
+      <Route path="/login"              element={<AuthRedirect tab="login" />} />
+      <Route path="/register"           element={<AuthRedirect tab="register" />} />
       <Route path="/forgot-password"    element={<ForgotPassword />} />
       <Route path="/reset-password"    element={<ResetPassword />} />
 

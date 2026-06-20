@@ -24,6 +24,8 @@ import mcqRoutes          from './routes/mcqRoutes.js'
 import quizRoutes         from './routes/quizRoutes.js'
 import resultRoutes       from './routes/resultRoutes.js'
 import analyticsRoutes    from './routes/analyticsRoutes.js'
+import quickQuizRoutes    from './routes/quickQuizRoutes.js'
+import uploadRoutes       from './routes/uploadRoutes.js'
 
 // Middlewares
 import { errorHandler } from './middleware/errorHandler.js'
@@ -127,6 +129,8 @@ app.use('/api/mcq',           mcqRoutes)
 app.use('/api/quiz',          quizRoutes)
 app.use('/api/result',        resultRoutes)
 app.use('/api/analytics',     analyticsRoutes)
+app.use('/api/quick-quiz',    quickQuizRoutes)
+app.use('/api/upload',        uploadRoutes)
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))

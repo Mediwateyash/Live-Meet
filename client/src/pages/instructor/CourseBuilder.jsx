@@ -6,7 +6,7 @@ import { z } from 'zod'
 import Cropper from 'react-easy-crop'
 import {
   Plus, Trash2, GripVertical, ChevronDown, Upload, X, Check,
-  PlayCircle, ZoomIn, ZoomOut, Crop, Eye, Pencil
+  PlayCircle, ZoomIn, ZoomOut, Crop, Eye, Pencil, FileText, Loader2
 } from 'lucide-react'
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors,
@@ -22,6 +22,7 @@ import TagInput from '../../components/ui/TagInput.jsx'
 import Select from '../../components/ui/Select.jsx'
 import { coursesAPI } from '../../api/courses.js'
 import { adminAPI } from '../../api/admin.js'
+import api from '../../api/axios.js'
 import { CATEGORIES, LEVELS, LANGUAGES } from '../../utils/constants.js'
 import toast from 'react-hot-toast'
 
@@ -783,6 +784,31 @@ function SortableSection({ section, si, onUpdateSection, onRemoveSection, onAddL
 function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
   const [ytInput, setYtInput] = useState(lesson.videoUrl || '')
   const [durationInput, setDurationInput] = useState(lesson.duration ? Math.round(lesson.duration / 60) : '')
+  const [uploadingNotes, setUploadingNotes] = useState(false)
+
+  const handleNotesUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setUploadingNotes(true)
+    toast.loading('Uploading notes...', { id: `upload-${si}-${li}` })
+
+    try {
+      const { data } = await api.post('/upload/resource', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      
+      onUpdateLesson(si, li, 'resources', [{ name: file.name, url: data.url, type: 'pdf' }])
+      toast.success('Notes uploaded successfully!', { id: `upload-${si}-${li}` })
+    } catch (err) {
+      toast.error('Failed to upload notes', { id: `upload-${si}-${li}` })
+    } finally {
+      setUploadingNotes(false)
+    }
+  }
 
   const handleYtInput = async (val) => {
     setYtInput(val)
@@ -906,24 +932,50 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
           )}
         </div>
 
-        {/* Right: thumbnail preview */}
-        <div className="w-36 shrink-0 p-3 pl-0 flex items-center">
-          {savedYt && ytThumb ? (
-            <div className="w-full rounded-lg overflow-hidden relative" style={{ aspectRatio: '16/9', background: '#0F0F0F' }}>
-              <img src={ytThumb} className="w-full h-full object-cover" alt="" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,0,0,0.85)' }}>
-                  <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: '8px solid white', marginLeft: 2 }} />
+        {/* Right: thumbnail preview & notes */}
+        <div className="w-48 shrink-0 p-3 pl-0 flex flex-col gap-2">
+          <div className="flex items-center">
+            {savedYt && ytThumb ? (
+              <div className="w-full rounded-lg overflow-hidden relative" style={{ aspectRatio: '16/9', background: '#0F0F0F' }}>
+                <img src={ytThumb} className="w-full h-full object-cover" alt="" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,0,0,0.85)' }}>
+                    <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: '8px solid white', marginLeft: 2 }} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="w-full rounded-lg flex flex-col items-center justify-center gap-1"
-              style={{ aspectRatio: '16/9', background: 'var(--bg-muted)', border: '1px dashed var(--border-default)' }}>
-              <PlayCircle size={16} color="var(--text-muted)" />
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>No video</span>
-            </div>
-          )}
+            ) : (
+              <div className="w-full rounded-lg flex flex-col items-center justify-center gap-1"
+                style={{ aspectRatio: '16/9', background: 'var(--bg-muted)', border: '1px dashed var(--border-default)' }}>
+                <PlayCircle size={16} color="var(--text-muted)" />
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>No video</span>
+              </div>
+            )}
+          </div>
+
+          <div className="w-full">
+             {lesson.resources && lesson.resources.length > 0 ? (
+                 <div className="flex items-center justify-between bg-[rgba(124,58,237,0.1)] border border-[rgba(124,58,237,0.3)] rounded-lg p-2">
+                    <div className="flex items-center gap-1.5 overflow-hidden">
+                       <FileText size={14} color="#7C3AED" className="shrink-0" />
+                       <span className="text-[10px] font-medium text-[#7C3AED] truncate">{lesson.resources[0].name}</span>
+                    </div>
+                    <button onClick={() => onUpdateLesson(si, li, 'resources', [])} className="shrink-0 ml-1">
+                       <X size={12} color="#EF4444" />
+                    </button>
+                 </div>
+             ) : (
+                 <label className="flex items-center justify-center gap-1.5 w-full py-1.5 rounded-lg border border-dashed cursor-pointer transition-colors"
+                    style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.color = '#7C3AED'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                 >
+                    {uploadingNotes ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                    <span className="text-[11px] font-medium">{uploadingNotes ? 'Uploading...' : 'Add Notes (PDF)'}</span>
+                    <input type="file" accept=".pdf" className="hidden" onChange={handleNotesUpload} disabled={uploadingNotes} />
+                 </label>
+             )}
+          </div>
         </div>
       </div>
     </div>

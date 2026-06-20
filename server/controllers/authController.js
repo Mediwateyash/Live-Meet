@@ -9,7 +9,7 @@ import { validatePassword } from '../utils/passwordValidator.js'
 
 export async function register(req, res, next) {
   try {
-    let { fullName, email, password } = req.body
+    let { fullName, email, password, role } = req.body
     if (!fullName || !email || !password) throw new ApiError(400, 'All fields required')
 
     fullName = fullName.trim()
@@ -21,7 +21,9 @@ export async function register(req, res, next) {
     const exists = await User.findOne({ email })
     if (exists) throw new ApiError(409, 'Email already registered')
 
-    const user = await User.create({ fullName, email, password })
+    if (role && !['student', 'instructor'].includes(role)) throw new ApiError(400, 'Invalid role')
+
+    const user = await User.create({ fullName, email, password, role: role || 'student' })
     const accessToken  = generateAccessToken(user._id)
     const refreshToken = generateRefreshToken(user._id)
 

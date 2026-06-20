@@ -22,6 +22,7 @@ const registerSchema = z.object({
   email:           z.string().email('Enter a valid email'),
   password:        z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
+  role:            z.enum(['student', 'instructor']),
   terms:           z.literal(true, { errorMap: () => ({ message: 'You must accept the terms' }) }),
 }).refine(d => d.password === d.confirmPassword, {
   message: 'Passwords do not match',
@@ -95,13 +96,16 @@ function LoginForm({ onSuccess, onClose, switchToRegister }) {
 function RegisterForm({ onSuccess, onClose, switchToLogin }) {
   const { setUser } = useAuthStore()
   const [showPwd, setShowPwd] = useState(false)
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch, setValue } = useForm({
     resolver: zodResolver(registerSchema),
+    defaultValues: { role: 'student' }
   })
+  
+  const currentRole = watch('role')
 
-  const onSubmit = async ({ fullName, email, password }) => {
+  const onSubmit = async ({ fullName, email, password, role }) => {
     try {
-      const { data } = await authAPI.register({ fullName, email, password })
+      const { data } = await authAPI.register({ fullName, email, password, role })
       setUser(data.data)
       toast.success('Account created! Welcome to Zenius AI 🎓')
       reset()
@@ -114,6 +118,16 @@ function RegisterForm({ onSuccess, onClose, switchToLogin }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="flex gap-2">
+        <button type="button" onClick={() => setValue('role', 'student')} 
+           className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${currentRole === 'student' ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--bg-muted)]'}`}>
+           Student
+        </button>
+        <button type="button" onClick={() => setValue('role', 'instructor')} 
+           className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${currentRole === 'instructor' ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--bg-muted)]'}`}>
+           Teacher
+        </button>
+      </div>
       <Input
         label="Full Name"
         placeholder="Your name"

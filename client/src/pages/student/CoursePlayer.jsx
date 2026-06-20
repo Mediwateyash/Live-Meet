@@ -9,6 +9,7 @@ import Spinner from '../../components/ui/Spinner.jsx'
 import toast from 'react-hot-toast'
 import { formatDuration } from '../../utils/formatters.js'
 import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
+import api from '../../api/axios.js'
 
 export default function CoursePlayer() {
   const { slug } = useParams()
@@ -24,6 +25,14 @@ export default function CoursePlayer() {
   const [tab,        setTab]        = useState(() => searchParams.get('tab') || 'overview')
   const [marking,    setMarking]    = useState(false)
   const [videoEnded, setVideoEnded] = useState(false)
+
+  // Quick Quiz State
+  const [quickQuizLoading, setQuickQuizLoading] = useState(false)
+  const [quickQuizActive, setQuickQuizActive]   = useState(false)
+  const [quickQuizMCQs, setQuickQuizMCQs]       = useState([])
+  const [quickQuizAnswers, setQuickQuizAnswers] = useState({})
+  const [quickQuizSubmitted, setQuickQuizSubmitted] = useState(false)
+  const [quickQuizScore, setQuickQuizScore]     = useState(0)
 
   useEffect(() => {
     const load = async () => {
@@ -55,6 +64,10 @@ export default function CoursePlayer() {
 
   useEffect(() => {
     setVideoEnded(false)
+    setQuickQuizActive(false)
+    setQuickQuizMCQs([])
+    setQuickQuizAnswers({})
+    setQuickQuizSubmitted(false)
   }, [currentLesson])
 
   const isCompleted = (lessonId) => progress?.completedLessons?.some(id => id.toString() === lessonId?.toString())
@@ -72,6 +85,38 @@ export default function CoursePlayer() {
       setMarking(false)
     }
   }
+
+  const handleGenerateQuickQuiz = async () => {
+    if (!currentLesson?.resources?.[0]?.url) return;
+    setQuickQuizActive(true);
+    setQuickQuizLoading(true);
+    setQuickQuizSubmitted(false);
+    setQuickQuizAnswers({});
+    try {
+        const res = await api.post('/quick-quiz/generate', {
+            resourceUrl: currentLesson.resources[0].url,
+            title: currentLesson.title,
+            numQuestions: 5
+        });
+        setQuickQuizMCQs(res.data.questions);
+    } catch (error) {
+        toast.error('Failed to generate quick quiz');
+        setQuickQuizActive(false);
+    } finally {
+        setQuickQuizLoading(false);
+    }
+  };
+
+  const handleQuickQuizSubmit = () => {
+      let score = 0;
+      quickQuizMCQs.forEach((mcq, idx) => {
+          if (quickQuizAnswers[idx] === mcq.correctAnswer) {
+              score++;
+          }
+      });
+      setQuickQuizScore(Math.round((score / quickQuizMCQs.length) * 100));
+      setQuickQuizSubmitted(true);
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: '#0F0F0F' }}>
@@ -105,9 +150,56 @@ export default function CoursePlayer() {
       <div className="flex flex-1 overflow-hidden">
         {/* Video + tabs */}
         <div className="flex-1 flex flex-col overflow-auto">
-          {/* Video */}
-          <div style={{ background: '#000', aspectRatio: '16/9', maxHeight: '60vh' }}>
-            {currentLesson?.videoUrl ? (
+          {/* Video / PDF / Quiz */}
+          <div style={{ background: '#000', aspectRatio: '16/9', maxHeight: '60vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            {quickQuizActive ? (
+                <div className="w-full h-full bg-[#1A1A2E] text-white p-8 overflow-y-auto">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-bold">Quick Quiz: {currentLesson?.title}</h3>
+                        <button onClick={() => setQuickQuizActive(false)} className="text-gray-400 hover:text-white">Close</button>
+                    </div>
+                    {quickQuizLoading ? (
+                        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                            <Spinner size={40} color="#7C3AED" />
+                            <p className="text-[#A78BFA] animate-pulse font-medium">AI is generating your quiz...</p>
+                        </div>
+                    ) : quickQuizSubmitted ? (
+                        <div className="flex flex-col items-center justify-center h-64 space-y-4 bg-[rgba(124,58,237,0.1)] rounded-xl p-8 border border-[rgba(124,58,237,0.3)]">
+                            <h4 className="text-3xl font-bold text-white">Score: {quickQuizScore}%</h4>
+                            <p className="text-gray-400">{quickQuizScore >= 70 ? 'Great job! You grasped the key concepts.' : 'You might want to review the notes again.'}</p>
+                            <button onClick={() => setQuickQuizActive(false)} className="mt-4 bg-[#7C3AED] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#6D28D9]">Back to Lesson</button>
+                        </div>
+                    ) : (
+                        <div className="space-y-8 pb-8">
+                            {quickQuizMCQs.map((mcq, idx) => (
+                                <div key={idx} className="bg-[rgba(255,255,255,0.03)] p-6 rounded-xl border border-[rgba(255,255,255,0.05)]">
+                                    <p className="text-lg font-medium mb-4"><span className="text-[#A78BFA] mr-2">Q{idx + 1}.</span> {mcq.question}</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {mcq.options.map((opt, oIdx) => (
+                                            <button
+                                                key={oIdx}
+                                                onClick={() => setQuickQuizAnswers(prev => ({ ...prev, [idx]: opt }))}
+                                                className={`p-3 rounded-lg text-left transition-all ${quickQuizAnswers[idx] === opt ? 'bg-[rgba(124,58,237,0.2)] border-[#7C3AED] border' : 'bg-[rgba(0,0,0,0.2)] border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.05)]'}`}
+                                            >
+                                                {String.fromCharCode(65 + oIdx)}. {opt}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={handleQuickQuizSubmit}
+                                    disabled={Object.keys(quickQuizAnswers).length < quickQuizMCQs.length}
+                                    className="bg-[#7C3AED] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#6D28D9] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                >
+                                    Submit Quick Quiz
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            ) : currentLesson?.videoUrl ? (
               <ReactPlayer
                 ref={playerRef}
                 src={currentLesson.videoUrl}
@@ -132,30 +224,45 @@ export default function CoursePlayer() {
                   }
                 }}
               />
+            ) : currentLesson?.resources?.length > 0 ? (
+                <div className="w-full h-full bg-white flex flex-col">
+                    <iframe src={currentLesson.resources[0].url} width="100%" height="100%" className="flex-1" title="Notes Viewer" />
+                </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-base" style={{ color: '#666' }}>
-                No video available
+                No video or notes available
               </div>
             )}
           </div>
 
           {/* Below player */}
           <div className="p-8 max-w-4xl">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
               <h2 className="text-xl font-bold text-white">{currentLesson?.title}</h2>
-              <button
-                onClick={markComplete}
-                disabled={marking || isCompleted(currentLesson?._id) || (currentLesson?.videoUrl && !videoEnded)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all"
-                style={{
-                  background: isCompleted(currentLesson?._id) ? '#10B981' : '#7C3AED',
-                  color: 'white',
-                  opacity: (marking || (currentLesson?.videoUrl && !videoEnded && !isCompleted(currentLesson?._id))) ? 0.5 : 1,
-                  cursor: (isCompleted(currentLesson?._id) || (currentLesson?.videoUrl && !videoEnded)) ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {isCompleted(currentLesson?._id) ? <><Check size={18} /> Completed</> : <><CheckCircle2 size={18} /> Mark Complete</>}
-              </button>
+              <div className="flex gap-3">
+                  {!currentLesson?.videoUrl && currentLesson?.resources?.length > 0 && (
+                      <button
+                        onClick={handleGenerateQuickQuiz}
+                        disabled={quickQuizActive}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all bg-[rgba(124,58,237,0.15)] text-[#A78BFA] hover:bg-[rgba(124,58,237,0.25)] border border-[rgba(124,58,237,0.3)] disabled:opacity-50"
+                      >
+                        <Brain size={18} /> Take a Quick Quiz
+                      </button>
+                  )}
+                  <button
+                    onClick={markComplete}
+                    disabled={marking || isCompleted(currentLesson?._id) || (currentLesson?.videoUrl && !videoEnded)}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all"
+                    style={{
+                      background: isCompleted(currentLesson?._id) ? '#10B981' : '#7C3AED',
+                      color: 'white',
+                      opacity: (marking || (currentLesson?.videoUrl && !videoEnded && !isCompleted(currentLesson?._id))) ? 0.5 : 1,
+                      cursor: (isCompleted(currentLesson?._id) || (currentLesson?.videoUrl && !videoEnded)) ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {isCompleted(currentLesson?._id) ? <><Check size={18} /> Completed</> : <><CheckCircle2 size={18} /> Mark Complete</>}
+                  </button>
+              </div>
             </div>
 
             {/* Tabs */}
