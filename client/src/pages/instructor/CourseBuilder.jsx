@@ -804,7 +804,7 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
       onUpdateLesson(si, li, 'resources', [{ name: file.name, url: data.url, type: 'pdf' }])
       toast.success('Notes uploaded successfully!', { id: `upload-${si}-${li}` })
     } catch (err) {
-      toast.error('Failed to upload notes', { id: `upload-${si}-${li}` })
+      toast.error(err.response?.data?.message || 'Failed to upload notes', { id: `upload-${si}-${li}` })
     } finally {
       setUploadingNotes(false)
     }

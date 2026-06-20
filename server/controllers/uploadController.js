@@ -8,12 +8,16 @@ export const uploadResource = async (req, res) => {
         }
 
         const result = await cloudinary.uploader.upload(req.file.path, {
-            resource_type: 'raw', // Necessary for PDFs and documents
+            resource_type: 'auto', // Use auto to let Cloudinary handle it
             folder: 'zenius/resources'
         });
 
         // Clean up the local file
-        fs.unlinkSync(req.file.path);
+        try {
+            fs.unlinkSync(req.file.path);
+        } catch (cleanupError) {
+            console.error('Cleanup error:', cleanupError);
+        }
 
         res.status(200).json({
             message: 'File uploaded successfully',
@@ -22,6 +26,7 @@ export const uploadResource = async (req, res) => {
         });
     } catch (error) {
         console.error('Error uploading resource:', error);
-        res.status(500).json({ message: 'Failed to upload resource' });
+        try { if (req.file) fs.unlinkSync(req.file.path); } catch(e) {}
+        res.status(500).json({ message: error.message || 'Failed to upload resource', details: error });
     }
 };
