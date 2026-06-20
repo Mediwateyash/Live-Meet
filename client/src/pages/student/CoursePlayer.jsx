@@ -6,6 +6,7 @@ import { coursesAPI } from '../../api/courses.js'
 import { progressAPI } from '../../api/progress.js'
 import ProgressBar from '../../components/ui/ProgressBar.jsx'
 import Spinner from '../../components/ui/Spinner.jsx'
+import useAuthStore from '../../store/authStore.js'
 import toast from 'react-hot-toast'
 import { formatDuration } from '../../utils/formatters.js'
 import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
@@ -14,6 +15,7 @@ import api from '../../api/axios.js'
 
 export default function CoursePlayer() {
   const { slug } = useParams()
+  const { user } = useAuthStore()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const playerRef = useRef(null)
@@ -441,8 +443,8 @@ export default function CoursePlayer() {
                 ) : (
                   <div className="py-4">
                     <CertificateTemplate
-                      studentName={course?.enrolledStudents?.find(s => s._id === progress?.student)?.fullName || 'Student'}
-                      courseTitle={course?.title}
+                      studentName={user?.fullName || 'Student'}
+                      courseTitle={course?.title || 'Course'}
                       instructorName={course?.instructor?.fullName}
                       issueDate={progress?.certificateIssuedAt}
                     />
