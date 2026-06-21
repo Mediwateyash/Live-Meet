@@ -6,6 +6,7 @@ import Button from '../../components/ui/Button.jsx'
 import useAuthStore from '../../store/authStore.js'
 import { formatDate } from '../../utils/formatters.js'
 import { coursesAPI } from '../../api/courses.js'
+import api from '../../api/axios.js'
 import html2canvas from 'html2canvas'
 
 export default function Certificate() {
@@ -13,15 +14,31 @@ export default function Certificate() {
   const { user } = useAuthStore()
   const certRef = useRef(null)
   const [course, setCourse] = useState(null)
+  const [progress, setProgress] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!courseId) return
-    coursesAPI.getBySlug(courseId)
-      .then(({ data }) => setCourse(data.data || null))
+    Promise.all([
+      coursesAPI.getBySlug(courseId),
+      api.get(`/progress/${courseId}`)
+    ])
+      .then(([courseRes, progressRes]) => {
+        setCourse(courseRes.data.data || null)
+        setProgress(progressRes.data.data || null)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [courseId])
+
+  const formatName = (name) => {
+    if (!name) return 'Student Name';
+    return name
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
   const handleDownload = async () => {
     if (!certRef.current) return
@@ -42,6 +59,8 @@ export default function Certificate() {
     )
   }
 
+  const issueDate = progress?.completedAt ? new Date(progress.completedAt) : new Date();
+
   return (
     <PageLayout>
       <div className="max-w-4xl mx-auto px-6 py-12">
@@ -49,56 +68,111 @@ export default function Certificate() {
           <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Certificate of Completion
           </h1>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Download your certificate as an image</p>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Download your certificate as a high-resolution image</p>
         </div>
 
         {/* Certificate */}
         <div
           ref={certRef}
-          className="relative rounded-2xl overflow-hidden mx-auto"
+          className="relative rounded-2xl overflow-hidden mx-auto shadow-xl"
           style={{
             maxWidth: 800,
             aspectRatio: '1.414',
-            background: 'linear-gradient(135deg, #1E1B4B 0%, #2E1065 60%, #1E1B4B 100%)',
-            border: '4px solid #7C3AED',
-            padding: '40px 60px',
+            background: '#FFFDF9',
+            border: '6px double #D4AF37',
+            padding: '50px 70px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
           }}
         >
-          {/* Decorative corner */}
-          <div style={{ position: 'absolute', top: 20, left: 20, width: 60, height: 60, borderTop: '2px solid #7C3AED', borderLeft: '2px solid #7C3AED', borderRadius: '8px 0 0 0' }} />
-          <div style={{ position: 'absolute', bottom: 20, right: 20, width: 60, height: 60, borderBottom: '2px solid #7C3AED', borderRight: '2px solid #7C3AED', borderRadius: '0 0 8px 0' }} />
+          {/* Decorative Corners */}
+          <div style={{ position: 'absolute', top: 15, left: 15, width: 40, height: 40, borderTop: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', borderRadius: '4px 0 0 0' }} />
+          <div style={{ position: 'absolute', top: 15, right: 15, width: 40, height: 40, borderTop: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', borderRadius: '0 4px 0 0' }} />
+          <div style={{ position: 'absolute', bottom: 15, left: 15, width: 40, height: 40, borderBottom: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', borderRadius: '0 0 0 4px' }} />
+          <div style={{ position: 'absolute', bottom: 15, right: 15, width: 40, height: 40, borderBottom: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', borderRadius: '0 0 4px 0' }} />
 
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#7C3AED' }}>
-              <GraduationCap size={20} color="white" />
+          {/* Header */}
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#7C3AED' }}>
+              <GraduationCap size={18} color="white" />
             </div>
-            <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 20, color: '#A78BFA' }}>Zenius AI</span>
+            <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 16, color: '#1E1B4B', letterSpacing: '0.1em' }}>ZENIUS AI</span>
           </div>
 
-          <Award size={48} color="#F59E0B" style={{ marginBottom: 16 }} />
+          {/* Main Certificate Content */}
+          <div className="flex flex-col items-center text-center my-4 w-full">
+            <Award size={42} color="#D4AF37" style={{ marginBottom: 12 }} />
 
-          <p style={{ color: '#C4B5FD', fontSize: 14, marginBottom: 8, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-            Certificate of Completion
-          </p>
-          <p style={{ color: '#94A3B8', fontSize: 14, marginBottom: 12 }}>This certifies that</p>
+            <h2 style={{ 
+              fontFamily: 'Outfit, sans-serif', 
+              fontWeight: 800, 
+              fontSize: 20, 
+              color: '#1E1B4B', 
+              letterSpacing: '0.25em', 
+              textTransform: 'uppercase',
+              marginBottom: 10
+            }}>
+              Certificate of Completion
+            </h2>
+            
+            <p style={{ color: '#57534E', fontSize: 13, marginBottom: 16, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+              This is proudly presented to
+            </p>
 
-          <h2 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 32, color: 'white', marginBottom: 8, textAlign: 'center' }}>
-            {user?.fullName}
-          </h2>
+            <h1 style={{ 
+              fontFamily: 'Outfit, sans-serif', 
+              fontWeight: 800, 
+              fontSize: 34, 
+              color: '#1E1B4B', 
+              marginBottom: 14, 
+              letterSpacing: '0.02em'
+            }}>
+              {formatName(user?.fullName)}
+            </h1>
 
-          <p style={{ color: '#94A3B8', fontSize: 14, marginBottom: 8 }}>has successfully completed</p>
+            <p style={{ color: '#57534E', fontSize: 13, marginBottom: 14, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+              for successfully completing the specialized course
+            </p>
 
-          <h3 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: 18, color: '#A78BFA', marginBottom: 24, textAlign: 'center' }}>
-            {course?.title || `Course #${courseId}`}
-          </h3>
+            <h3 style={{ 
+              fontFamily: 'Georgia, serif', 
+              fontWeight: 700, 
+              fontSize: 22, 
+              color: '#7C3AED', 
+              marginBottom: 10,
+              fontStyle: 'italic'
+            }}>
+              {course?.title || `Course #${courseId}`}
+            </h3>
+          </div>
 
-          <div style={{ display: 'flex', gap: 40, color: '#64748B', fontSize: 12 }}>
-            <span>Date: {formatDate(new Date())}</span>
-            <span>ID: ZENO-{courseId?.slice(-6).toUpperCase()}</span>
+          {/* Signatures & Footer info */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%', marginTop: 10 }}>
+            {/* Signature 1 - Instructor */}
+            <div style={{ textAlign: 'center', color: '#1E1B4B', fontSize: 10, flex: '1 1 0%' }}>
+              <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#7C3AED', fontSize: 15, marginBottom: 6 }}>
+                {course?.instructor?.fullName || 'Course Instructor'}
+              </div>
+              <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.6)', margin: '0 auto', maxWidth: 130, height: 1 }} />
+              <div style={{ color: '#64748B', fontSize: 9, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instructor</div>
+            </div>
+
+            {/* Date & ID */}
+            <div style={{ textAlign: 'center', color: '#64748B', fontSize: 9, flex: '1.2 1 0%', paddingBottom: 4 }}>
+              <div>Issue Date: {formatDate(issueDate)}</div>
+              <div style={{ marginTop: 2 }}>Certificate ID: ZENO-{courseId?.slice(-6).toUpperCase()}</div>
+            </div>
+
+            {/* Signature 2 - Issued By */}
+            <div style={{ textAlign: 'center', color: '#1E1B4B', fontSize: 10, flex: '1 1 0%' }}>
+              <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#7C3AED', fontSize: 15, marginBottom: 6 }}>
+                Zenius AI
+              </div>
+              <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.6)', margin: '0 auto', maxWidth: 130, height: 1 }} />
+              <div style={{ color: '#64748B', fontSize: 9, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Issued By</div>
+            </div>
           </div>
         </div>
 
