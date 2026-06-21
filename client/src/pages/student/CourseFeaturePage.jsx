@@ -38,6 +38,18 @@ function fmtDate(d) {
 function fmtTime(d) {
   return new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
 }
+function getDownloadUrl(url) {
+  if (!url) return '';
+  if (url.includes('cloudinary.com')) {
+    if (url.includes('/image/upload/')) {
+      return url.replace('/image/upload/', '/image/upload/fl_attachment/');
+    }
+    if (url.includes('/raw/upload/')) {
+      return url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+    }
+  }
+  return url;
+}
 
 function LiveLecturesList({ courseId }) {
   const navigate   = useNavigate()
@@ -171,7 +183,7 @@ function LiveLecturesList({ courseId }) {
   )
 }
 
-function NotesList({ course, onSelectNote }) {
+function NotesList({ course, selectedNote, onSelectNote }) {
   const sections = course?.curriculum || []
   
   // Check if there are any notes at all
@@ -213,25 +225,45 @@ function NotesList({ course, onSelectNote }) {
             </h3>
             <div className="grid grid-cols-1 gap-3">
               {lessonsWithNotes.map((lesson) => 
-                lesson.resources.map((res, rIdx) => (
-                  <div key={`${lesson._id}-${rIdx}`} className="rounded-2xl p-5 bg-white dark:bg-[var(--bg-surface)] border border-gray-150 dark:border-[var(--border-default)] flex flex-col sm:flex-row justify-between sm:items-center gap-4 animate-in fade-in duration-200">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-50 dark:bg-purple-950/20 text-[#7C3AED] shrink-0">
-                        <FileText size={20} />
+                lesson.resources.map((res, rIdx) => {
+                  const isSelected = selectedNote?.url === res.url;
+                  return (
+                    <div 
+                      key={`${lesson._id}-${rIdx}`} 
+                      onClick={() => onSelectNote({ name: res.name || `Notes for ${lesson.title}`, url: res.url, lessonTitle: lesson.title })}
+                      className={`rounded-2xl p-5 border flex justify-between items-center gap-4 transition-all duration-200 cursor-pointer ${
+                        isSelected 
+                          ? 'border-[#7C3AED] bg-[rgba(124,58,237,0.08)] shadow-[0_0_15px_rgba(124,58,237,0.15)]' 
+                          : 'border-gray-150 dark:border-[var(--border-default)] bg-white dark:bg-[var(--bg-surface)] hover:bg-gray-50 dark:hover:bg-[rgba(255,255,255,0.02)]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          isSelected ? 'bg-[rgba(124,58,237,0.15)] text-[#A78BFA]' : 'bg-purple-50 dark:bg-purple-950/20 text-[#7C3AED]'
+                        }`}>
+                          <FileText size={20} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }} title={res.name || `Notes for ${lesson.title}`}>
+                            {res.name || `Notes for ${lesson.title}`}
+                          </h4>
+                          <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>Lesson: {lesson.title}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{res.name || `Notes for ${lesson.title}`}</h4>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Lesson: {lesson.title}</p>
+                      <div className="shrink-0">
+                        <span 
+                          className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all shadow-sm ${
+                            isSelected 
+                              ? 'bg-transparent border border-[#7C3AED] text-[#A78BFA]' 
+                              : 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white'
+                          }`}
+                        >
+                          {isSelected ? 'Viewing' : 'Open'}
+                        </span>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => onSelectNote({ name: res.name || `Notes for ${lesson.title}`, url: res.url, lessonTitle: lesson.title })}
-                      className="shrink-0 px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all text-center flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                    >
-                      Open Notes
-                    </button>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
@@ -250,8 +282,29 @@ export default function CourseFeaturePage({ feature }) {
   const [loadingProgress, setLoadingProgress] = useState(true)
   const [selectedNote, setSelectedNote] = useState(null)
 
+  // Auto-select first note when course curriculum is loaded
   useEffect(() => {
-    setSelectedNote(null)
+    if (course?.curriculum && !selectedNote) {
+      for (const section of course.curriculum) {
+        const lessonWithNotes = section.lessons?.find(l => l.resources?.length > 0)
+        if (lessonWithNotes) {
+          const res = lessonWithNotes.resources[0]
+          setSelectedNote({
+            name: res.name || `Notes for ${lessonWithNotes.title}`,
+            url: res.url,
+            lessonTitle: lessonWithNotes.title
+          })
+          break
+        }
+      }
+    }
+  }, [course])
+
+  useEffect(() => {
+    // Reset selection only if switching away from notes
+    if (feature !== 'notes') {
+      setSelectedNote(null)
+    }
   }, [feature])
 
   const { icon: Icon, label, desc } = FEATURES[feature] || {}
@@ -335,7 +388,7 @@ export default function CourseFeaturePage({ feature }) {
         </div>
 
         {/* Content area */}
-        <div className={`flex-1 px-8 py-10 ${!isLive ? 'flex flex-col items-center justify-center' : ''}`}>
+        <div className={`flex-1 px-8 py-10 ${(!isLive && feature !== 'notes' && feature !== 'progress') ? 'flex flex-col items-center justify-center' : ''}`}>
           {isLive ? (
             <div className="max-w-3xl mx-auto w-full">
               <div className="flex items-center gap-3 mb-6">
@@ -352,71 +405,91 @@ export default function CourseFeaturePage({ feature }) {
               <LiveLecturesList courseId={course?._id} />
             </div>
           ) : feature === 'notes' ? (
-            <div className="max-w-4xl mx-auto w-full">
-              {selectedNote ? (
-                <div className="space-y-6 animate-in fade-in duration-200">
-                  {/* Header/Nav */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-800">
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setSelectedNote(null)}
-                        className="flex items-center justify-center p-2 rounded-xl bg-gray-850 hover:bg-gray-800 text-[#7C3AED] transition-colors cursor-pointer"
-                        title="Back to notes list"
-                      >
-                        <ArrowLeft size={18} />
-                      </button>
-                      <div className="text-left">
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                          <FileText size={18} className="text-[#7C3AED]" />
-                          {selectedNote.name}
-                        </h2>
-                        <p className="text-xs text-gray-400">Lesson: {selectedNote.lessonTitle}</p>
-                      </div>
-                    </div>
-                    
-                    <a 
-                      href={selectedNote.url}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-5 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all text-center flex items-center justify-center gap-2 shadow-sm"
-                    >
-                      <Download size={14} />
-                      Download PDF
-                    </a>
-                  </div>
-
-                  {/* PDF Viewer Container */}
-                  <div className="rounded-2xl overflow-hidden border border-gray-800 bg-white" style={{ height: '70vh' }}>
-                    <iframe 
-                      src={selectedNote.url} 
-                      width="100%" 
-                      height="100%" 
-                      className="border-none"
-                      title={selectedNote.name}
-                    />
-                  </div>
-
-                  <p className="text-xs text-center text-gray-500">
-                    Having trouble viewing the file? Click the "Download PDF" button to open or download it directly.
+            <div className="max-w-7xl mx-auto w-full space-y-6">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: iconBg }}>
+                  <FileText size={20} color={iconColor} />
+                </div>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Course Study Notes</h2>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {course?.title || 'Loading…'}
                   </p>
                 </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: iconBg }}>
-                      <FileText size={20} color={iconColor} />
-                    </div>
-                    <div className="text-left">
-                      <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Course Study Notes</h2>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                        {course?.title || 'Loading…'}
-                      </p>
-                    </div>
-                  </div>
-                  <NotesList course={course} onSelectNote={setSelectedNote} />
+              </div>
+
+              {/* Side-by-side Dual Pane Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start text-left">
+                
+                {/* Left Panel: Notes list (col-span-5) */}
+                <div className="md:col-span-5 space-y-4">
+                  <NotesList 
+                    course={course} 
+                    selectedNote={selectedNote} 
+                    onSelectNote={setSelectedNote} 
+                  />
                 </div>
-              )}
+
+                {/* Right Panel: Inline PDF viewer (col-span-7) */}
+                <div className="md:col-span-7 w-full">
+                  {selectedNote ? (
+                    <div className="space-y-4 rounded-2xl p-5 border border-gray-800 bg-[#121222]/80 backdrop-blur-md animate-in fade-in duration-200">
+                      
+                      {/* Active File Info and Action Buttons */}
+                      <div className="flex items-center justify-between pb-3 border-b border-gray-850">
+                        <div className="text-left min-w-0 pr-4">
+                          <h3 className="text-sm font-bold text-white truncate" title={selectedNote.name}>
+                            {selectedNote.name}
+                          </h3>
+                          <p className="text-xs text-gray-400 truncate">Lesson: {selectedNote.lessonTitle}</p>
+                        </div>
+                        
+                        <a 
+                          href={getDownloadUrl(selectedNote.url)}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer"
+                        >
+                          <Download size={13} />
+                          Download PDF
+                        </a>
+                      </div>
+
+                      {/* PDF iframe frame */}
+                      <div className="rounded-xl overflow-hidden border border-gray-850 bg-white" style={{ height: '60vh' }}>
+                        <iframe 
+                          src={selectedNote.url} 
+                          width="100%" 
+                          height="100%" 
+                          className="border-none"
+                          title={selectedNote.name}
+                        />
+                      </div>
+                      
+                      {/* Help & Cloudinary configuration tip */}
+                      <div className="flex flex-col gap-2 text-center text-xs text-gray-400 mt-2">
+                        <div className="text-[11px] text-gray-400 bg-gray-900/60 p-3.5 rounded-xl leading-relaxed text-left border border-gray-850/80">
+                          <p className="font-semibold text-yellow-500 mb-1 flex items-center gap-1">
+                            ⚠️ Cloudinary Configuration Tip:
+                          </p>
+                          <p>
+                            If the PDF fails to load or returns a 401 ACL error, please log into your <strong>Cloudinary Console</strong> and go to <strong>Settings ➔ Security ➔ PDF and ZIP files delivery</strong>. Make sure you enable the option to <strong>"Allow delivery of PDF and ZIP files"</strong> and save.
+                          </p>
+                        </div>
+                      </div>
+
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-32 rounded-2xl border border-dashed border-gray-800 bg-[#121222]/30 text-gray-500">
+                      <FileText size={40} className="text-gray-700 mb-3 animate-pulse" />
+                      <p className="text-sm font-medium">Select a note from the left to view it here</p>
+                    </div>
+                  )}
+                </div>
+
+              </div>
             </div>
           ) : feature === 'tests' || feature === 'mcq' ? (
             <div className="max-w-4xl mx-auto w-full">
