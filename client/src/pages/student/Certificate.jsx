@@ -1,16 +1,27 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { GraduationCap, Download, Award } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
 import useAuthStore from '../../store/authStore.js'
 import { formatDate } from '../../utils/formatters.js'
+import { coursesAPI } from '../../api/courses.js'
 import html2canvas from 'html2canvas'
 
 export default function Certificate() {
   const { courseId } = useParams()
   const { user } = useAuthStore()
   const certRef = useRef(null)
+  const [course, setCourse] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!courseId) return
+    coursesAPI.getBySlug(courseId)
+      .then(({ data }) => setCourse(data.data || null))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [courseId])
 
   const handleDownload = async () => {
     if (!certRef.current) return
@@ -19,6 +30,16 @@ export default function Certificate() {
     a.href = canvas.toDataURL('image/png')
     a.download = `zenius-certificate-${courseId}.png`
     a.click()
+  }
+
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (
@@ -72,7 +93,7 @@ export default function Certificate() {
           <p style={{ color: '#94A3B8', fontSize: 14, marginBottom: 8 }}>has successfully completed</p>
 
           <h3 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 600, fontSize: 18, color: '#A78BFA', marginBottom: 24, textAlign: 'center' }}>
-            Course #{courseId}
+            {course?.title || `Course #${courseId}`}
           </h3>
 
           <div style={{ display: 'flex', gap: 40, color: '#64748B', fontSize: 12 }}>
