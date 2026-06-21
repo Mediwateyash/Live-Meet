@@ -171,7 +171,7 @@ export default function Certificate() {
           {/* Main Certificate Content */}
           <div style={{
             position: 'absolute',
-            top: '120px',
+            top: '135px',
             left: '0',
             width: '100%',
             display: 'flex',
@@ -181,7 +181,7 @@ export default function Certificate() {
             padding: '0 70px',
             boxSizing: 'border-box'
           }}>
-            <Award size={44} color="#D4AF37" style={{ marginBottom: 14 }} />
+            <Award size={44} color="#D4AF37" style={{ marginBottom: 16 }} />
 
             <h2 style={{ 
                fontFamily: 'Outfit, sans-serif', 
@@ -190,12 +190,12 @@ export default function Certificate() {
                color: '#1E1B4B', 
                letterSpacing: '0.25em', 
                textTransform: 'uppercase',
-               marginBottom: 12
+               marginBottom: 14
              }}>
               Certificate of Completion
             </h2>
             
-            <p style={{ color: '#57534E', fontSize: 14, marginBottom: 18, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+            <p style={{ color: '#57534E', fontSize: 14, marginBottom: 20, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
               This is proudly presented to
             </p>
 
@@ -204,25 +204,25 @@ export default function Certificate() {
                fontWeight: 800, 
                fontSize: 36, 
                color: '#1E1B4B', 
-               marginBottom: 18, 
+               marginBottom: 22, 
                letterSpacing: '0.02em',
                lineHeight: 1.2
              }}>
               {formatName(user?.fullName)}
             </h1>
 
-            <p style={{ color: '#57534E', fontSize: 14, marginBottom: 16, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+            <p style={{ color: '#57534E', fontSize: 14, marginBottom: 18, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
               for successfully completing the specialized course
             </p>
 
             <h3 style={{ 
                fontFamily: 'Georgia, serif', 
                fontWeight: 700, 
-               fontSize: 26, 
+               fontSize: 28, 
                color: '#7C3AED', 
                marginBottom: 10,
                fontStyle: 'italic',
-               lineHeight: 1.2
+               lineHeight: 1.3
              }}>
               {course?.title || `Course #${courseId}`}
             </h3>
