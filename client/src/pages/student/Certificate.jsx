@@ -171,7 +171,7 @@ export default function Certificate() {
           {/* Main Certificate Content */}
           <div style={{
             position: 'absolute',
-            top: '110px',
+            top: '120px',
             left: '0',
             width: '100%',
             display: 'flex',
@@ -181,49 +181,49 @@ export default function Certificate() {
             padding: '0 70px',
             boxSizing: 'border-box'
           }}>
-            <Award size={40} color="#D4AF37" style={{ marginBottom: 10 }} />
+            <Award size={44} color="#D4AF37" style={{ marginBottom: 14 }} />
 
             <h2 style={{ 
-              fontFamily: 'Outfit, sans-serif', 
-              fontWeight: 800, 
-              fontSize: 20, 
-              color: '#1E1B4B', 
-              letterSpacing: '0.25em', 
-              textTransform: 'uppercase',
-              marginBottom: 8
-            }}>
+               fontFamily: 'Outfit, sans-serif', 
+               fontWeight: 800, 
+               fontSize: 22, 
+               color: '#1E1B4B', 
+               letterSpacing: '0.25em', 
+               textTransform: 'uppercase',
+               marginBottom: 12
+             }}>
               Certificate of Completion
             </h2>
             
-            <p style={{ color: '#57534E', fontSize: 13, marginBottom: 14, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+            <p style={{ color: '#57534E', fontSize: 14, marginBottom: 18, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
               This is proudly presented to
             </p>
 
             <h1 style={{ 
-              fontFamily: 'Outfit, sans-serif', 
-              fontWeight: 800, 
-              fontSize: 32, 
-              color: '#1E1B4B', 
-              marginBottom: 12, 
-              letterSpacing: '0.02em',
-              lineHeight: 1.2
-            }}>
+               fontFamily: 'Outfit, sans-serif', 
+               fontWeight: 800, 
+               fontSize: 36, 
+               color: '#1E1B4B', 
+               marginBottom: 18, 
+               letterSpacing: '0.02em',
+               lineHeight: 1.2
+             }}>
               {formatName(user?.fullName)}
             </h1>
 
-            <p style={{ color: '#57534E', fontSize: 13, marginBottom: 12, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+            <p style={{ color: '#57534E', fontSize: 14, marginBottom: 16, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
               for successfully completing the specialized course
             </p>
 
             <h3 style={{ 
-              fontFamily: 'Georgia, serif', 
-              fontWeight: 700, 
-              fontSize: 22, 
-              color: '#7C3AED', 
-              marginBottom: 10,
-              fontStyle: 'italic',
-              lineHeight: 1.2
-            }}>
+               fontFamily: 'Georgia, serif', 
+               fontWeight: 700, 
+               fontSize: 26, 
+               color: '#7C3AED', 
+               marginBottom: 10,
+               fontStyle: 'italic',
+               lineHeight: 1.2
+             }}>
               {course?.title || `Course #${courseId}`}
             </h3>
           </div>
