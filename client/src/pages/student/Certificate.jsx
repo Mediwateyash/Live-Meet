@@ -43,30 +43,18 @@ export default function Certificate() {
   const handleDownload = async () => {
     if (!certRef.current) return
 
-    // Clone the element to render it offscreen without parent container/viewport scroll constraints
-    const original = certRef.current
-    const clone = original.cloneNode(true)
-    
-    // Style the clone to be absolute aligned with the current scroll viewport context
-    clone.style.position = 'absolute'
-    clone.style.top = `${window.scrollY}px`
-    clone.style.left = `${window.scrollX}px`
-    clone.style.width = '800px'
-    clone.style.height = '565px'
-    clone.style.margin = '0'
-    clone.style.padding = '0'
-    clone.style.zIndex = '-9999'
-    clone.style.transform = 'none'
-    
-    document.body.appendChild(clone)
+    // Save current scroll position
+    const currentScrollY = window.scrollY
+    const currentScrollX = window.scrollX
+
+    // Temporarily scroll to top-left to avoid html2canvas scroll offset crop issues
+    window.scrollTo(0, 0)
 
     try {
-      const canvas = await html2canvas(clone, {
+      const canvas = await html2canvas(certRef.current, {
         scale: 3,
         useCORS: true,
         backgroundColor: '#FFFDF9',
-        width: 800,
-        height: 565,
         logging: false,
       })
       const a = document.createElement('a')
@@ -76,7 +64,8 @@ export default function Certificate() {
     } catch (error) {
       console.error('Error generating certificate:', error)
     } finally {
-      document.body.removeChild(clone)
+      // Restore original scroll position
+      window.scrollTo(currentScrollX, currentScrollY)
     }
   }
 
@@ -147,37 +136,32 @@ export default function Certificate() {
           <div style={{ position: 'absolute', bottom: '18px', left: '18px', width: '35px', height: '35px', borderBottom: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', bottom: '18px', right: '18px', width: '35px', height: '35px', borderBottom: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
 
-          {/* Header */}
+           {/* Header */}
           <div style={{
             position: 'absolute',
             top: '45px',
             left: '0',
             width: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '8px'
+            textAlign: 'center',
           }}>
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#7C3AED' }}>
-              <GraduationCap size={18} color="white" />
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#7C3AED' }}>
+                <GraduationCap size={18} color="white" />
+              </div>
+              <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 16, color: '#1E1B4B', letterSpacing: '0.1em' }}>ZENIUS AI</span>
             </div>
-            <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 16, color: '#1E1B4B', letterSpacing: '0.1em' }}>ZENIUS AI</span>
           </div>
 
           {/* Main Certificate Content */}
           <div style={{
             position: 'absolute',
             top: '95px',
-            left: '0',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
+            left: '70px',
+            right: '70px',
             textAlign: 'center',
-            padding: '0 70px',
             boxSizing: 'border-box'
           }}>
-            <Award size={44} color="#D4AF37" style={{ marginBottom: 10 }} />
+            <Award size={44} color="#D4AF37" style={{ display: 'block', margin: '0 auto 10px auto' }} />
 
             <h2 style={{ 
                fontFamily: 'Outfit, sans-serif', 
