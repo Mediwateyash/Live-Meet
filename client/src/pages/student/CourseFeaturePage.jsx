@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, FileText, ClipboardList, Brain, TrendingUp, Video, Calendar, Clock, ExternalLink, Radio, Monitor } from 'lucide-react'
+import { ArrowLeft, FileText, ClipboardList, Brain, TrendingUp, Video, Calendar, Clock, ExternalLink, Radio, Monitor, Award, CheckCircle2, Play } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import { coursesAPI } from '../../api/courses.js'
 import { liveLecturesAPI } from '../../api/liveLectures.js'
 import useAuthStore from '../../store/authStore.js'
 import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
+import api from '../../api/axios.js'
 
 const FEATURES = {
   notes:    { icon: FileText,      label: 'Notes',          desc: 'Study materials uploaded by your instructor will appear here.' },
@@ -172,6 +173,9 @@ export default function CourseFeaturePage({ feature }) {
   const { slug } = useParams()
   const navigate = useNavigate()
   const [course, setCourse] = useState(null)
+  const [progress, setProgress] = useState(null)
+  const [results, setResults] = useState([])
+  const [loadingProgress, setLoadingProgress] = useState(true)
 
   const { icon: Icon, label, desc } = FEATURES[feature] || {}
   const { iconBg, iconColor } = NAV_COLORS[feature] || {}
@@ -181,6 +185,37 @@ export default function CourseFeaturePage({ feature }) {
       .then(({ data }) => setCourse(data.data || null))
       .catch(() => {})
   }, [slug])
+
+  useEffect(() => {
+    if (!course || feature !== 'progress') return
+    
+    const fetchProgressAndResults = async () => {
+      try {
+        setLoadingProgress(true)
+        const [progRes, resultsRes] = await Promise.all([
+          api.get(`/progress/${course._id}`),
+          api.get('/result/my-results')
+        ])
+        setProgress(progRes.data)
+        
+        const quizzesRes = await api.get(`/quiz?courseId=${course._id}`)
+        const courseQuizIds = new Set(quizzesRes.data.map(q => q._id.toString()))
+        
+        const courseResults = resultsRes.data.filter(r => {
+          const quizId = r.quizId?._id || r.quizId
+          return quizId && courseQuizIds.has(quizId.toString())
+        })
+        
+        setResults(courseResults)
+      } catch (error) {
+        console.error('Failed to load progress or results', error)
+      } finally {
+        setLoadingProgress(false)
+      }
+    }
+    
+    fetchProgressAndResults()
+  }, [course, feature])
 
   const isLive = feature === 'live'
 
@@ -244,6 +279,188 @@ export default function CourseFeaturePage({ feature }) {
             <div className="max-w-4xl mx-auto w-full">
                <CourseQuizzes courseId={course?._id} />
             </div>
+          ) : feature === 'progress' ? (
+            loadingProgress ? (
+              <div className="w-full py-24 flex justify-center items-center">
+                <div className="w-12 h-12 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <div className="max-w-4xl mx-auto w-full space-y-8 animate-fadeIn">
+                {/* Header card with progress statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Progress Card */}
+                  <div className="md:col-span-2 bg-white dark:bg-[var(--bg-surface)] p-6 rounded-2xl shadow-md border border-gray-150 dark:border-[var(--border-default)] flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Course Completion</h3>
+                      <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Track your lesson viewing progress</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-6">
+                      {/* Radial Progress / Text percent */}
+                      <div className="relative w-24 h-24 shrink-0 flex items-center justify-center bg-indigo-50 dark:bg-indigo-950/20 rounded-full border border-indigo-100 dark:border-indigo-900/30">
+                        <span className="text-2xl font-black text-[#7C3AED] dark:text-indigo-400">
+                          {progress?.percentComplete || 0}%
+                        </span>
+                      </div>
+                      
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-[#7C3AED] to-indigo-500 rounded-full transition-all duration-1000" 
+                            style={{ width: `${progress?.percentComplete || 0}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                          <span>{progress?.completedLessons?.length || 0} Lessons Completed</span>
+                          <span>{progress?.percentComplete >= 100 ? 'Completed' : 'In Progress'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Certificate / Award Card */}
+                  <div className="bg-white dark:bg-[var(--bg-surface)] p-6 rounded-2xl shadow-md border border-gray-150 dark:border-[var(--border-default)] flex flex-col justify-between">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>Certification</h3>
+                        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Earn yours by finishing the course</p>
+                      </div>
+                      <div className={`p-2.5 rounded-xl ${progress?.percentComplete >= 100 ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-500' : 'bg-gray-50 dark:bg-gray-800 text-gray-400'}`}>
+                        <Award size={24} />
+                      </div>
+                    </div>
+                    
+                    <div className="pt-4">
+                      {progress?.percentComplete >= 100 ? (
+                        <div className="space-y-3">
+                          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 size={14} /> Congratulations! You are certified.
+                          </p>
+                          <Link 
+                            to={`/certificate/${course?._id}`}
+                            className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                          >
+                            View Certificate
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            Complete all course lessons to unlock your official verified certificate.
+                          </p>
+                          <div className="w-full py-2 bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded-xl text-xs font-semibold text-center border border-dashed border-gray-200 dark:border-gray-700">
+                            Locked ({progress?.percentComplete || 0}% Done)
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional milestones */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Milestones Card */}
+                  <div className="bg-white dark:bg-[var(--bg-surface)] p-6 rounded-2xl shadow-md border border-gray-150 dark:border-[var(--border-default)]">
+                    <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Milestones</h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center gap-3">
+                          <span className={`w-2.5 h-2.5 rounded-full ${progress?.percentComplete >= 100 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                          <div>
+                            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Lessons Completed</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Watch all learning videos</p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg" style={{ color: 'var(--text-secondary)' }}>
+                          {progress?.completedLessons?.length || 0} done
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center gap-3">
+                          <span className={`w-2.5 h-2.5 rounded-full ${progress?.hasPassedFinalExam ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'}`} />
+                          <div>
+                            <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Course Assessments</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Complete all course tests</p>
+                          </div>
+                        </div>
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${progress?.hasPassedFinalExam ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-450 dark:text-gray-550'}`}>
+                          {progress?.hasPassedFinalExam ? 'Passed' : 'Pending'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Activity Details Card */}
+                  <div className="bg-white dark:bg-[var(--bg-surface)] p-6 rounded-2xl shadow-md border border-gray-150 dark:border-[var(--border-default)] flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Resume Learning</h3>
+                      <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>Pick up right where you left off in this course.</p>
+                    </div>
+                    <button 
+                      onClick={() => navigate(`/course/${slug}/learn`)}
+                      className="w-full py-3 bg-[#7C3AED] hover:bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-indigo-200 dark:hover:shadow-none transition-all flex items-center justify-center gap-2"
+                    >
+                      <Play size={16} /> Open Course Player
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quiz & Assessment Performance */}
+                <div className="bg-white dark:bg-[var(--bg-surface)] p-6 rounded-2xl shadow-md border border-gray-150 dark:border-[var(--border-default)]">
+                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    <ClipboardList size={18} className="text-[#7C3AED]" /> Assessment Performance
+                  </h3>
+                  
+                  {results.length === 0 ? (
+                    <div className="text-center py-10 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl bg-gray-50 dark:bg-gray-900/30">
+                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>You haven't attempted any quizzes for this course yet.</p>
+                      <Link to={`/course/${slug}/tests`} className="mt-2 inline-block text-xs font-bold text-[#7C3AED] hover:underline">
+                        Go to Tests Tab &rarr;
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-gray-150 dark:border-gray-850">
+                            <th className="pb-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Quiz Title</th>
+                            <th className="pb-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Score</th>
+                            <th className="pb-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Status</th>
+                            <th className="pb-3 text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Date Taken</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
+                          {results.map((res) => {
+                            const passed = res.score >= 50
+                            return (
+                              <tr key={res._id} className="hover:bg-gray-50 dark:hover:bg-gray-900/20">
+                                <td className="py-3.5 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                  {res.quizId?.title || 'Practice Quiz'}
+                                </td>
+                                <td className="py-3.5 text-sm font-mono font-bold">
+                                  <span className={passed ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-455'}>
+                                    {res.score}%
+                                  </span>
+                                </td>
+                                <td className="py-3.5">
+                                  <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${passed ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-455'}`}>
+                                    {passed ? 'Passed' : 'Failed'}
+                                  </span>
+                                </td>
+                                <td className="py-3.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                                  {new Date(res.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
           ) : (
             <div className="w-full max-w-3xl flex flex-col items-center justify-center py-32 rounded-2xl mx-auto"
               style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
@@ -259,6 +476,7 @@ export default function CourseFeaturePage({ feature }) {
               </span>
             </div>
           )}
+
 
           <button
             onClick={() => navigate(`/course/${slug}`)}
