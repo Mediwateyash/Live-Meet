@@ -460,7 +460,7 @@ export default function CourseFeaturePage({ feature }) {
                       {/* PDF iframe frame */}
                       <div className="rounded-xl overflow-hidden border border-gray-850 bg-white" style={{ height: '60vh' }}>
                         <iframe 
-                          src={selectedNote.url} 
+                          src={`https://docs.google.com/viewer?url=${encodeURIComponent(getDownloadUrl(selectedNote.url))}&embedded=true`} 
                           width="100%" 
                           height="100%" 
                           className="border-none"

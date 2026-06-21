@@ -292,7 +292,7 @@ export default function CoursePlayer() {
                       <Download size={13} /> Download PDF
                     </a>
                   </div>
-                  <iframe src={currentLesson.resources[0].url} width="100%" height="100%" className="flex-1 rounded-xl overflow-hidden border border-gray-800 bg-white" title="Notes Viewer" />
+                  <iframe src={`https://docs.google.com/viewer?url=${encodeURIComponent(getDownloadUrl(currentLesson.resources[0].url))}&embedded=true`} width="100%" height="100%" className="flex-1 rounded-xl overflow-hidden border border-gray-800 bg-white" title="Notes Viewer" />
                   <div className="mt-3 text-[11px] text-gray-405 bg-gray-950/60 p-3 rounded-lg leading-relaxed text-left border border-gray-850/80">
                     <p className="font-semibold text-yellow-500 mb-0.5">⚠️ Cloudinary PDF Settings Info:</p>
                     <p>If the PDF fails to display, please log into your Cloudinary Console and under <strong>Settings ➔ Security ➔ PDF and ZIP files delivery</strong>, ensure <strong>"Allow delivery of PDF and ZIP files"</strong> is enabled.</p>

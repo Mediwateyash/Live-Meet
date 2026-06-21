@@ -1,14 +1,4 @@
 export function mongoSanitize(req, res, next) {
-  const sanitizeValue = (val) => {
-    if (typeof val === 'string') {
-      // If a string value starts with $ or contains a dot, modify/cleanse it
-      if (val.startsWith('$') || val.includes('.')) {
-        return val.replace(/[\$.]/g, '');
-      }
-    }
-    return val;
-  };
-
   const sanitize = (obj) => {
     if (obj && typeof obj === 'object') {
       if (Array.isArray(obj)) {
@@ -19,8 +9,6 @@ export function mongoSanitize(req, res, next) {
               obj.splice(i, 1);
               i--; 
             }
-          } else {
-            obj[i] = sanitizeValue(obj[i]);
           }
         }
       } else {
@@ -34,8 +22,6 @@ export function mongoSanitize(req, res, next) {
               if (Object.keys(obj[key]).length === 0) {
                 delete obj[key];
               }
-            } else {
-              obj[key] = sanitizeValue(obj[key]);
             }
           }
         }
