@@ -50,6 +50,9 @@ export default function Certificate() {
     // Temporarily scroll to top-left to avoid html2canvas scroll offset crop issues
     window.scrollTo(0, 0)
 
+    // Add a minor delay to allow browser layout to settle after scrolling
+    await new Promise(resolve => setTimeout(resolve, 50))
+
     try {
       const canvas = await html2canvas(certRef.current, {
         scale: 3,
@@ -106,35 +109,76 @@ export default function Certificate() {
             overflow: 'hidden',
           }}
         >
-          {/* Outer Border (thick solid gold) */}
-          <div style={{
-            position: 'absolute',
-            top: '8px',
-            left: '8px',
-            right: '8px',
-            bottom: '8px',
-            border: '2px solid #D4AF37',
-            borderRadius: '8px',
-            pointerEvents: 'none',
-          }} />
+          {/* SVG Borders & Corner Decorations to prevent html2canvas line crossover rendering artifacts */}
+          <svg
+            width="800"
+            height="565"
+            viewBox="0 0 800 565"
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '800px',
+              height: '565px',
+              pointerEvents: 'none',
+            }}
+          >
+            {/* Outer Border (thick solid gold) */}
+            <rect
+              x="8"
+              y="8"
+              width="784"
+              height="549"
+              rx="8"
+              ry="8"
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="2"
+            />
 
-          {/* Inner Border (thin solid gold) */}
-          <div style={{
-            position: 'absolute',
-            top: '12px',
-            left: '12px',
-            right: '12px',
-            bottom: '12px',
-            border: '1px solid #D4AF37',
-            borderRadius: '4px',
-            pointerEvents: 'none',
-          }} />
+            {/* Inner Border (thin solid gold) */}
+            <rect
+              x="12"
+              y="12"
+              width="776"
+              height="541"
+              rx="4"
+              ry="4"
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="1"
+            />
 
-          {/* Decorative Corners */}
-          <div style={{ position: 'absolute', top: '18px', left: '18px', width: '35px', height: '35px', borderTop: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: '18px', right: '18px', width: '35px', height: '35px', borderTop: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: '18px', left: '18px', width: '35px', height: '35px', borderBottom: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: '18px', right: '18px', width: '35px', height: '35px', borderBottom: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
+            {/* Decorative Corners */}
+            {/* Top-Left */}
+            <path
+              d="M18,53 L18,18 L53,18"
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="2"
+            />
+            {/* Top-Right */}
+            <path
+              d="M747,18 L782,18 L782,53"
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="2"
+            />
+            {/* Bottom-Left */}
+            <path
+              d="M53,547 L18,547 L18,512"
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="2"
+            />
+            {/* Bottom-Right */}
+            <path
+              d="M747,547 L782,547 L782,512"
+              fill="none"
+              stroke="#D4AF37"
+              strokeWidth="2"
+            />
+          </svg>
 
            {/* Header */}
           <div style={{
@@ -217,13 +261,39 @@ export default function Certificate() {
             bottom: '45px', 
             left: '70px', 
             width: '160px', 
-            textAlign: 'center' 
+            textAlign: 'center',
+            display: 'block'
           }}>
-            <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#7C3AED', fontSize: 15, marginBottom: 6, minHeight: '22px' }}>
+            <div style={{ 
+              fontFamily: 'Georgia, serif', 
+              fontStyle: 'italic', 
+              color: '#7C3AED', 
+              fontSize: 15, 
+              marginBottom: 6, 
+              minHeight: '22px',
+              textAlign: 'center',
+              width: '100%',
+              display: 'block'
+            }}>
               {course?.instructor?.fullName || 'Course Instructor'}
             </div>
-            <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.6)', margin: '0 auto', width: '100%', height: 1 }} />
-            <div style={{ color: '#64748B', fontSize: 9, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instructor</div>
+            <div style={{ 
+              height: '1px', 
+              backgroundColor: 'rgba(212, 175, 55, 0.6)', 
+              margin: '0 auto', 
+              width: '100%',
+              display: 'block'
+            }} />
+            <div style={{ 
+              color: '#64748B', 
+              fontSize: 9, 
+              marginTop: 4, 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.05em',
+              textAlign: 'center',
+              width: '100%',
+              display: 'block'
+            }}>Instructor</div>
           </div>
 
           {/* Date & ID */}
@@ -235,10 +305,11 @@ export default function Certificate() {
             textAlign: 'center',
             color: '#64748B', 
             fontSize: 9, 
-            paddingBottom: 4 
+            paddingBottom: 4,
+            display: 'block'
           }}>
-            <div>Issue Date: {formatDate(issueDate)}</div>
-            <div style={{ marginTop: 2 }}>Certificate ID: ZENO-{courseId?.slice(-6).toUpperCase()}</div>
+            <div style={{ width: '100%', textAlign: 'center', display: 'block' }}>Issue Date: {formatDate(issueDate)}</div>
+            <div style={{ marginTop: 2, width: '100%', textAlign: 'center', display: 'block' }}>Certificate ID: ZENO-{courseId?.slice(-6).toUpperCase()}</div>
           </div>
 
           {/* Signature 2 - Issued By */}
@@ -247,13 +318,39 @@ export default function Certificate() {
             bottom: '45px', 
             right: '70px', 
             width: '160px', 
-            textAlign: 'center' 
+            textAlign: 'center',
+            display: 'block'
           }}>
-            <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#7C3AED', fontSize: 15, marginBottom: 6, minHeight: '22px' }}>
+            <div style={{ 
+              fontFamily: 'Georgia, serif', 
+              fontStyle: 'italic', 
+              color: '#7C3AED', 
+              fontSize: 15, 
+              marginBottom: 6, 
+              minHeight: '22px',
+              textAlign: 'center',
+              width: '100%',
+              display: 'block'
+            }}>
               Zenius AI
             </div>
-            <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.6)', margin: '0 auto', width: '100%', height: 1 }} />
-            <div style={{ color: '#64748B', fontSize: 9, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Issued By</div>
+            <div style={{ 
+              height: '1px', 
+              backgroundColor: 'rgba(212, 175, 55, 0.6)', 
+              margin: '0 auto', 
+              width: '100%',
+              display: 'block'
+            }} />
+            <div style={{ 
+              color: '#64748B', 
+              fontSize: 9, 
+              marginTop: 4, 
+              textTransform: 'uppercase', 
+              letterSpacing: '0.05em',
+              textAlign: 'center',
+              width: '100%',
+              display: 'block'
+            }}>Issued By</div>
           </div>
         </div>
 
