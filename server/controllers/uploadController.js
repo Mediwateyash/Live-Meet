@@ -44,12 +44,6 @@ export const uploadResource = async (req, res) => {
     } catch (error) {
         console.error('Error uploading resource:', error);
         try { if (req.file) fs.unlinkSync(req.file.path); } catch(e) {}
-        
-        const responsePayload = { message: 'Failed to upload resource' };
-        if (process.env.NODE_ENV !== 'production') {
-            responsePayload.message = error.message || 'Failed to upload resource';
-            responsePayload.details = error;
-        }
-        res.status(500).json(responsePayload);
+        res.status(500).json({ message: 'Failed to upload resource' });
     }
 };

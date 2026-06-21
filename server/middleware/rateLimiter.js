@@ -24,3 +24,19 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+export const writeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 50 : 10000,                   // 50 attempts in prod, 10000 in dev
+  message: { success: false, message: 'Too many updates, please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+export const enrollLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: process.env.NODE_ENV === 'production' ? 5 : 10000,                    // 5 attempts in prod, 10000 in dev
+  message: { success: false, message: 'Too many enrollment actions, please try again in a minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
