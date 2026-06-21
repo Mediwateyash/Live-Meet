@@ -37,7 +37,7 @@ function CourseToolsSidebar({ slug, navigate, progress, onClose }) {
           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#7C3AED' }}>
             <Brain size={15} color="white" />
           </div>
-          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Course Tools</span>
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Learning Center</span>
         </div>
         {onClose && (
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#F0EEFF] transition-colors">
@@ -236,7 +236,7 @@ export default function CourseDetail() {
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <Menu size={16} />
-            Course Tools
+            Learning Center
           </button>
           {(progress?.percentComplete || 0) > 0 && (
             <span className="text-xs font-semibold" style={{ color: '#7C3AED' }}>
@@ -475,12 +475,19 @@ export default function CourseDetail() {
                       <div className="h-full rounded-full" style={{ width: `${progress?.percentComplete || 0}%`, background: 'linear-gradient(90deg, #7C3AED, #A78BFA)' }} />
                     </div>
                     <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                      {progress?.completedLessons?.length || 0} / {totalLessons} lessons done
+                      {Math.min(progress?.completedLessons?.length || 0, totalLessons)} / {totalLessons} lessons done
                     </p>
                   </div>
-                  <Button className="w-full" onClick={() => navigate(`/course/${slug}/learn`)}>
-                    Continue Learning →
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button className="w-full" onClick={() => navigate(`/course/${slug}/learn`)}>
+                      Continue Learning →
+                    </Button>
+                    {Math.round(progress?.percentComplete || 0) === 100 && (
+                      <Button className="w-full" variant="outline" onClick={() => navigate(`/certificate/${course.slug}`)}>
+                        View Certificate
+                      </Button>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>

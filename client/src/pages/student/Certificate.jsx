@@ -259,7 +259,7 @@ export default function Certificate() {
           <div style={{ 
             position: 'absolute', 
             bottom: '45px', 
-            left: '70px', 
+            right: '70px', 
             width: '160px', 
             textAlign: 'center',
             display: 'block'
@@ -316,7 +316,7 @@ export default function Certificate() {
           <div style={{ 
             position: 'absolute', 
             bottom: '45px', 
-            right: '70px', 
+            left: '70px', 
             width: '160px', 
             textAlign: 'center',
             display: 'block'
