@@ -12,7 +12,7 @@ export async function getProfile(req, res, next) {
     if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin') {
       throw new ApiError(403, 'Access denied')
     }
-    const user = await User.findById(req.params.id).select('-password -refreshToken -resetPasswordToken')
+    const user = await User.findById(req.params.id).select('-password -refreshToken -resetPasswordToken -resetPasswordExpires')
     if (!user) throw new ApiError(404, 'User not found')
     res.json(new ApiResponse(200, user))
   } catch (err) { next(err) }

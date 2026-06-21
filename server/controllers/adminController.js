@@ -140,7 +140,18 @@ export async function updateUserStatus(req, res, next) {
 
 export async function deleteUser(req, res, next) {
   try {
-    await User.findByIdAndDelete(req.params.id)
+    if (req.params.id === req.user._id.toString()) {
+      throw new ApiError(400, 'Admins cannot delete their own account')
+    }
+    const targetUser = await User.findById(req.params.id)
+    if (!targetUser) throw new ApiError(404, 'User not found')
+    
+    // Optional additional protection: Prevent deleting other admins
+    if (targetUser.role === 'admin') {
+      throw new ApiError(403, 'Admins cannot delete other administrators')
+    }
+
+    await targetUser.deleteOne()
     res.json(new ApiResponse(200, null, 'User deleted'))
   } catch (err) { next(err) }
 }
@@ -157,7 +168,14 @@ export async function getAllCourses(req, res, next) {
 
 export async function updateCourseApproval(req, res, next) {
   try {
-    const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    const { status, isFree, price } = req.body
+    const updateData = {}
+    if (status !== undefined) updateData.status = status
+    if (isFree !== undefined) updateData.isFree = !!isFree
+    if (price !== undefined) updateData.price = isFree ? 0 : (Number(price) || 0)
+
+    const course = await Course.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true })
+    if (!course) throw new ApiError(404, 'Course not found')
     res.json(new ApiResponse(200, course, 'Course updated'))
   } catch (err) { next(err) }
 }
@@ -208,10 +226,10 @@ export async function adminCreateCourse(req, res, next) {
   try {
     const instructor = await User.findById(req.params.id)
     if (!instructor) throw new ApiError(404, 'Instructor not found')
-    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, thumbnail, ...rest } = req.body
+    const { title, subtitle, description, category, language, status, level, price, isFree, tags, whatYouLearn, requirements, curriculum, thumbnail } = req.body
     const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
     const course = await Course.create({
-      ...rest,
+      title, subtitle, description, category, language, status,
       instructor: req.params.id,
       thumbnail: uploadedThumbnail,
       level: level && ['Beginner', 'Intermediate', 'Advanced'].includes(level) ? level : undefined,
@@ -230,13 +248,19 @@ export async function adminUpdateCourse(req, res, next) {
   try {
     const course = await Course.findById(req.params.id)
     if (!course) throw new ApiError(404, 'Course not found')
-    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, thumbnail, ...rest } = req.body
+    const { title, subtitle, description, category, language, status, level, price, isFree, tags, whatYouLearn, requirements, curriculum, thumbnail } = req.body
     const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
-    Object.assign(course, rest)
+    
+    if (title !== undefined) course.title = title
+    if (subtitle !== undefined) course.subtitle = subtitle
+    if (description !== undefined) course.description = description
+    if (category !== undefined) course.category = category
+    if (language !== undefined) course.language = language
+    if (status !== undefined) course.status = status
     if (uploadedThumbnail !== undefined) course.thumbnail = uploadedThumbnail
     if (level && ['Beginner', 'Intermediate', 'Advanced'].includes(level)) course.level = level
-    course.price = isFree ? 0 : (Number(price) || 0)
-    course.isFree = !!isFree
+    if (price !== undefined) course.price = isFree ? 0 : (Number(price) || 0)
+    if (isFree !== undefined) course.isFree = !!isFree
     if (Array.isArray(tags)) course.tags = tags
     if (Array.isArray(whatYouLearn)) course.whatYouLearn = whatYouLearn
     if (Array.isArray(requirements)) course.requirements = requirements

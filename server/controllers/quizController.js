@@ -28,17 +28,14 @@ export const createQuiz = async (req, res) => {
 
 export const getQuizzes = async (req, res) => {
     try {
-        // Teacher sees their own, Students see public + their own private ones
         let filter = {};
         if (req.query.courseId) {
             filter.courseId = req.query.courseId;
         }
-        if (req.user.role === 'instructor' || req.user.role === 'teacher') {
+        if (req.user.role === 'instructor' || req.user.role === 'admin') {
             filter.createdBy = req.user._id;
         } else if (req.user.role === 'student') {
             if (!req.query.courseId) {
-                // If fetching globally, only show quizzes for enrolled courses
-                // Or private quizzes created by the student (which might not have a courseId)
                 filter.$or = [
                     { 
                         courseId: { $in: req.user.enrolledCourses || [] },
@@ -51,16 +48,37 @@ export const getQuizzes = async (req, res) => {
                     { visibility: 'private', createdBy: req.user._id }
                 ];
             } else {
-                // If fetching for a specific course, just check visibility
                 filter.$or = [
                     { visibility: 'public' },
-                    { visibility: { $exists: false } }, // Fallback for older quizzes
+                    { visibility: { $exists: false } }, 
                     { visibility: 'private', createdBy: req.user._id }
                 ];
             }
         }
-        const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
-        res.json(quizzes);
+        
+        let quizzesQuery = Quiz.find(filter).sort({ createdAt: -1 });
+        if (req.user.role === 'student') {
+            quizzesQuery = quizzesQuery.populate('mcqIds', '-correctAnswer -explanation');
+        } else {
+            quizzesQuery = quizzesQuery.populate('mcqIds');
+        }
+        
+        const quizzes = await quizzesQuery;
+        
+        const quizzesJSON = quizzes.map(q => {
+            const quizObj = q.toObject();
+            if (req.user.role === 'student' && quizObj.mcqIds) {
+                quizObj.mcqIds.forEach(mcq => {
+                    if (mcq) {
+                        delete mcq.correctAnswer;
+                        delete mcq.explanation;
+                    }
+                });
+            }
+            return quizObj;
+        });
+
+        res.json(quizzesJSON);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -97,10 +97,21 @@ if (process.env.NODE_ENV === 'production') {
     xssFilter: true,
   }));
 } else {
-  // Relaxed headers in development for easier debugging of media embeds
+  // Enforce security headers in development but relax CSP/CORP for local embeds
   app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'", 'http://localhost:*', 'ws://localhost:*'],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://*.youtube.com', 'https://*.ytimg.com'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co', 'https://*.ytimg.com'],
+        connectSrc: ["'self'", 'ws:', 'wss:', 'https:'],
+        frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com'],
+        mediaSrc: ["'self'", 'https://res.cloudinary.com', 'data:', 'blob:'],
+      }
+    },
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
   }));
 }
 
@@ -116,7 +127,7 @@ app.use('/api', apiLimiter)
 // Robots.txt
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain')
-  res.send(`User-agent: *\nAllow: /\nDisallow:`)
+  res.send(`User-agent: *\nDisallow: /api/\nDisallow: /admin/\nAllow: /`)
 })
 
 // Routes

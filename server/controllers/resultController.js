@@ -102,7 +102,7 @@ export const getResultById = async (req, res) => {
         const studentIdStr = result.studentId ? result.studentId._id.toString() : null;
         const reqUserIdStr = req.user._id.toString();
 
-        if (studentIdStr !== reqUserIdStr && req.user.role !== 'teacher' && req.user.role !== 'admin' && req.user.role !== 'instructor') {
+        if (studentIdStr !== reqUserIdStr && req.user.role !== 'admin' && req.user.role !== 'instructor') {
             return res.status(403).json({ message: 'Not authorized' });
         }
 

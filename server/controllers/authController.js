@@ -119,7 +119,10 @@ export async function forgotPassword(req, res, next) {
     const token   = crypto.randomBytes(32).toString('hex')
     const expires = Date.now() + 60 * 60 * 1000
 
-    user.resetPasswordToken   = crypto.createHmac('sha256', process.env.JWT_SECRET || 'secret').update(token).digest('hex')
+    if (!process.env.JWT_SECRET) {
+      throw new ApiError(500, 'Secure key not configured on server')
+    }
+    user.resetPasswordToken   = crypto.createHmac('sha256', process.env.JWT_SECRET).update(token).digest('hex')
     user.resetPasswordExpires = expires
     await user.save({ validateBeforeSave: false })
 
@@ -140,7 +143,10 @@ export async function resetPassword(req, res, next) {
     if (!token) throw new ApiError(400, 'Token required')
     validatePassword(password)
 
-    const hashed = crypto.createHmac('sha256', process.env.JWT_SECRET || 'secret').update(token).digest('hex')
+    if (!process.env.JWT_SECRET) {
+      throw new ApiError(500, 'Secure key not configured on server')
+    }
+    const hashed = crypto.createHmac('sha256', process.env.JWT_SECRET).update(token).digest('hex')
     const user   = await User.findOne({
       resetPasswordToken:   hashed,
       resetPasswordExpires: { $gt: Date.now() },

@@ -108,7 +108,13 @@ export function registerLiveRoomSocket(io) {
     // ── Join ──────────────────────────────────────────────────────────────────
     socket.on('join-class', async (lectureId) => {
       try {
-        const lecture = await LiveLecture.findById(lectureId).populate('courseId', 'enrolledStudents')
+        if (!lectureId || !/^[0-9a-fA-F]{24}$/.test(lectureId)) {
+          return socket.emit('access-denied', { message: 'Invalid lecture ID format.' })
+        }
+        const lecture = await LiveLecture.findById(lectureId).populate({
+          path: 'courseId',
+          select: 'enrolledStudents'
+        })
         if (!lecture) return socket.emit('error-message', 'Lecture not found')
 
         if (lecture.status === 'ended') {

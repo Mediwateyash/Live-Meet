@@ -22,10 +22,20 @@ export function validateFileMagicBytes(filePath) {
       return 'ole'; // Can be doc or ppt
     }
 
-    // Fallback for TXT: check if there are no null bytes
+    // Fallback for TXT: check if it only contains printable text and no script tags
     const content = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' }).substring(0, 1000);
+    // Reject HTML/JavaScript script tag injections
+    const lowerContent = content.toLowerCase();
+    if (lowerContent.includes('<script') || lowerContent.includes('javascript:') || lowerContent.includes('onload=') || lowerContent.includes('onerror=')) {
+      return null;
+    }
+    // Reject binary content
     if (!content.includes('\0')) {
-      return 'txt';
+      const isAllPrintable = /^[\x20-\x7E\r\n\t]*$/.test(content);
+      // Fallback fallback: if it's reasonably plain text
+      if (isAllPrintable || !/[^\x09\x0A\x0D\x20-\x7E\x80-\xFF]/.test(content)) {
+        return 'txt';
+      }
     }
   } catch (error) {
     console.error('[validateFileMagicBytes] Error:', error);
