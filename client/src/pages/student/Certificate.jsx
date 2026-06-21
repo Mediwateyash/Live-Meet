@@ -104,7 +104,7 @@ export default function Certificate() {
             left: '8px',
             right: '8px',
             bottom: '8px',
-            border: '3px solid #D4AF37',
+            border: '2px solid #D4AF37',
             borderRadius: '8px',
             pointerEvents: 'none',
           }} />
@@ -112,20 +112,20 @@ export default function Certificate() {
           {/* Inner Border (thin solid gold) */}
           <div style={{
             position: 'absolute',
-            top: '16px',
-            left: '16px',
-            right: '16px',
-            bottom: '16px',
+            top: '12px',
+            left: '12px',
+            right: '12px',
+            bottom: '12px',
             border: '1px solid #D4AF37',
-            borderRadius: '6px',
+            borderRadius: '4px',
             pointerEvents: 'none',
           }} />
 
           {/* Decorative Corners */}
-          <div style={{ position: 'absolute', top: '24px', left: '24px', width: '40px', height: '40px', borderTop: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '40px', height: '40px', borderTop: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: '24px', left: '24px', width: '40px', height: '40px', borderBottom: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: '24px', right: '24px', width: '40px', height: '40px', borderBottom: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: '18px', left: '18px', width: '35px', height: '35px', borderTop: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: '18px', right: '18px', width: '35px', height: '35px', borderTop: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '18px', left: '18px', width: '35px', height: '35px', borderBottom: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '18px', right: '18px', width: '35px', height: '35px', borderBottom: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
 
           {/* Header */}
           <div style={{
