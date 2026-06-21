@@ -3,6 +3,7 @@ import api from '../../api/axios.js';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Upload, Brain, CheckCircle, AlertCircle, Loader, RefreshCw, FileText, Clock, AlertTriangle, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '../../components/ui/ConfirmModal.jsx';
 
 const FakeProgress = () => {
     const [progress, setProgress] = useState(0);
@@ -39,6 +40,8 @@ const CreateQuiz = () => {
     const [materials, setMaterials] = useState([]);
     const [loadingMaterials, setLoadingMaterials] = useState(true);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
 
     const fetchMaterials = useCallback(async () => {
         try {
@@ -58,14 +61,18 @@ const CreateQuiz = () => {
         return () => clearInterval(interval);
     }, [refreshTrigger, fetchMaterials]);
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this material and all its MCQs?")) return;
+    const handleDelete = async () => {
+        if (!confirmDeleteId) return;
+        setDeletingId(confirmDeleteId);
         try {
-            await api.delete(`/material/${id}`);
-            setMaterials(materials.filter(m => m._id !== id));
+            await api.delete(`/material/${confirmDeleteId}`);
+            setMaterials(materials.filter(m => m._id !== confirmDeleteId));
             toast.success("Material deleted");
         } catch (error) {
             toast.error("Failed to delete material.");
+        } finally {
+            setDeletingId(null);
+            setConfirmDeleteId(null);
         }
     };
 
@@ -188,6 +195,7 @@ const CreateQuiz = () => {
     };
 
     return (
+        <>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
@@ -360,7 +368,7 @@ const CreateQuiz = () => {
                                                     </button>
                                                 )}
                                                 <button 
-                                                    onClick={() => handleDelete(m._id)} 
+                                                    onClick={() => setConfirmDeleteId(m._id)} 
                                                     className="ml-2 p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors"
                                                     title="Delete Material"
                                                 >
@@ -481,6 +489,18 @@ const CreateQuiz = () => {
                 </div>
             </div>
         </div>
+
+        <ConfirmModal
+            isOpen={!!confirmDeleteId}
+            onClose={() => setConfirmDeleteId(null)}
+            onConfirm={handleDelete}
+            title="Delete Material"
+            message="Are you sure you want to delete this material and all its MCQs? This action cannot be undone."
+            confirmLabel="Delete"
+            confirmVariant="danger"
+            loading={!!deletingId}
+        />
+    </>
     );
 };
 

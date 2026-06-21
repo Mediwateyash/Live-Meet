@@ -90,13 +90,13 @@ export default function InstructorCourses() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
                         {[
-                          { icon: FileText,     title: 'Notes',         color: '#7C3AED', bg: 'rgba(109,40,217,0.12)',  path: null },
-                          { icon: ClipboardList, title: 'Tests',        color: '#2563EB', bg: 'rgba(37,99,235,0.12)',   path: null },
-                          { icon: Brain,         title: 'MCQ',          color: '#10B981', bg: 'rgba(16,185,129,0.12)',  path: '/instructor/quizzes/create' },
-                          { icon: Video,         title: 'Live Lectures',color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  path: '/instructor/live-lectures' },
-                          { icon: TrendingUp,    title: 'Progress',     color: '#EC4899', bg: 'rgba(236,72,153,0.12)',  path: null },
+                          { icon: FileText,      title: 'Notes',         color: '#7C3AED', bg: 'rgba(109,40,217,0.12)',  path: (id) => `/instructor/quizzes/create?courseId=${id}` },
+                          { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: 'rgba(37,99,235,0.12)',   path: (id) => `/instructor/quizzes?courseId=${id}` },
+                          { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: 'rgba(16,185,129,0.12)',  path: (id) => `/instructor/quizzes/create?courseId=${id}` },
+                          { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  path: (id) => `/instructor/live-lectures?courseId=${id}` },
+                          { icon: TrendingUp,    title: 'Progress',      color: '#EC4899', bg: 'rgba(236,72,153,0.12)',  path: (id) => `/instructor/quizzes/results?courseId=${id}` },
                         ].map(({ icon: Icon, title, color, bg, path }) => (
-                          <button key={title} title={title} className="p-1.5 rounded-lg transition-colors" onClick={() => path && navigate(path)}
+                          <button key={title} title={title} className="p-1.5 rounded-lg transition-colors" onClick={() => navigate(path(course._id))}
                             onMouseEnter={e => e.currentTarget.style.background = bg}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                           >

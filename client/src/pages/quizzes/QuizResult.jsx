@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/axios.js';
 import { CheckCircle, XCircle, ArrowLeft, Award, Download, User } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import useAuthStore from '../../store/authStore.js';
+import PageLayout from '../../components/layout/PageLayout.jsx';
 
 const QuizResult = () => {
     const { id, resultId } = useParams();
@@ -136,12 +137,23 @@ const QuizResult = () => {
         doc.save(`QuizResult_${result.studentId?.name || 'Student'}_${result.quizId.title}.pdf`);
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading results...</div>;
-    if (!result) return <div className="p-8 text-center text-red-500 font-bold">Failed to load result</div>;
+    if (loading) return (
+        <PageLayout noFooter={true}>
+            <div className="w-full py-24 flex justify-center items-center">
+                <div className="w-12 h-12 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        </PageLayout>
+    );
+    if (!result) return (
+        <PageLayout noFooter={true}>
+            <div className="p-8 text-center" style={{ color: 'var(--text-primary)' }}>Failed to load result</div>
+        </PageLayout>
+    );
 
     const backPath = user?.role === 'teacher' || user?.role === 'admin' ? '/teacher/results' : '/student';
 
     return (
+        <PageLayout noFooter={true}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
@@ -225,6 +237,7 @@ const QuizResult = () => {
                 })}
             </div>
         </div>
+        </PageLayout>
     );
 };
 

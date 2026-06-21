@@ -84,7 +84,8 @@ function RequireRole({ children, role }) {
 
   if (!user) return <Navigate to="/" replace />
   if (role === 'admin'      && user.role !== 'admin')      return <Navigate to="/dashboard" replace />
-  if (role === 'instructor' && (user.role !== 'instructor' || !user.isApprovedInstructor)) {
+  // Admins can access instructor pages too
+  if (role === 'instructor' && user.role !== 'admin' && (user.role !== 'instructor' || !user.isApprovedInstructor)) {
     return <Navigate to="/become-instructor" replace />
   }
   return children

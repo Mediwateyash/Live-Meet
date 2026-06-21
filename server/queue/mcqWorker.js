@@ -21,8 +21,6 @@ const getMimeType = (ext) => {
 };
 
 export const processMaterialJob = async (materialId, filePath, startPage, endPage, mcqCount, chapterName) => {
-    console.log(`[Worker] Started processing for Material ${materialId} - ${filePath}`);
-
     try {
         await Material.findByIdAndUpdate(materialId, { status: 'processing' });
 
@@ -30,27 +28,25 @@ export const processMaterialJob = async (materialId, filePath, startPage, endPag
         const mimeType = getMimeType(ext);
         let results = [];
 
-        // 1. Multimodal Path (PDF, PPTX, DOCX) - 2026 Native AI Support
+        // 1. Multimodal Path (PDF, PPTX, DOCX) - Native AI Support
         if (mimeType) {
-            console.log(`[Worker] Using Multimodal path for ${mimeType}`);
             const fileBuffer = fs.readFileSync(filePath);
-            
+
             // Check file size (approx limit 100MB for inlineData)
             const stats = fs.statSync(filePath);
             const fileSizeMB = stats.size / (1024 * 1024);
-            
+
             if (fileSizeMB > 100) {
                 throw new Error("File size exceeds 100MB limit for prompt processing.");
             }
 
             results = await generateMCQs({ fileBuffer, mimeType, numQuestions: mcqCount, startPage, endPage, chapterName });
-        } 
+        }
         // 2. Text Path Fallback (TXT)
         else {
-            console.log(`[Worker] Using Text Extraction path for ${ext}`);
             const extractedText = await extractTextFromFile(filePath);
             if (!extractedText) throw new Error("Extracted text is empty.");
-            
+
             await Material.findByIdAndUpdate(materialId, { extractedText });
             results = await generateMCQs({ text: extractedText, numQuestions: mcqCount, startPage, endPage, chapterName });
         }
@@ -63,12 +59,10 @@ export const processMaterialJob = async (materialId, filePath, startPage, endPag
 
         await MCQ.insertMany(mcqsWithId);
         await Material.findByIdAndUpdate(materialId, { status: 'completed' });
-        
-        console.log(`[Worker] SUCCESS for ${materialId}. Saved ${results.length} high-quality MCQs.`);
 
     } catch (error) {
         console.error(`[Worker] JOB FAILED for ${materialId}:`, error.message);
-        await Material.findByIdAndUpdate(materialId, { 
+        await Material.findByIdAndUpdate(materialId, {
             status: 'failed',
             error: error.message
         });
@@ -77,7 +71,6 @@ export const processMaterialJob = async (materialId, filePath, startPage, endPag
         try {
             if (fs.existsSync(filePath)) {
                 fs.unlinkSync(filePath);
-                console.log(`[Worker] Cleaned up temporary file: ${filePath}`);
             }
         } catch (cleanupError) {
             console.error('[Worker] Error cleaning up temporary file:', cleanupError);

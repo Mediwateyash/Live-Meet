@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import { Plus, Edit, Eye, Trash2, BookOpen, FileText, ClipboardList, Brain, Video, ArrowLeft } from 'lucide-react'
+import { Plus, Edit, Eye, Trash2, BookOpen, FileText, ClipboardList, Brain, Video, TrendingUp, ArrowLeft } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
 import Badge from '../../components/ui/Badge.jsx'
@@ -171,16 +171,17 @@ export default function AdminInstructorManage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
                         {[
-                          { icon: FileText,      title: 'Notes',         color: '#7C3AED', bg: '#F0EEFF', path: null },
-                          { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: '#EFF6FF', path: null },
-                          { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: '#F0FDF4', path: null },
-                          { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: '#FFFBEB', path: '/admin/live-lectures' },
+                          { icon: FileText,      title: 'Notes',         color: '#7C3AED', bg: '#F0EEFF', path: (id) => `/instructor/quizzes/create?courseId=${id}` },
+                          { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: '#EFF6FF', path: (id) => `/instructor/quizzes?courseId=${id}` },
+                          { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: '#F0FDF4', path: (id) => `/instructor/quizzes/create?courseId=${id}` },
+                          { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: '#FFFBEB', path: (id) => `/admin/live-lectures?courseId=${id}` },
+                          { icon: TrendingUp,    title: 'Progress',      color: '#EC4899', bg: '#FDF2F8', path: (id) => `/instructor/quizzes/results?courseId=${id}` },
                         ].map(({ icon: Icon, title, color, bg, path }) => (
                           <button
                             key={title}
                             title={title}
                             className="p-1.5 rounded-lg transition-colors"
-                            onClick={() => path && navigate(path)}
+                            onClick={() => navigate(path(course._id))}
                             onMouseEnter={e => e.currentTarget.style.background = bg}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                           >
