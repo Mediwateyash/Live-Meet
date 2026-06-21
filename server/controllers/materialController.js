@@ -2,11 +2,28 @@ import Material from '../models/Material.js';
 import { processMaterialJob } from '../queue/mcqWorker.js';
 import path from 'path';
 import url from 'url';
+import fs from 'fs';
+import { validateFileMagicBytes } from '../utils/fileSignature.js';
 
 export const uploadMaterial = async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        // Validate magic bytes
+        const detected = validateFileMagicBytes(req.file.path);
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        
+        let isValid = false;
+        if (ext === '.pdf' && detected === 'pdf') isValid = true;
+        else if ((ext === '.docx' || ext === '.pptx') && detected === 'zip') isValid = true;
+        else if ((ext === '.doc' || ext === '.ppt') && detected === 'ole') isValid = true;
+        else if (ext === '.txt' && detected === 'txt') isValid = true;
+
+        if (!isValid) {
+            try { fs.unlinkSync(req.file.path); } catch (e) {}
+            return res.status(400).json({ message: 'Invalid file format or file content mismatch' });
         }
 
         let startPage = req.body.startPage ? parseInt(req.body.startPage, 10) : null;
@@ -16,12 +33,15 @@ export const uploadMaterial = async (req, res) => {
 
         // Validation
         if (mcqCount < 1 || mcqCount > 15) {
+            try { fs.unlinkSync(req.file.path); } catch (e) {}
             return res.status(400).json({ message: 'MCQ count must be between 1 and 15.' });
         }
         if (startPage && startPage < 1) {
+            try { fs.unlinkSync(req.file.path); } catch (e) {}
             return res.status(400).json({ message: 'Start page must be 1 or greater.' });
         }
         if (startPage && endPage && startPage > endPage) {
+            try { fs.unlinkSync(req.file.path); } catch (e) {}
             return res.status(400).json({ message: 'End page must be greater than or equal to start page.' });
         }
 
@@ -43,6 +63,9 @@ export const uploadMaterial = async (req, res) => {
             material
         });
     } catch (error) {
+        if (req.file) {
+            try { fs.unlinkSync(req.file.path); } catch (e) {}
+        }
         res.status(500).json({ message: error.message });
     }
 };

@@ -71,7 +71,16 @@ export const getQuizById = async (req, res) => {
         const quiz = await Quiz.findById(req.params.id).populate('mcqIds', '-correctAnswer -explanation'); 
         // Hide correct answer and explanation from the quiz view for safety!
         if (quiz) {
-            res.json(quiz);
+            const quizObj = quiz.toObject();
+            if (req.user.role === 'student' && quizObj.mcqIds) {
+                quizObj.mcqIds.forEach(mcq => {
+                    if (mcq) {
+                        delete mcq.correctAnswer;
+                        delete mcq.explanation;
+                    }
+                });
+            }
+            res.json(quizObj);
         } else {
             res.status(404).json({ message: 'Quiz not found' });
         }

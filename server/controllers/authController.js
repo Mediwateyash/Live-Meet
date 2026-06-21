@@ -81,7 +81,15 @@ export async function refresh(req, res, next) {
 
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET)
     const user    = await User.findById(decoded.userId).select('+refreshToken')
-    if (!user || user.refreshToken !== token) throw new ApiError(401, 'Invalid refresh token')
+    if (!user) throw new ApiError(401, 'Invalid refresh token')
+
+    if (user.refreshToken !== token) {
+      // Stolen/reused refresh token detected! Revoke current refresh token to block access.
+      user.refreshToken = undefined
+      await user.save({ validateBeforeSave: false })
+      clearTokenCookies(res)
+      throw new ApiError(401, 'Suspicious activity detected. Please login again.')
+    }
 
     const accessToken  = generateAccessToken(user._id)
     const refreshToken = generateRefreshToken(user._id)
@@ -111,7 +119,7 @@ export async function forgotPassword(req, res, next) {
     const token   = crypto.randomBytes(32).toString('hex')
     const expires = Date.now() + 60 * 60 * 1000
 
-    user.resetPasswordToken   = crypto.createHash('sha256').update(token).digest('hex')
+    user.resetPasswordToken   = crypto.createHmac('sha256', process.env.JWT_SECRET || 'secret').update(token).digest('hex')
     user.resetPasswordExpires = expires
     await user.save({ validateBeforeSave: false })
 
@@ -132,7 +140,7 @@ export async function resetPassword(req, res, next) {
     if (!token) throw new ApiError(400, 'Token required')
     validatePassword(password)
 
-    const hashed = crypto.createHash('sha256').update(token).digest('hex')
+    const hashed = crypto.createHmac('sha256', process.env.JWT_SECRET || 'secret').update(token).digest('hex')
     const user   = await User.findOne({
       resetPasswordToken:   hashed,
       resetPasswordExpires: { $gt: Date.now() },

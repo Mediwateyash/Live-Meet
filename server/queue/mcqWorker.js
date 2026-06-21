@@ -73,5 +73,14 @@ export const processMaterialJob = async (materialId, filePath, startPage, endPag
             error: error.message
         });
         throw error; // Re-throw so the controller knows it failed
+    } finally {
+        try {
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                console.log(`[Worker] Cleaned up temporary file: ${filePath}`);
+            }
+        } catch (cleanupError) {
+            console.error('[Worker] Error cleaning up temporary file:', cleanupError);
+        }
     }
 };

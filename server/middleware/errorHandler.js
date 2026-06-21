@@ -1,3 +1,5 @@
+import { ApiError } from '../utils/ApiError.js'
+
 export const errorHandler = (err, req, res, next) => {
   // Log full error internally for debugging
   console.error(`[ERROR] ${err.name}: ${err.message}\n`, err.stack || '')
@@ -29,7 +31,11 @@ export const errorHandler = (err, req, res, next) => {
 
   // Default error message
   const status = err.statusCode || 500
-  const message = err.message || 'Something went wrong'
+  let message = err.message || 'Something went wrong'
+  
+  if (status === 500 && process.env.NODE_ENV === 'production' && !(err instanceof ApiError)) {
+    message = 'Internal Server Error'
+  }
   
   res.status(status).json({ success: false, message })
 }

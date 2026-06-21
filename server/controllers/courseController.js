@@ -265,14 +265,26 @@ function parseISO8601Duration(durationString) {
   const seconds = parseInt(matches[3] || 0)
   return hours * 3600 + minutes * 60 + seconds
 }
-
 export async function getYoutubeMeta(req, res, next) {
   try {
     const { url } = req.query
     if (!url) throw new ApiError(400, 'YouTube URL required')
 
-    if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
-      throw new ApiError(400, 'Invalid YouTube URL')
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch (e) {
+      throw new ApiError(400, 'Invalid URL format');
+    }
+
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new ApiError(400, 'Invalid protocol');
+    }
+
+    const allowedHostnames = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com'];
+    const isAllowedHost = allowedHostnames.includes(parsedUrl.hostname) || parsedUrl.hostname.endsWith('.youtube.com');
+    if (!isAllowedHost) {
+      throw new ApiError(400, 'Only YouTube URLs are allowed');
     }
 
     const response = await fetch(url, {

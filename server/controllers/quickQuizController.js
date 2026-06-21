@@ -1,4 +1,5 @@
 import { generateMCQs } from '../services/aiService.js';
+import { validateUrlForSsrf } from '../utils/ssrfFilter.js';
 
 export const generateQuickQuiz = async (req, res) => {
     try {
@@ -6,6 +7,13 @@ export const generateQuickQuiz = async (req, res) => {
 
         if (!resourceUrl) {
             return res.status(400).json({ message: "Resource URL is required to generate a quick quiz." });
+        }
+
+        // Validate URL against SSRF
+        try {
+            await validateUrlForSsrf(resourceUrl);
+        } catch (validationError) {
+            return res.status(400).json({ message: validationError.message || "Invalid URL or restricted IP" });
         }
 
         const response = await fetch(resourceUrl);

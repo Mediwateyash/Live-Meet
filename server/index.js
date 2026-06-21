@@ -38,13 +38,18 @@ import { registerLiveRoomSocket } from './socket/liveRoom.js'
 connectDB()
 
 const app        = express()
+app.set('trust proxy', 1)
+
 const httpServer = createServer(app)
 
 const allowedOrigins = [
   'https://live-meet.onrender.com',
-  'http://localhost:5173',
   process.env.CLIENT_URL
 ].filter(Boolean)
+
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:5173')
+}
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -71,7 +76,7 @@ if (process.env.NODE_ENV === 'production') {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://*.youtube.com', 'https://*.ytimg.com'],
+        scriptSrc: ["'self'", 'https://*.youtube.com', 'https://*.ytimg.com'],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co', 'https://*.ytimg.com'],
@@ -104,9 +109,9 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
-// Rate limiting & NoSQL query sanitization
-app.use('/api', apiLimiter)
+// Rate limiting & NoSQL query sanitization (sanitize first)
 app.use(mongoSanitize)
+app.use('/api', apiLimiter)
 
 // Robots.txt
 app.get('/robots.txt', (req, res) => {

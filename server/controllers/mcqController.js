@@ -28,7 +28,14 @@ export const updateMCQ = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        const updatedMCQ = await MCQ.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const { question, options, correctAnswer, explanation } = req.body;
+        const updateData = {};
+        if (question !== undefined) updateData.question = question;
+        if (options !== undefined) updateData.options = options;
+        if (correctAnswer !== undefined) updateData.correctAnswer = correctAnswer;
+        if (explanation !== undefined) updateData.explanation = explanation;
+
+        const updatedMCQ = await MCQ.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
         res.json(updatedMCQ);
     } catch (error) {
         res.status(500).json({ message: error.message });

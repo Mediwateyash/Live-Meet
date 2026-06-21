@@ -1,4 +1,6 @@
 import User from '../models/User.js'
+import Course from '../models/Course.js'
+import mongoose from 'mongoose'
 import InstructorRequest from '../models/InstructorRequest.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
@@ -85,8 +87,17 @@ export async function getWishlist(req, res, next) {
 
 export async function toggleWishlist(req, res, next) {
   try {
-    const user     = await User.findById(req.user._id)
     const courseId = req.params.courseId
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      throw new ApiError(400, 'Invalid course ID')
+    }
+
+    const courseExists = await Course.exists({ _id: courseId })
+    if (!courseExists) {
+      throw new ApiError(404, 'Course not found')
+    }
+
+    const user     = await User.findById(req.user._id)
     const idx      = user.wishlist.findIndex(id => id.toString() === courseId.toString())
     if (idx > -1) {
       user.wishlist.splice(idx, 1)
