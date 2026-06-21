@@ -161,7 +161,9 @@ export default function Certificate() {
             textAlign: 'center',
             boxSizing: 'border-box'
           }}>
-            <Award size={44} color="#D4AF37" style={{ display: 'block', margin: '0 auto 10px auto' }} />
+            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+              <Award size={44} color="#D4AF37" style={{ display: 'inline-block' }} />
+            </div>
 
             <h2 style={{ 
                fontFamily: 'Outfit, sans-serif', 
