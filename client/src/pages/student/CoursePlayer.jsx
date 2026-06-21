@@ -166,8 +166,8 @@ export default function CoursePlayer() {
     { id: 'notes',     label: 'Notes',         icon: FileText },
     { id: 'tests',     label: 'Tests',          icon: ClipboardList },
     { id: 'mcq',       label: 'MCQ Generator',  icon: Brain },
-    { id: 'progress',  label: 'Progress',       icon: TrendingUp },
     { id: 'live',      label: 'Live Lectures',  icon: Video },
+    { id: 'progress',  label: 'Progress',       icon: TrendingUp },
     { id: 'certificate', label: 'Certificate',  icon: Award },
   ]
 

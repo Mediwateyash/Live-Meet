@@ -12,8 +12,8 @@ const FEATURES = {
   notes:       { icon: FileText,      label: 'Notes',          desc: 'Study materials uploaded by your instructor will appear here.' },
   tests:       { icon: ClipboardList, label: 'Tests',          desc: 'Quizzes and assessments for this course will appear here.' },
   mcq:         { icon: Brain,         label: 'MCQ Generator',  desc: 'AI-generated multiple choice questions for this course will appear here.' },
-  progress:    { icon: TrendingUp,    label: 'Progress',       desc: 'Your detailed learning progress and analytics will appear here.' },
   live:        { icon: Video,         label: 'Live Lectures',  desc: 'Scheduled live sessions by your instructor will appear here.' },
+  progress:    { icon: TrendingUp,    label: 'Progress',       desc: 'Your detailed learning progress and analytics will appear here.' },
   certificate: { icon: Award,         label: 'Certificate',    desc: 'View and download your certificate after completing the course.' },
 }
 
@@ -21,8 +21,8 @@ const NAV_COLORS = {
   notes:       { iconBg: '#EDE9FE', iconColor: '#7C3AED' },
   tests:       { iconBg: '#EFF6FF', iconColor: '#2563EB' },
   mcq:         { iconBg: '#F0FDF4', iconColor: '#059669' },
-  progress:    { iconBg: '#FFFBEB', iconColor: '#D97706' },
   live:        { iconBg: '#FEF2F2', iconColor: '#DC2626' },
+  progress:    { iconBg: '#FFFBEB', iconColor: '#D97706' },
   certificate: { iconBg: '#FFFBEB', iconColor: '#F59E0B' },
 }
 
@@ -171,6 +171,78 @@ function LiveLecturesList({ courseId }) {
   )
 }
 
+function NotesList({ course }) {
+  const sections = course?.curriculum || []
+  
+  // Check if there are any notes at all
+  let hasNotes = false
+  for (const section of sections) {
+    if (section.lessons?.some(l => l.resources?.length > 0)) {
+      hasNotes = true
+      break
+    }
+  }
+
+  if (!hasNotes) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 rounded-2xl w-full"
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: '#EDE9FE' }}>
+          <FileText size={28} color="#7C3AED" />
+        </div>
+        <h3 className="text-lg font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+          No notes uploaded yet
+        </h3>
+        <p className="text-sm text-center max-w-xs" style={{ color: 'var(--text-muted)' }}>
+          Your instructor hasn't uploaded any study materials or notes for this course yet.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6 w-full text-left">
+      {sections.map((section, sIdx) => {
+        const lessonsWithNotes = section.lessons?.filter(l => l.resources?.length > 0) || []
+        if (lessonsWithNotes.length === 0) return null
+
+        return (
+          <div key={sIdx} className="space-y-2.5">
+            <h3 className="text-sm font-bold uppercase tracking-wider pl-1" style={{ color: '#7C3AED' }}>
+              Section {sIdx + 1}: {section.title}
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              {lessonsWithNotes.map((lesson) => 
+                lesson.resources.map((res, rIdx) => (
+                  <div key={`${lesson._id}-${rIdx}`} className="rounded-2xl p-5 bg-white dark:bg-[var(--bg-surface)] border border-gray-150 dark:border-[var(--border-default)] flex flex-col sm:flex-row justify-between sm:items-center gap-4 animate-in fade-in duration-200">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-50 dark:bg-purple-950/20 text-[#7C3AED] shrink-0">
+                        <FileText size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{res.name || `Notes for ${lesson.title}`}</h4>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Lesson: {lesson.title}</p>
+                      </div>
+                    </div>
+                    <a 
+                      href={res.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="shrink-0 px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all text-center flex items-center justify-center gap-1.5 shadow-sm"
+                    >
+                      Open Notes
+                    </a>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function CourseFeaturePage({ feature }) {
   const { slug } = useParams()
   const navigate = useNavigate()
@@ -275,6 +347,21 @@ export default function CourseFeaturePage({ feature }) {
                 </div>
               </div>
               <LiveLecturesList courseId={course?._id} />
+            </div>
+          ) : feature === 'notes' ? (
+            <div className="max-w-3xl mx-auto w-full">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: iconBg }}>
+                  <FileText size={20} color={iconColor} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Course Study Notes</h2>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {course?.title || 'Loading…'}
+                  </p>
+                </div>
+              </div>
+              <NotesList course={course} />
             </div>
           ) : feature === 'tests' || feature === 'mcq' ? (
             <div className="max-w-4xl mx-auto w-full">
