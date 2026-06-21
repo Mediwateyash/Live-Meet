@@ -42,7 +42,18 @@ export default function Certificate() {
 
   const handleDownload = async () => {
     if (!certRef.current) return
-    const canvas = await html2canvas(certRef.current, { scale: 2 })
+    const canvas = await html2canvas(certRef.current, {
+      scale: 3,
+      useCORS: true,
+      backgroundColor: '#FFFDF9',
+      scrollX: 0,
+      scrollY: 0,
+      width: 800,
+      height: 565,
+      windowWidth: 800,
+      windowHeight: 565,
+      logging: false,
+    })
     const a = document.createElement('a')
     a.href = canvas.toDataURL('image/png')
     a.download = `zenius-certificate-${courseId}.png`
@@ -74,27 +85,59 @@ export default function Certificate() {
         {/* Certificate */}
         <div
           ref={certRef}
-          className="relative rounded-2xl overflow-hidden mx-auto shadow-xl"
+          data-certificate-container="true"
+          className="relative mx-auto shadow-xl"
           style={{
-            maxWidth: 800,
-            aspectRatio: '1.414',
+            width: '800px',
+            height: '565px',
             background: '#FFFDF9',
-            border: '6px double #D4AF37',
-            padding: '50px 70px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            borderRadius: '12px',
+            boxSizing: 'border-box',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
+          {/* Outer Border (thick solid gold) */}
+          <div style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            right: '8px',
+            bottom: '8px',
+            border: '3px solid #D4AF37',
+            borderRadius: '8px',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Inner Border (thin solid gold) */}
+          <div style={{
+            position: 'absolute',
+            top: '16px',
+            left: '16px',
+            right: '16px',
+            bottom: '16px',
+            border: '1px solid #D4AF37',
+            borderRadius: '6px',
+            pointerEvents: 'none',
+          }} />
+
           {/* Decorative Corners */}
-          <div style={{ position: 'absolute', top: 15, left: 15, width: 40, height: 40, borderTop: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', borderRadius: '4px 0 0 0' }} />
-          <div style={{ position: 'absolute', top: 15, right: 15, width: 40, height: 40, borderTop: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', borderRadius: '0 4px 0 0' }} />
-          <div style={{ position: 'absolute', bottom: 15, left: 15, width: 40, height: 40, borderBottom: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', borderRadius: '0 0 0 4px' }} />
-          <div style={{ position: 'absolute', bottom: 15, right: 15, width: 40, height: 40, borderBottom: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', borderRadius: '0 0 4px 0' }} />
+          <div style={{ position: 'absolute', top: '24px', left: '24px', width: '40px', height: '40px', borderTop: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '40px', height: '40px', borderTop: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '24px', left: '24px', width: '40px', height: '40px', borderBottom: '2px solid #D4AF37', borderLeft: '2px solid #D4AF37', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '24px', right: '24px', width: '40px', height: '40px', borderBottom: '2px solid #D4AF37', borderRight: '2px solid #D4AF37', pointerEvents: 'none' }} />
 
           {/* Header */}
-          <div className="flex items-center gap-2">
+          <div style={{
+            position: 'absolute',
+            top: '45px',
+            left: '0',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#7C3AED' }}>
               <GraduationCap size={18} color="white" />
             </div>
@@ -102,8 +145,19 @@ export default function Certificate() {
           </div>
 
           {/* Main Certificate Content */}
-          <div className="flex flex-col items-center text-center my-4 w-full">
-            <Award size={42} color="#D4AF37" style={{ marginBottom: 12 }} />
+          <div style={{
+            position: 'absolute',
+            top: '110px',
+            left: '0',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            padding: '0 70px',
+            boxSizing: 'border-box'
+          }}>
+            <Award size={40} color="#D4AF37" style={{ marginBottom: 10 }} />
 
             <h2 style={{ 
               fontFamily: 'Outfit, sans-serif', 
@@ -112,27 +166,28 @@ export default function Certificate() {
               color: '#1E1B4B', 
               letterSpacing: '0.25em', 
               textTransform: 'uppercase',
-              marginBottom: 10
+              marginBottom: 8
             }}>
               Certificate of Completion
             </h2>
             
-            <p style={{ color: '#57534E', fontSize: 13, marginBottom: 16, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+            <p style={{ color: '#57534E', fontSize: 13, marginBottom: 14, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
               This is proudly presented to
             </p>
 
             <h1 style={{ 
               fontFamily: 'Outfit, sans-serif', 
               fontWeight: 800, 
-              fontSize: 34, 
+              fontSize: 32, 
               color: '#1E1B4B', 
-              marginBottom: 14, 
-              letterSpacing: '0.02em'
+              marginBottom: 12, 
+              letterSpacing: '0.02em',
+              lineHeight: 1.2
             }}>
               {formatName(user?.fullName)}
             </h1>
 
-            <p style={{ color: '#57534E', fontSize: 13, marginBottom: 14, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
+            <p style={{ color: '#57534E', fontSize: 13, marginBottom: 12, fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
               for successfully completing the specialized course
             </p>
 
@@ -142,37 +197,57 @@ export default function Certificate() {
               fontSize: 22, 
               color: '#7C3AED', 
               marginBottom: 10,
-              fontStyle: 'italic'
+              fontStyle: 'italic',
+              lineHeight: 1.2
             }}>
               {course?.title || `Course #${courseId}`}
             </h3>
           </div>
 
           {/* Signatures & Footer info */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', width: '100%', marginTop: 10 }}>
-            {/* Signature 1 - Instructor */}
-            <div style={{ textAlign: 'center', color: '#1E1B4B', fontSize: 10, flex: '1 1 0%' }}>
-              <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#7C3AED', fontSize: 15, marginBottom: 6 }}>
-                {course?.instructor?.fullName || 'Course Instructor'}
-              </div>
-              <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.6)', margin: '0 auto', maxWidth: 130, height: 1 }} />
-              <div style={{ color: '#64748B', fontSize: 9, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instructor</div>
+          {/* Signature 1 - Instructor */}
+          <div style={{ 
+            position: 'absolute', 
+            bottom: '45px', 
+            left: '70px', 
+            width: '160px', 
+            textAlign: 'center' 
+          }}>
+            <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#7C3AED', fontSize: 15, marginBottom: 6, minHeight: '22px' }}>
+              {course?.instructor?.fullName || 'Course Instructor'}
             </div>
+            <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.6)', margin: '0 auto', width: '100%', height: 1 }} />
+            <div style={{ color: '#64748B', fontSize: 9, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Instructor</div>
+          </div>
 
-            {/* Date & ID */}
-            <div style={{ textAlign: 'center', color: '#64748B', fontSize: 9, flex: '1.2 1 0%', paddingBottom: 4 }}>
-              <div>Issue Date: {formatDate(issueDate)}</div>
-              <div style={{ marginTop: 2 }}>Certificate ID: ZENO-{courseId?.slice(-6).toUpperCase()}</div>
-            </div>
+          {/* Date & ID */}
+          <div style={{ 
+            position: 'absolute', 
+            bottom: '45px', 
+            left: '250px', 
+            right: '250px', 
+            textAlign: 'center',
+            color: '#64748B', 
+            fontSize: 9, 
+            paddingBottom: 4 
+          }}>
+            <div>Issue Date: {formatDate(issueDate)}</div>
+            <div style={{ marginTop: 2 }}>Certificate ID: ZENO-{courseId?.slice(-6).toUpperCase()}</div>
+          </div>
 
-            {/* Signature 2 - Issued By */}
-            <div style={{ textAlign: 'center', color: '#1E1B4B', fontSize: 10, flex: '1 1 0%' }}>
-              <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#7C3AED', fontSize: 15, marginBottom: 6 }}>
-                Zenius AI
-              </div>
-              <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.6)', margin: '0 auto', maxWidth: 130, height: 1 }} />
-              <div style={{ color: '#64748B', fontSize: 9, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Issued By</div>
+          {/* Signature 2 - Issued By */}
+          <div style={{ 
+            position: 'absolute', 
+            bottom: '45px', 
+            right: '70px', 
+            width: '160px', 
+            textAlign: 'center' 
+          }}>
+            <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', color: '#7C3AED', fontSize: 15, marginBottom: 6, minHeight: '22px' }}>
+              Zenius AI
             </div>
+            <div style={{ borderTop: '1px solid rgba(212, 175, 55, 0.6)', margin: '0 auto', width: '100%', height: 1 }} />
+            <div style={{ color: '#64748B', fontSize: 9, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Issued By</div>
           </div>
         </div>
 
