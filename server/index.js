@@ -81,7 +81,7 @@ if (process.env.NODE_ENV === 'production') {
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co', 'https://*.ytimg.com'],
         connectSrc: ["'self'", 'wss:', 'https:'],
-        frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com'],
+        frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com', 'https://res.cloudinary.com', 'https://docs.google.com'],
         mediaSrc: ["'self'", 'https://res.cloudinary.com', 'data:', 'blob:'],
       },
     },
@@ -107,7 +107,7 @@ if (process.env.NODE_ENV === 'production') {
         fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co', 'https://*.ytimg.com'],
         connectSrc: ["'self'", 'ws:', 'wss:', 'https:'],
-        frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com'],
+        frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com', 'https://res.cloudinary.com', 'https://docs.google.com'],
         mediaSrc: ["'self'", 'https://res.cloudinary.com', 'data:', 'blob:'],
       }
     },
