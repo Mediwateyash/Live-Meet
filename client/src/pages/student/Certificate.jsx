@@ -47,10 +47,10 @@ export default function Certificate() {
     const original = certRef.current
     const clone = original.cloneNode(true)
     
-    // Style the clone to be absolute at top-left, offscreen
+    // Style the clone to be absolute aligned with the current scroll viewport context
     clone.style.position = 'absolute'
-    clone.style.top = '0'
-    clone.style.left = '0'
+    clone.style.top = `${window.scrollY}px`
+    clone.style.left = `${window.scrollX}px`
     clone.style.width = '800px'
     clone.style.height = '565px'
     clone.style.margin = '0'
@@ -65,12 +65,8 @@ export default function Certificate() {
         scale: 3,
         useCORS: true,
         backgroundColor: '#FFFDF9',
-        scrollX: 0,
-        scrollY: 0,
         width: 800,
         height: 565,
-        windowWidth: 800,
-        windowHeight: 565,
         logging: false,
       })
       const a = document.createElement('a')
