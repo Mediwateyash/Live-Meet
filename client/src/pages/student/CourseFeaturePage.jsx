@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, FileText, ClipboardList, Brain, TrendingUp, Video, Calendar, Clock, ExternalLink, Radio, Monitor, Award, CheckCircle2, Play } from 'lucide-react'
+import { ArrowLeft, FileText, ClipboardList, Brain, TrendingUp, Video, Calendar, Clock, ExternalLink, Radio, Monitor, Award, CheckCircle2, Play, Download } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import { coursesAPI } from '../../api/courses.js'
 import { liveLecturesAPI } from '../../api/liveLectures.js'
@@ -171,7 +171,7 @@ function LiveLecturesList({ courseId }) {
   )
 }
 
-function NotesList({ course }) {
+function NotesList({ course, onSelectNote }) {
   const sections = course?.curriculum || []
   
   // Check if there are any notes at all
@@ -224,14 +224,12 @@ function NotesList({ course }) {
                         <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Lesson: {lesson.title}</p>
                       </div>
                     </div>
-                    <a 
-                      href={res.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="shrink-0 px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all text-center flex items-center justify-center gap-1.5 shadow-sm"
+                    <button 
+                      onClick={() => onSelectNote({ name: res.name || `Notes for ${lesson.title}`, url: res.url, lessonTitle: lesson.title })}
+                      className="shrink-0 px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all text-center flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                     >
                       Open Notes
-                    </a>
+                    </button>
                   </div>
                 ))
               )}
@@ -250,6 +248,11 @@ export default function CourseFeaturePage({ feature }) {
   const [progress, setProgress] = useState(null)
   const [results, setResults] = useState([])
   const [loadingProgress, setLoadingProgress] = useState(true)
+  const [selectedNote, setSelectedNote] = useState(null)
+
+  useEffect(() => {
+    setSelectedNote(null)
+  }, [feature])
 
   const { icon: Icon, label, desc } = FEATURES[feature] || {}
   const { iconBg, iconColor } = NAV_COLORS[feature] || {}
@@ -349,19 +352,71 @@ export default function CourseFeaturePage({ feature }) {
               <LiveLecturesList courseId={course?._id} />
             </div>
           ) : feature === 'notes' ? (
-            <div className="max-w-3xl mx-auto w-full">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: iconBg }}>
-                  <FileText size={20} color={iconColor} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Course Study Notes</h2>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {course?.title || 'Loading…'}
+            <div className="max-w-4xl mx-auto w-full">
+              {selectedNote ? (
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  {/* Header/Nav */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-800">
+                    <div className="flex items-center gap-3">
+                      <button 
+                        onClick={() => setSelectedNote(null)}
+                        className="flex items-center justify-center p-2 rounded-xl bg-gray-850 hover:bg-gray-800 text-[#7C3AED] transition-colors cursor-pointer"
+                        title="Back to notes list"
+                      >
+                        <ArrowLeft size={18} />
+                      </button>
+                      <div className="text-left">
+                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                          <FileText size={18} className="text-[#7C3AED]" />
+                          {selectedNote.name}
+                        </h2>
+                        <p className="text-xs text-gray-400">Lesson: {selectedNote.lessonTitle}</p>
+                      </div>
+                    </div>
+                    
+                    <a 
+                      href={selectedNote.url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-5 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all text-center flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      <Download size={14} />
+                      Download PDF
+                    </a>
+                  </div>
+
+                  {/* PDF Viewer Container */}
+                  <div className="rounded-2xl overflow-hidden border border-gray-800 bg-white" style={{ height: '70vh' }}>
+                    <iframe 
+                      src={selectedNote.url} 
+                      width="100%" 
+                      height="100%" 
+                      className="border-none"
+                      title={selectedNote.name}
+                    />
+                  </div>
+
+                  <p className="text-xs text-center text-gray-500">
+                    Having trouble viewing the file? Click the "Download PDF" button to open or download it directly.
                   </p>
                 </div>
-              </div>
-              <NotesList course={course} />
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: iconBg }}>
+                      <FileText size={20} color={iconColor} />
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Course Study Notes</h2>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {course?.title || 'Loading…'}
+                      </p>
+                    </div>
+                  </div>
+                  <NotesList course={course} onSelectNote={setSelectedNote} />
+                </div>
+              )}
             </div>
           ) : feature === 'tests' || feature === 'mcq' ? (
             <div className="max-w-4xl mx-auto w-full">
