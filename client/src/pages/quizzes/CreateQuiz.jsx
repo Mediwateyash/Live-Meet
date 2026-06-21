@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../api/axios.js';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Upload, Brain, CheckCircle, AlertCircle, Loader, RefreshCw, FileText, Clock, AlertTriangle, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '../../components/ui/ConfirmModal.jsx';
+import PageLayout from '../../components/layout/PageLayout.jsx';
 
 const FakeProgress = () => {
     const [progress, setProgress] = useState(0);
@@ -196,13 +197,18 @@ const CreateQuiz = () => {
 
     return (
         <>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <PageLayout noFooter={true}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" style={{ background: 'var(--bg-page)', minHeight: '100%' }}>
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
-                    <Link to="/instructor" className="text-gray-500 hover:text-indigo-600 transition-colors">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="p-2 rounded-lg transition-colors hover:bg-[rgba(109,40,217,0.1)]"
+                        style={{ color: 'var(--text-muted)' }}
+                    >
                         <ArrowLeft className="w-5 h-5" />
-                    </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Teacher Dashboard</h1>
+                    </button>
+                    <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>MCQ Generator</h1>
                 </div>
             </div>
 
@@ -211,13 +217,13 @@ const CreateQuiz = () => {
                 {/* LEFT PANEL: UPLOAD & GENERATE MCQS (1 column)                    */}
                 {/* ---------------------------------------------------------------- */}
                 <div className="xl:col-span-1 space-y-8">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                    <div className="p-6 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                             <Upload className="w-5 h-5 text-indigo-600" />
                             Upload & Generate MCQs
                         </h3>
                         
-                        <div className="mt-2 text-sm text-gray-500 mb-4">
+                        <div className="mt-2 text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
                             Supported formats: PDF, DOCX, PPTX, TXT. Max size: 10MB.
                         </div>
 
@@ -239,25 +245,27 @@ const CreateQuiz = () => {
                                     type="text"
                                     value={chapterName}
                                     onChange={(e) => setChapterName(e.target.value)}
-                                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                    className="w-full p-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]"
+                                    style={{ background: 'var(--bg-page)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}
                                     placeholder="Optional Module/Chapter Name"
                                 />
                             </div>
                             
                             <div className="flex flex-col mb-2 mt-2">
-                                <label className="flex justify-between text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                <label className="flex justify-between text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
                                     <span>Number of Questions</span>
-                                    <span className="text-indigo-600 font-bold">{mcqCount}</span>
+                                    <span className="font-bold" style={{ color: '#7C3AED' }}>{mcqCount}</span>
                                 </label>
-                                <input 
-                                    type="range" 
-                                    min="1" 
-                                    max="15" 
-                                    value={mcqCount} 
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="15"
+                                    value={mcqCount}
                                     onChange={(e) => setMcqCount(parseInt(e.target.value))}
-                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-[#7C3AED]"
+                                    style={{ background: 'var(--border-default)' }}
                                 />
-                                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                <div className="flex justify-between text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                                     <span>1</span>
                                     <span>15</span>
                                 </div>
@@ -265,24 +273,26 @@ const CreateQuiz = () => {
                             
                             <div className="flex items-end gap-3 sm:gap-4 flex-wrap sm:flex-nowrap mt-2">
                                 <div className="flex-1 w-full sm:w-auto">
-                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Start Page (Optional)</label>
+                                    <label className="block text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>Start Page (Optional)</label>
                                     <input
                                         type="number"
                                         min="1"
                                         value={startPage}
                                         onChange={(e) => setStartPage(e.target.value)}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                        className="w-full p-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]"
+                                        style={{ background: 'var(--bg-page)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}
                                         placeholder="e.g. 1"
                                     />
                                 </div>
                                 <div className="flex-1 w-full sm:w-auto">
-                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">End Page (Optional)</label>
+                                    <label className="block text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>End Page (Optional)</label>
                                     <input
                                         type="number"
                                         min="1"
                                         value={endPage}
                                         onChange={(e) => setEndPage(e.target.value)}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                        className="w-full p-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]"
+                                        style={{ background: 'var(--bg-page)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}
                                         placeholder="e.g. 5"
                                     />
                                 </div>
@@ -312,37 +322,41 @@ const CreateQuiz = () => {
                 <div className="xl:col-span-2">
                     {!publishingMaterial ? (
                         // STATE A: Show Your Study Materials List
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col">
-                            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                <h3 className="text-lg font-semibold text-gray-800">Your Study Materials</h3>
-                                <button onClick={fetchMaterials} className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1 font-medium">
+                        <div className="rounded-xl overflow-hidden h-full flex flex-col" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+                            <div className="px-6 py-4 flex justify-between items-center" style={{ borderBottom: '1px solid var(--border-default)', background: 'var(--bg-muted)' }}>
+                                <h3 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Your Study Materials</h3>
+                                <button onClick={fetchMaterials} className="text-sm flex items-center gap-1 font-medium transition-colors" style={{ color: '#7C3AED' }}>
                                     <RefreshCw className={`w-4 h-4 ${loadingMaterials ? 'animate-spin' : ''}`} /> Refresh
                                 </button>
                             </div>
                             
                             {materials.length === 0 ? (
-                                <div className="p-12 text-center text-gray-500 flex flex-col items-center">
-                                    <FileText className="w-12 h-12 text-gray-300 mb-3" />
+                                <div className="p-12 text-center flex flex-col items-center" style={{ color: 'var(--text-muted)' }}>
+                                    <FileText className="w-12 h-12 mb-3" style={{ color: 'var(--border-default)' }} />
                                     No materials uploaded yet. Upload a document to start generating quizzes!
                                 </div>
                             ) : (
-                                <ul className="divide-y divide-gray-100 flex-1 overflow-y-auto max-h-[700px]">
+                                <ul className="flex-1 overflow-y-auto max-h-[700px]">
                                     {materials.map((m) => (
-                                        <li key={m._id} className="p-4 sm:px-6 hover:bg-gray-50 transition-colors flex items-center justify-between group">
+                                        <li key={m._id} className="p-4 sm:px-6 transition-colors flex items-center justify-between group"
+                                            style={{ borderBottom: '1px solid var(--border-default)' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-muted)'}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                        >
                                             <div className="flex items-center gap-4">
-                                                <div className="bg-indigo-50 p-3 rounded-lg text-indigo-600">
+                                                <div className="p-3 rounded-lg" style={{ background: 'rgba(109,40,217,0.1)', color: '#7C3AED' }}>
                                                     <FileText className="w-6 h-6" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-md font-semibold text-gray-900 line-clamp-1" title={m.chapterName || m.fileName}>{m.chapterName || m.fileName}</h4>
-                                                    <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                                                        <span className="uppercase font-medium bg-gray-200 px-2 py-0.5 rounded text-gray-700">{m.fileType}</span>
+                                                    <h4 className="text-md font-semibold line-clamp-1" style={{ color: 'var(--text-primary)' }} title={m.chapterName || m.fileName}>{m.chapterName || m.fileName}</h4>
+                                                    <div className="text-xs mt-1 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                                                        <span className="uppercase font-medium px-2 py-0.5 rounded" style={{ background: 'var(--bg-muted)', color: 'var(--text-secondary)' }}>{m.fileType}</span>
                                                         {m.startPage && m.endPage && (
-                                                            <span className="font-medium bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">Pages: {m.startPage}–{m.endPage}</span>
+                                                            <span className="font-medium px-2 py-0.5 rounded" style={{ background: 'rgba(109,40,217,0.1)', color: '#7C3AED' }}>Pages: {m.startPage}–{m.endPage}</span>
                                                         )}
                                                         <span>• {new Date(m.createdAt).toLocaleDateString()}</span>
                                                     </div>
-                                                    {m.chapterName && <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><FileText className="w-3 h-3"/> {m.fileName}</div>}
+                                                    {m.chapterName && <div className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--text-muted)' }}><FileText className="w-3 h-3"/> {m.fileName}</div>}
                                                     {m.status === 'failed' && m.error && (
                                                         <div className="text-xs text-red-500 mt-1 font-medium">Failed: {m.error}</div>
                                                     )}
@@ -353,16 +367,19 @@ const CreateQuiz = () => {
                                                 <div className="flex flex-col items-end gap-1">
                                                     <div className="flex items-center gap-2">
                                                         {getStatusIcon(m.status)}
-                                                        <span className="text-sm text-gray-600 capitalize font-medium hidden sm:inline">
+                                                        <span className="text-sm capitalize font-medium hidden sm:inline" style={{ color: 'var(--text-secondary)' }}>
                                                             {m.status === 'processing' ? 'Generating...' : m.status}
                                                         </span>
                                                     </div>
                                                     {m.status === 'processing' && <FakeProgress />}
                                                 </div>
                                                 {m.status === 'completed' && (
-                                                    <button 
-                                                        onClick={() => handlePrepareQuiz(m)} 
-                                                        className="ml-4 px-3 py-1.5 text-sm bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-50 hover:text-indigo-600 font-bold transition-colors shadow-sm"
+                                                    <button
+                                                        onClick={() => handlePrepareQuiz(m)}
+                                                        className="ml-4 px-3 py-1.5 text-sm rounded-md font-bold transition-colors"
+                                                        style={{ background: 'var(--bg-page)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}
+                                                        onMouseEnter={e => e.currentTarget.style.color = '#7C3AED'}
+                                                        onMouseLeave={e => e.currentTarget.style.color = 'var(--text-primary)'}
                                                     >
                                                         Create Quiz
                                                     </button>
@@ -382,15 +399,17 @@ const CreateQuiz = () => {
                         </div>
                     ) : (
                         // STATE B: Review & Publish Quiz
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full animate-fade-in">
-                            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                    <Brain className="w-5 h-5 text-indigo-600" /> 
+                        <div className="rounded-xl flex flex-col h-full animate-fade-in" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+                            <div className="px-6 py-4 flex justify-between items-center" style={{ borderBottom: '1px solid var(--border-default)', background: 'var(--bg-muted)' }}>
+                                <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                                    <Brain className="w-5 h-5" style={{ color: '#7C3AED' }} />
                                     Review & Publish Quiz
                                 </h3>
-                                <button 
-                                    onClick={() => setPublishingMaterial(null)} 
-                                    className="text-gray-400 hover:text-gray-600"
+                                <button
+                                    onClick={() => setPublishingMaterial(null)}
+                                    style={{ color: 'var(--text-muted)' }}
+                                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -399,12 +418,13 @@ const CreateQuiz = () => {
                             <div className="p-6 space-y-6 flex-1 overflow-y-auto">
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div className="sm:col-span-2">
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Target Course</label>
-                                        <select 
+                                        <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>Target Course</label>
+                                        <select
                                             required
                                             value={selectedCourseId}
                                             onChange={e => setSelectedCourseId(e.target.value)}
-                                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm bg-gray-50"
+                                            className="w-full p-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]"
+                                            style={{ background: 'var(--bg-page)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}
                                         >
                                             <option value="">-- Select Course --</option>
                                             {courses.map(c => (
@@ -413,40 +433,49 @@ const CreateQuiz = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Timer (Minutes)</label>
-                                        <input 
+                                        <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>Timer (Minutes)</label>
+                                        <input
                                             required
-                                            type="number" 
+                                            type="number"
                                             min="1"
                                             value={quizTimer}
                                             onChange={e => setQuizTimer(Number(e.target.value))}
-                                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                            className="w-full p-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]"
+                                            style={{ background: 'var(--bg-page)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Quiz Title</label>
-                                    <input 
+                                    <label className="block text-sm font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>Quiz Title</label>
+                                    <input
                                         required
-                                        type="text" 
+                                        type="text"
                                         value={quizTitle}
                                         onChange={e => setQuizTitle(e.target.value)}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                        className="w-full p-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]"
+                                        style={{ background: 'var(--bg-page)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}
                                     />
                                 </div>
 
-                                <div className="pt-4 border-t border-gray-100">
+                                <div className="pt-4" style={{ borderTop: '1px solid var(--border-default)' }}>
                                     <div className="flex justify-between items-center mb-4">
-                                        <h4 className="font-bold text-gray-800">Select Questions</h4>
-                                        <span className="text-sm text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded">{selectedMcqs.size} of {mcqs.length} selected</span>
+                                        <h4 className="font-bold" style={{ color: 'var(--text-primary)' }}>Select Questions</h4>
+                                        <span className="text-sm font-medium px-2 py-1 rounded" style={{ background: 'var(--bg-muted)', color: 'var(--text-secondary)' }}>{selectedMcqs.size} of {mcqs.length} selected</span>
                                     </div>
                                     <div className="space-y-3">
                                         {mcqs.map((mcq, idx) => (
-                                            <label key={mcq._id} className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${selectedMcqs.has(mcq._id) ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
-                                                <input 
+                                            <label
+                                                key={mcq._id}
+                                                className="flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-all"
+                                                style={{
+                                                    background: selectedMcqs.has(mcq._id) ? 'rgba(109,40,217,0.1)' : 'var(--bg-page)',
+                                                    border: selectedMcqs.has(mcq._id) ? '1px solid rgba(109,40,217,0.4)' : '1px solid var(--border-default)',
+                                                }}
+                                            >
+                                                <input
                                                     type="checkbox"
-                                                    className="mt-1 flex-shrink-0 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
+                                                    className="mt-1 flex-shrink-0 w-4 h-4 accent-[#7C3AED]"
                                                     checked={selectedMcqs.has(mcq._id)}
                                                     onChange={() => toggleSelection(mcq._id)}
                                                 />
@@ -460,7 +489,7 @@ const CreateQuiz = () => {
                                                             {mcq.difficulty || 'medium'}
                                                         </span>
                                                     </div>
-                                                    <p className="font-medium text-gray-800 text-sm leading-relaxed"><span className="text-gray-400 mr-2 font-bold">Q{idx+1}.</span>{mcq.question}</p>
+                                                    <p className="font-medium text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}><span className="mr-2 font-bold" style={{ color: 'var(--text-muted)' }}>Q{idx+1}.</span>{mcq.question}</p>
                                                 </div>
                                             </label>
                                         ))}
@@ -468,17 +497,23 @@ const CreateQuiz = () => {
                                 </div>
                             </div>
                             
-                            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-xl">
-                                <button 
+                            <div className="p-6 flex justify-end gap-3 rounded-b-xl" style={{ borderTop: '1px solid var(--border-default)', background: 'var(--bg-muted)' }}>
+                                <button
                                     onClick={() => setPublishingMaterial(null)}
-                                    className="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                                    className="px-6 py-2.5 font-medium rounded-lg transition-colors"
+                                    style={{ color: 'var(--text-secondary)' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'var(--border-default)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                 >
                                     Cancel
                                 </button>
-                                <button 
+                                <button
                                     onClick={handlePublish}
                                     disabled={selectedMcqs.size === 0}
-                                    className="px-8 py-2.5 bg-[#10B981] text-white rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-600 shadow-md flex items-center gap-2 transition-all"
+                                    className="px-8 py-2.5 text-white rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2 transition-all"
+                                    style={{ background: '#10B981' }}
+                                    onMouseEnter={e => !e.currentTarget.disabled && (e.currentTarget.style.background = '#059669')}
+                                    onMouseLeave={e => e.currentTarget.style.background = '#10B981'}
                                 >
                                     <Plus className="w-5 h-5"/>
                                     Publish Course Quiz
@@ -489,6 +524,7 @@ const CreateQuiz = () => {
                 </div>
             </div>
         </div>
+        </PageLayout>
 
         <ConfirmModal
             isOpen={!!confirmDeleteId}
@@ -500,7 +536,7 @@ const CreateQuiz = () => {
             confirmVariant="danger"
             loading={!!deletingId}
         />
-    </>
+        </>
     );
 };
 
