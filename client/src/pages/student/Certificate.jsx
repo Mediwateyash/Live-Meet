@@ -42,22 +42,46 @@ export default function Certificate() {
 
   const handleDownload = async () => {
     if (!certRef.current) return
-    const canvas = await html2canvas(certRef.current, {
-      scale: 3,
-      useCORS: true,
-      backgroundColor: '#FFFDF9',
-      scrollX: 0,
-      scrollY: 0,
-      width: 800,
-      height: 565,
-      windowWidth: 800,
-      windowHeight: 565,
-      logging: false,
-    })
-    const a = document.createElement('a')
-    a.href = canvas.toDataURL('image/png')
-    a.download = `zenius-certificate-${courseId}.png`
-    a.click()
+
+    // Clone the element to render it offscreen without parent container/viewport scroll constraints
+    const original = certRef.current
+    const clone = original.cloneNode(true)
+    
+    // Style the clone to be fixed at top-left, offscreen
+    clone.style.position = 'fixed'
+    clone.style.top = '0'
+    clone.style.left = '0'
+    clone.style.width = '800px'
+    clone.style.height = '565px'
+    clone.style.margin = '0'
+    clone.style.padding = '0'
+    clone.style.zIndex = '-9999'
+    clone.style.transform = 'none'
+    
+    document.body.appendChild(clone)
+
+    try {
+      const canvas = await html2canvas(clone, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: '#FFFDF9',
+        scrollX: 0,
+        scrollY: 0,
+        width: 800,
+        height: 565,
+        windowWidth: 800,
+        windowHeight: 565,
+        logging: false,
+      })
+      const a = document.createElement('a')
+      a.href = canvas.toDataURL('image/png')
+      a.download = `zenius-certificate-${courseId}.png`
+      a.click()
+    } catch (error) {
+      console.error('Error generating certificate:', error)
+    } finally {
+      document.body.removeChild(clone)
+    }
   }
 
   if (loading) {
