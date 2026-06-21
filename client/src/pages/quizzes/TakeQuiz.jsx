@@ -22,6 +22,35 @@ const TakeQuiz = () => {
     const [calcValue, setCalcValue] = useState('');
     const [isStarted, setIsStarted] = useState(false);
     const [strikes, setStrikes] = useState(0);
+    const [calcPos, setCalcPos] = useState({ x: 0, y: 0 });
+    const [notesPos, setNotesPos] = useState({ x: 0, y: 0 });
+
+    const startDrag = (e, setPos) => {
+        if (e.button !== 0) return; // only left click
+        
+        let lastX = e.clientX;
+        let lastY = e.clientY;
+        
+        const handlePointerMove = (moveEvent) => {
+            const dx = moveEvent.clientX - lastX;
+            const dy = moveEvent.clientY - lastY;
+            lastX = moveEvent.clientX;
+            lastY = moveEvent.clientY;
+            
+            setPos(prev => ({
+                x: prev.x + dx,
+                y: prev.y + dy
+            }));
+        };
+        
+        const handlePointerUp = () => {
+            document.removeEventListener('pointermove', handlePointerMove);
+            document.removeEventListener('pointerup', handlePointerUp);
+        };
+        
+        document.addEventListener('pointermove', handlePointerMove);
+        document.addEventListener('pointerup', handlePointerUp);
+    };
     const [isMalpractice, setIsMalpractice] = useState(false);
     const [showStrikeModal, setShowStrikeModal] = useState(false);
     const [strikeReason, setStrikeReason] = useState("");
@@ -97,7 +126,7 @@ const TakeQuiz = () => {
 
         setStrikes(prevStrikes => {
             const nextStrikes = prevStrikes + 1;
-            if (nextStrikes >= 3) {
+            if (nextStrikes >= 2) {
                 setIsMalpractice(true);
                 setTimeout(() => handleCompleteSubmit(true), 0);
             } else {
@@ -254,11 +283,11 @@ const TakeQuiz = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[var(--bg-page)] p-4">
                 <div className="max-w-md w-full bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl border-2 border-rose-100 dark:border-rose-900/30 p-8 text-center">
-                    <div className="w-20 h-20 bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-455 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="w-20 h-20 bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center mx-auto mb-6">
                         <ShieldAlert className="w-12 h-12" />
                     </div>
                     <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-2">EXAM TERMINATED</h1>
-                    <p className="text-rose-600 dark:text-rose-455 font-bold mb-6 uppercase tracking-widest text-xs">Malpractice Detected</p>
+                    <p className="text-rose-600 dark:text-rose-400 font-bold mb-6 uppercase tracking-widest text-xs">Malpractice Detected</p>
                     <div className="bg-rose-50 dark:bg-rose-950/20 p-4 rounded-xl text-rose-800 dark:text-rose-300 text-sm mb-8 leading-relaxed">
                         Multiple violations were detected during your assessment (Tab switching or exiting full screen). As per the proctoring policy, your exam has been automatically submitted and terminated.
                     </div>
@@ -315,7 +344,7 @@ const TakeQuiz = () => {
                                 {[
                                     "Ensure you have a stable internet connection throughout the test.",
                                     "This exam is PROCTORED. You must remain in FULL SCREEN mode.",
-                                    "Switching tabs or exiting full screen more than 2 times will terminate the exam.",
+                                    "Switching tabs or exiting full screen 2 times will terminate the exam.",
                                     "The quiz will be automatically submitted when the timer reaches zero.",
                                     "Each question carries 1 mark. There is no negative marking.",
                                     "You can use the built-in Calculator and Scratchpad tools provided."
@@ -522,35 +551,49 @@ const TakeQuiz = () => {
 
             {/* Calculator Modal */}
             {showCalculator && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl w-full max-w-[280px] overflow-hidden border border-gray-200 dark:border-[var(--border-default)]">
-                        <div className="bg-gray-900 dark:bg-gray-950 p-4 flex justify-between items-center text-white">
-                            <div className="flex items-center gap-2 font-medium">
-                                <Calculator className="w-4 h-4" /> Calculator
-                            </div>
-                            <button onClick={() => setShowCalculator(false)} className="hover:bg-white/10 p-1 rounded-full">
-                                <X className="w-5 h-5" />
-                            </button>
+                <div 
+                    style={{
+                        position: 'fixed',
+                        right: '40px',
+                        top: '120px',
+                        transform: `translate(${calcPos.x}px, ${calcPos.y}px)`,
+                        touchAction: 'none'
+                    }}
+                    className="bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl w-full max-w-[280px] overflow-hidden border border-gray-200 dark:border-[var(--border-default)] z-50"
+                >
+                    <div 
+                        onPointerDown={(e) => startDrag(e, setCalcPos)}
+                        className="bg-gray-900 dark:bg-gray-950 p-4 flex justify-between items-center text-white cursor-move select-none"
+                    >
+                        <div className="flex items-center gap-2 font-medium">
+                            <Calculator className="w-4 h-4" /> Calculator
                         </div>
-                        <div className="p-4 bg-gray-50 dark:bg-gray-900/40">
-                            <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-4 text-right text-2xl font-mono h-14 flex items-center justify-end overflow-hidden text-gray-900 dark:text-white">
-                                {calcValue || '0'}
-                            </div>
-                            <div className="grid grid-cols-4 gap-2">
-                                {['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+'].map(btn => (
-                                    <button
-                                        key={btn}
-                                        onClick={() => handleCalcClick(btn)}
-                                        className={`p-3 rounded-lg font-bold transition-all ${
-                                            btn === '=' ? 'bg-primary text-white col-span-1' : 
-                                            btn === 'C' ? 'bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400' : 
-                                            ['/','*','-','+'].includes(btn) ? 'bg-indigo-50 dark:bg-indigo-950/50 text-primary dark:text-indigo-400' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm'
-                                        } hover:brightness-95 active:scale-95`}
-                                    >
-                                        {btn}
-                                    </button>
-                                ))}
-                            </div>
+                        <button 
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={() => setShowCalculator(false)} 
+                            className="hover:bg-white/10 p-1 rounded-full"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="p-4 bg-gray-50 dark:bg-gray-900/40">
+                        <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-4 text-right text-2xl font-mono h-14 flex items-center justify-end overflow-hidden text-gray-900 dark:text-white">
+                            {calcValue || '0'}
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            {['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+'].map(btn => (
+                                <button
+                                    key={btn}
+                                    onClick={() => handleCalcClick(btn)}
+                                    className={`p-3 rounded-lg font-bold transition-all ${
+                                        btn === '=' ? 'bg-primary text-white col-span-1' : 
+                                        btn === 'C' ? 'bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400' : 
+                                        ['/','*','-','+'].includes(btn) ? 'bg-indigo-50 dark:bg-indigo-950/50 text-primary dark:text-indigo-400' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm'
+                                    } hover:brightness-95 active:scale-95`}
+                                >
+                                    {btn}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -558,32 +601,46 @@ const TakeQuiz = () => {
 
             {/* Notes Modal */}
             {showNotes && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-[var(--border-default)]">
-                        <div className="bg-primary p-4 flex justify-between items-center text-white">
-                            <div className="flex items-center gap-2 font-medium">
-                                <FileText className="w-4 h-4" /> Scratchpad (Notes)
-                            </div>
-                            <button onClick={() => setShowNotes(false)} className="hover:bg-white/10 p-1 rounded-full">
-                                <X className="w-5 h-5" />
-                            </button>
+                <div 
+                    style={{
+                        position: 'fixed',
+                        left: '40px',
+                        top: '120px',
+                        transform: `translate(${notesPos.x}px, ${notesPos.y}px)`,
+                        touchAction: 'none'
+                    }}
+                    className="bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-[var(--border-default)] z-50"
+                >
+                    <div 
+                        onPointerDown={(e) => startDrag(e, setNotesPos)}
+                        className="bg-primary p-4 flex justify-between items-center text-white cursor-move select-none"
+                    >
+                        <div className="flex items-center gap-2 font-medium">
+                            <FileText className="w-4 h-4" /> Scratchpad (Notes)
                         </div>
-                        <div className="p-4">
-                            <textarea
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Jot down your rough work here..."
-                                className="w-full h-64 p-4 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900/50"
-                            />
-                            <div className="mt-4 flex justify-between items-center">
-                                <p className="text-xs text-gray-500 dark:text-gray-400 italic">Notes are local and will be lost on page refresh.</p>
-                                <button
-                                    onClick={() => setNotes('')}
-                                    className="flex items-center gap-2 px-4 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition font-medium"
-                                >
-                                    <Trash2 className="w-4 h-4" /> Reset Notes
-                                </button>
-                            </div>
+                        <button 
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onClick={() => setShowNotes(false)} 
+                            className="hover:bg-white/10 p-1 rounded-full"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="p-4">
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            placeholder="Jot down your rough work here..."
+                            className="w-full h-64 p-4 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900/50"
+                        />
+                        <div className="mt-4 flex justify-between items-center">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 italic">Notes are local and will be lost on page refresh.</p>
+                            <button
+                                onClick={() => setNotes('')}
+                                className="flex items-center gap-2 px-4 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition font-medium"
+                            >
+                                <Trash2 className="w-4 h-4" /> Reset Notes
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -595,12 +652,12 @@ const TakeQuiz = () => {
                     <div className="bg-white dark:bg-[var(--bg-surface)] rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border-4 border-amber-400 animate-bounceIn">
                         <div className="bg-amber-400 p-6 text-center text-amber-900">
                             <ShieldAlert className="w-16 h-16 mx-auto mb-2" />
-                            <h2 className="text-2xl font-black uppercase tracking-tight">Warning {strikes}/2</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-tight">Warning {strikes}/1</h2>
                         </div>
                         <div className="p-8 text-center">
                             <p className="text-gray-900 dark:text-white font-bold text-xl mb-2">{strikeReason}</p>
                             <p className="text-gray-600 dark:text-gray-300 mb-6">
-                                You have violated the proctoring rules. This is your **{strikes === 1 ? 'first' : 'final'} warning**. 
+                                You have violated the proctoring rules. This is your **final warning**. 
                                 The next violation will result in **immediate termination** of your exam.
                             </p>
                             

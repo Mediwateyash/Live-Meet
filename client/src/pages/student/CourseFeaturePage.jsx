@@ -196,7 +196,7 @@ export default function CourseFeaturePage({ feature }) {
           api.get(`/progress/${course._id}`),
           api.get('/result/my-results')
         ])
-        setProgress(progRes.data)
+        setProgress(progRes.data.data)
         
         const quizzesRes = await api.get(`/quiz?courseId=${course._id}`)
         const courseQuizIds = new Set(quizzesRes.data.map(q => q._id.toString()))
@@ -439,12 +439,12 @@ export default function CourseFeaturePage({ feature }) {
                                   {res.quizId?.title || 'Practice Quiz'}
                                 </td>
                                 <td className="py-3.5 text-sm font-mono font-bold">
-                                  <span className={passed ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-455'}>
+                                  <span className={passed ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
                                     {res.score}%
                                   </span>
                                 </td>
                                 <td className="py-3.5">
-                                  <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${passed ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-455'}`}>
+                                  <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${passed ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400'}`}>
                                     {passed ? 'Passed' : 'Failed'}
                                   </span>
                                 </td>

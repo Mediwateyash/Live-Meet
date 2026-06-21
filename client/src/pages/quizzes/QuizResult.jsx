@@ -149,10 +149,10 @@ const QuizResult = () => {
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Quiz Assessment Results</h1>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quiz Assessment Results</h1>
                         {result.studentId && (
-                            <p className="text-gray-500 flex items-center gap-1 mt-1">
-                                <User className="w-4 h-4" /> Student: <span className="font-semibold text-gray-700">
+                            <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                                <User className="w-4 h-4" /> Student: <span className="font-semibold text-gray-700 dark:text-gray-300">
                                     {typeof result.studentId === 'object' ? (result.studentId.name || result.studentId.email) : result.studentId}
                                 </span>
                             </p>
@@ -167,18 +167,18 @@ const QuizResult = () => {
                 </button>
             </div>
 
-            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center mb-8">
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center border-4 mb-4 ${result.score >= 70 ? 'bg-green-50 border-green-500 text-green-600' : result.score >= 40 ? 'bg-yellow-50 border-yellow-500 text-yellow-600' : 'bg-red-50 border-red-500 text-red-600'}`}>
+            <div className="bg-white dark:bg-[var(--bg-surface)] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] flex flex-col items-center justify-center text-center mb-8">
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center border-4 mb-4 ${result.score >= 70 ? 'bg-green-50 dark:bg-green-950/20 border-green-500 text-green-600 dark:text-emerald-400' : result.score >= 40 ? 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-500 text-yellow-600 dark:text-amber-400' : 'bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-rose-400'}`}>
                     <span className="text-4xl font-bold">{result.score}%</span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">{result.quizId.title}</h2>
-                <p className="text-gray-500 mt-2 font-medium flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{result.quizId.title}</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium flex items-center gap-2">
                     <Award className="w-5 h-5"/>
                     Completed on {new Date(result.createdAt).toLocaleString()}
                 </p>
             </div>
 
-            <h3 className="text-xl font-bold text-gray-900 mb-6 px-2">Detailed Review</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 px-2">Detailed Review</h3>
             
             <div className="space-y-6">
                 {result.answers.map((ans, idx) => {
@@ -186,10 +186,10 @@ const QuizResult = () => {
                     if (!ans.mcqId) return null; // skipped or deleted
 
                     return (
-                        <div key={idx} className={`bg-white p-6 rounded-xl shadow-sm border-l-4 ${isCorrect ? 'border-green-500' : 'border-red-500'}`}>
+                        <div key={idx} className={`bg-white dark:bg-[var(--bg-surface)] p-6 rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] border-l-4 ${isCorrect ? 'border-green-500' : 'border-red-500'}`}>
                             <div className="flex justify-between flex-start gap-4 mb-4">
-                                <h4 className="font-semibold text-lg text-gray-900">
-                                    <span className="text-gray-400 mr-2">Q{idx+1}.</span> 
+                                <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
+                                    <span className="text-gray-400 dark:text-gray-500 mr-2">Q{idx+1}.</span> 
                                     {ans.mcqId.question}
                                 </h4>
                                 <div>
@@ -199,12 +199,12 @@ const QuizResult = () => {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                 {ans.mcqId.options.map((opt, i) => {
-                                    let bgClass = "bg-gray-50 border-gray-200 text-gray-600";
+                                    let bgClass = "bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-900/40 dark:border-gray-800 dark:text-gray-300";
                                     
                                     if (opt === ans.mcqId.correctAnswer) {
-                                        bgClass = "bg-green-100 border-green-300 text-green-800 font-medium";
+                                        bgClass = "bg-green-100 border-green-300 text-green-800 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-400 font-medium";
                                     } else if (opt === ans.selected && !isCorrect) {
-                                        bgClass = "bg-red-100 border-red-300 text-red-800 line-through";
+                                        bgClass = "bg-red-100 border-red-300 text-red-800 dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400 line-through font-medium";
                                     }
 
                                     return (
@@ -216,9 +216,9 @@ const QuizResult = () => {
                                 })}
                             </div>
 
-                            <div className={`mt-4 p-4 rounded-lg border ${isCorrect ? 'bg-gray-50 border-gray-200' : 'bg-indigo-50 border-indigo-100'}`}>
-                                <span className={`font-semibold block mb-1 ${isCorrect ? 'text-gray-700' : 'text-primary'}`}>Explanation:</span>
-                                <p className={`${isCorrect ? 'text-gray-600' : 'text-gray-700'} text-sm leading-relaxed`}>{ans.mcqId.explanation}</p>
+                            <div className={`mt-4 p-4 rounded-lg border ${isCorrect ? 'bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800' : 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/30'}`}>
+                                <span className={`font-semibold block mb-1 ${isCorrect ? 'text-gray-700 dark:text-gray-300' : 'text-primary dark:text-indigo-400'}`}>Explanation:</span>
+                                <p className={`${isCorrect ? 'text-gray-600 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'} text-sm leading-relaxed`}>{ans.mcqId.explanation}</p>
                             </div>
                         </div>
                     );
