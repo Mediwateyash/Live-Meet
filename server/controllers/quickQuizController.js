@@ -8,7 +8,6 @@ export const generateQuickQuiz = async (req, res) => {
             return res.status(400).json({ message: "Resource URL is required to generate a quick quiz." });
         }
 
-        console.log(`[generateQuickQuiz] Fetching resource from: ${resourceUrl}`);
         const response = await fetch(resourceUrl);
         
         if (!response.ok) {
@@ -18,8 +17,6 @@ export const generateQuickQuiz = async (req, res) => {
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const mimeType = response.headers.get('content-type') || 'application/pdf';
-
-        console.log(`[generateQuickQuiz] Downloaded ${buffer.length} bytes of type ${mimeType}`);
 
         // Generate MCQs using AI
         const questions = await generateMCQs({

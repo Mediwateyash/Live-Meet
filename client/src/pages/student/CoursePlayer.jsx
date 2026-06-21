@@ -389,20 +389,29 @@ export default function CoursePlayer() {
                 <p className="text-sm" style={{ color: '#666' }}>Upcoming live sessions scheduled by the instructor will appear here.</p>
               </div>
             )}
-            {tab === 'certificate' && (
+                        {tab === 'certificate' && (
               <div className="py-6">
-                {!progress?.hasPassedFinalExam ? (
-                  <div className="flex flex-col items-center py-12 text-center">
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(239,68,68,0.1)' }}>
-                      <Award size={32} color="#EF4444" />
+                {(progress?.percentComplete || 0) < 100 ? (
+                  <div className="flex justify-center">
+                    <div className="rounded-2xl p-6 max-w-xs w-full" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="text-lg font-bold text-white mb-1">Certification</h3>
+                          <p className="text-sm" style={{ color: '#999' }}>Earn yours by finishing the course</p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                          <Award size={20} color="#666" />
+                        </div>
+                      </div>
+                      <p className="text-xs mb-4" style={{ color: '#666' }}>Complete all course lessons to unlock your official verified certificate.</p>
+                      <button
+                        disabled
+                        className="w-full py-2.5 rounded-xl text-sm font-semibold"
+                        style={{ background: 'rgba(255,255,255,0.06)', color: '#888', cursor: 'not-allowed' }}
+                      >
+                        Locked ({Math.round(progress?.percentComplete || 0)}% Done)
+                      </button>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Certificate Locked</h3>
-                    <p className="text-sm max-w-md text-gray-400 mb-6">
-                      You must complete the course curriculum and take all exams added by the instructor to unlock your certificate.
-                    </p>
-                    <button onClick={() => { setTab('tests'); refetchProgress(); }} className="px-6 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg transition-colors">
-                      Go to Exams
-                    </button>
                   </div>
                 ) : !progress?.hasGivenFeedback ? (
                   <div className="max-w-xl mx-auto bg-[#1A1A2E] p-8 rounded-xl border border-[rgba(255,255,255,0.1)] shadow-xl">
@@ -410,7 +419,7 @@ export default function CoursePlayer() {
                       <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto" style={{ background: 'rgba(16,185,129,0.1)' }}>
                         <CheckCircle2 size={32} color="#10B981" />
                       </div>
-                      <h3 className="text-2xl font-bold text-white mb-2">You Passed!</h3>
+                      <h3 className="text-2xl font-bold text-white mb-2">Course Complete!</h3>
                       <p className="text-gray-400 text-sm">Please leave a review for the course to unlock your certificate.</p>
                     </div>
                     <form onSubmit={handleFeedbackSubmit} className="space-y-4">

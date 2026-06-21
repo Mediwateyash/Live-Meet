@@ -9,19 +9,21 @@ import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
 import api from '../../api/axios.js'
 
 const FEATURES = {
-  notes:    { icon: FileText,      label: 'Notes',          desc: 'Study materials uploaded by your instructor will appear here.' },
-  tests:    { icon: ClipboardList, label: 'Tests',          desc: 'Quizzes and assessments for this course will appear here.' },
-  mcq:      { icon: Brain,         label: 'MCQ Generator',  desc: 'AI-generated multiple choice questions for this course will appear here.' },
-  progress: { icon: TrendingUp,    label: 'Progress',       desc: 'Your detailed learning progress and analytics will appear here.' },
-  live:     { icon: Video,         label: 'Live Lectures',  desc: 'Scheduled live sessions by your instructor will appear here.' },
+  notes:       { icon: FileText,      label: 'Notes',          desc: 'Study materials uploaded by your instructor will appear here.' },
+  tests:       { icon: ClipboardList, label: 'Tests',          desc: 'Quizzes and assessments for this course will appear here.' },
+  mcq:         { icon: Brain,         label: 'MCQ Generator',  desc: 'AI-generated multiple choice questions for this course will appear here.' },
+  progress:    { icon: TrendingUp,    label: 'Progress',       desc: 'Your detailed learning progress and analytics will appear here.' },
+  live:        { icon: Video,         label: 'Live Lectures',  desc: 'Scheduled live sessions by your instructor will appear here.' },
+  certificate: { icon: Award,         label: 'Certificate',    desc: 'View and download your certificate after completing the course.' },
 }
 
 const NAV_COLORS = {
-  notes:    { iconBg: '#EDE9FE', iconColor: '#7C3AED' },
-  tests:    { iconBg: '#EFF6FF', iconColor: '#2563EB' },
-  mcq:      { iconBg: '#F0FDF4', iconColor: '#059669' },
-  progress: { iconBg: '#FFFBEB', iconColor: '#D97706' },
-  live:     { iconBg: '#FEF2F2', iconColor: '#DC2626' },
+  notes:       { iconBg: '#EDE9FE', iconColor: '#7C3AED' },
+  tests:       { iconBg: '#EFF6FF', iconColor: '#2563EB' },
+  mcq:         { iconBg: '#F0FDF4', iconColor: '#059669' },
+  progress:    { iconBg: '#FFFBEB', iconColor: '#D97706' },
+  live:        { iconBg: '#FEF2F2', iconColor: '#DC2626' },
+  certificate: { iconBg: '#FFFBEB', iconColor: '#F59E0B' },
 }
 
 const STATUS_COLORS = {
@@ -207,8 +209,7 @@ export default function CourseFeaturePage({ feature }) {
         })
         
         setResults(courseResults)
-      } catch (error) {
-        console.error('Failed to load progress or results', error)
+      } catch {
       } finally {
         setLoadingProgress(false)
       }
@@ -242,7 +243,7 @@ export default function CourseFeaturePage({ feature }) {
               return (
                 <button
                   key={key}
-                  onClick={() => navigate(`/course/${slug}/${key}`)}
+                  onClick={() => key === 'certificate' ? navigate(`/certificate/${slug}`) : navigate(`/course/${slug}/${key}`)}
                   className="flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-all"
                   style={{
                     color: active ? c : 'var(--text-secondary)',

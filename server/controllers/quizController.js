@@ -60,7 +60,6 @@ export const getQuizzes = async (req, res) => {
             }
         }
         const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
-        console.log(`[getQuizzes] User Role: ${req.user.role}, Filter: ${JSON.stringify(filter)}, Found: ${quizzes.length}`);
         res.json(quizzes);
     } catch (error) {
         res.status(500).json({ message: error.message });

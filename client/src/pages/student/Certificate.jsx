@@ -19,13 +19,16 @@ export default function Certificate() {
 
   useEffect(() => {
     if (!courseId) return
-    Promise.all([
-      coursesAPI.getBySlug(courseId),
-      api.get(`/progress/${courseId}`)
-    ])
-      .then(([courseRes, progressRes]) => {
-        setCourse(courseRes.data.data || null)
-        setProgress(progressRes.data.data || null)
+    coursesAPI.getBySlug(courseId)
+      .then(async (courseRes) => {
+        const courseData = courseRes.data.data || null
+        setCourse(courseData)
+        if (courseData?._id) {
+          try {
+            const progressRes = await api.get(`/progress/${courseData._id}`)
+            setProgress(progressRes.data.data || null)
+          } catch {}
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -83,6 +86,40 @@ export default function Certificate() {
   }
 
   const issueDate = progress?.completedAt ? new Date(progress.completedAt) : new Date();
+  const isCompleted = (progress?.percentComplete || 0) >= 100;
+
+  if (!isCompleted) {
+    return (
+      <PageLayout>
+        <div className="max-w-md mx-auto px-6 py-20 flex flex-col items-center text-center">
+          <div
+            className="w-full rounded-2xl p-8 shadow-lg"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="text-left">
+                <h2 className="text-xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Certification</h2>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Earn yours by finishing the course</p>
+              </div>
+              <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--bg-muted)' }}>
+                <Award size={22} color="var(--text-muted)" />
+              </div>
+            </div>
+            <p className="text-sm mb-6 text-left" style={{ color: 'var(--text-muted)' }}>
+              Complete all course lessons to unlock your official verified certificate.
+            </p>
+            <button
+              disabled
+              className="w-full py-3 rounded-xl text-sm font-semibold"
+              style={{ background: 'var(--bg-muted)', color: 'var(--text-muted)', cursor: 'not-allowed' }}
+            >
+              Locked ({Math.round(progress?.percentComplete || 0)}% Done)
+            </button>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>

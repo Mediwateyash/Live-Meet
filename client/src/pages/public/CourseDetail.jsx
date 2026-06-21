@@ -24,8 +24,9 @@ const COURSE_TOOLS = [
   { path: 'notes',    icon: FileText,      label: 'Notes',         desc: 'Study materials',    iconBg: 'rgba(109,40,217,0.12)',  iconColor: '#7C3AED' },
   { path: 'tests',    icon: ClipboardList, label: 'Tests',         desc: 'Quizzes & exams',    iconBg: 'rgba(37,99,235,0.12)',   iconColor: '#2563EB' },
   { path: 'mcq',      icon: Brain,         label: 'MCQ Generator', desc: 'AI practice',        iconBg: 'rgba(5,150,105,0.12)',   iconColor: '#059669' },
-  { path: 'progress', icon: TrendingUp,    label: 'Progress',      desc: 'Track learning',     iconBg: 'rgba(217,119,6,0.12)',   iconColor: '#D97706' },
   { path: 'live',     icon: Video,         label: 'Live Lectures', desc: 'Scheduled sessions', iconBg: 'rgba(220,38,38,0.12)',   iconColor: '#DC2626' },
+  { path: 'progress', icon: TrendingUp,    label: 'Progress',      desc: 'Track learning',     iconBg: 'rgba(217,119,6,0.12)',   iconColor: '#D97706' },
+  { path: 'certificate', icon: Award,   label: 'Certificate',   desc: 'View your certificate', iconBg: 'rgba(234,179,8,0.12)', iconColor: '#F59E0B' },
 ]
 
 function CourseToolsSidebar({ slug, navigate, progress, onClose }) {
@@ -64,7 +65,7 @@ function CourseToolsSidebar({ slug, navigate, progress, onClose }) {
         {COURSE_TOOLS.map(({ path, icon: Icon, label, iconBg, iconColor }) => (
           <button
             key={path}
-            onClick={() => { navigate(`/course/${slug}/${path}`); onClose?.() }}
+            onClick={() => { if (path === 'certificate') { navigate(`/certificate/${slug}`); } else { navigate(`/course/${slug}/${path}`); } onClose?.(); } }
             className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all group"
             style={{ color: 'var(--text-secondary)', fontWeight: 500 }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}

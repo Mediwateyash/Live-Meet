@@ -62,8 +62,6 @@ export const submitQuiz = async (req, res) => {
             }
         }
 
-        console.log("[submitQuiz] Created result:", result);
-        console.log("[submitQuiz] Sending resultId:", result ? result._id : 'undefined');
 
         res.status(201).json({
             message: 'Quiz submitted successfully',
@@ -98,7 +96,6 @@ export const getResultById = async (req, res) => {
             });
 
         if (!result) {
-            console.log(`[getResultById] Result ${req.params.id} not found.`);
             return res.status(404).json({ message: 'Result not found' });
         }
 
@@ -106,7 +103,6 @@ export const getResultById = async (req, res) => {
         const reqUserIdStr = req.user._id.toString();
 
         if (studentIdStr !== reqUserIdStr && req.user.role !== 'teacher' && req.user.role !== 'admin' && req.user.role !== 'instructor') {
-            console.log(`[getResultById] Not authorized. Result studentId: ${studentIdStr}, Requester: ${reqUserIdStr}, Role: ${req.user.role}`);
             return res.status(403).json({ message: 'Not authorized' });
         }
 
