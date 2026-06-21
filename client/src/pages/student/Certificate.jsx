@@ -47,8 +47,8 @@ export default function Certificate() {
     const original = certRef.current
     const clone = original.cloneNode(true)
     
-    // Style the clone to be fixed at top-left, offscreen
-    clone.style.position = 'fixed'
+    // Style the clone to be absolute at top-left, offscreen
+    clone.style.position = 'absolute'
     clone.style.top = '0'
     clone.style.left = '0'
     clone.style.width = '800px'
