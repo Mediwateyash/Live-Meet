@@ -34,13 +34,32 @@ function isHostSocket(s) {
   return s.user?.role === 'instructor' || s.user?.role === 'admin'
 }
 
+const allowedOrigins = [
+  'https://live-meet.onrender.com',
+  process.env.CLIENT_URL
+].filter(Boolean)
+
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:5173')
+}
+
 export function registerLiveRoomSocket(io) {
   // ── Cookie, Auth Handshake, or Header auth ────────────────────────────────
   io.use(async (socket, next) => {
     try {
+      const origin = socket.handshake.headers.origin
+      if (origin) {
+        if (!allowedOrigins.includes(origin)) {
+          console.warn(`[SECURITY] Blocked WebSocket connection from unauthorized origin: ${origin}`);
+          return next(new Error('Origin not allowed'));
+        }
+      }
+
+      const cookies = parseCookies(socket.handshake.headers.cookie || '')
       const token =
         socket.handshake.auth?.token ||
-        socket.handshake.headers?.authorization?.split(' ')[1]
+        socket.handshake.headers?.authorization?.split(' ')[1] ||
+        cookies.accessToken
 
       if (!token) return next(new Error('Socket authentication required'))
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
