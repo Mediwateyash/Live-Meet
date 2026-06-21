@@ -60,3 +60,7 @@ Thumbs.db
 .claude/
 .gemini/
 .antigravity/
+
+# User Uploads / Temp files
+server/uploads/*
+!server/uploads/.gitkeep

@@ -4,6 +4,7 @@ import InstructorRequest  from '../models/InstructorRequest.js'
 import { ApiError }       from '../utils/ApiError.js'
 import { ApiResponse }    from '../utils/ApiResponse.js'
 import { sendEmail, approvalEmail, rejectionEmail } from '../config/nodemailer.js'
+import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
 
 export async function getDashboard(req, res, next) {
   try {
@@ -207,10 +208,12 @@ export async function adminCreateCourse(req, res, next) {
   try {
     const instructor = await User.findById(req.params.id)
     if (!instructor) throw new ApiError(404, 'Instructor not found')
-    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, ...rest } = req.body
+    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, thumbnail, ...rest } = req.body
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
     const course = await Course.create({
       ...rest,
       instructor: req.params.id,
+      thumbnail: uploadedThumbnail,
       level: level && ['Beginner', 'Intermediate', 'Advanced'].includes(level) ? level : undefined,
       price: isFree ? 0 : (Number(price) || 0),
       isFree: !!isFree,
@@ -227,8 +230,10 @@ export async function adminUpdateCourse(req, res, next) {
   try {
     const course = await Course.findById(req.params.id)
     if (!course) throw new ApiError(404, 'Course not found')
-    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, ...rest } = req.body
+    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, thumbnail, ...rest } = req.body
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
     Object.assign(course, rest)
+    if (uploadedThumbnail !== undefined) course.thumbnail = uploadedThumbnail
     if (level && ['Beginner', 'Intermediate', 'Advanced'].includes(level)) course.level = level
     course.price = isFree ? 0 : (Number(price) || 0)
     course.isFree = !!isFree

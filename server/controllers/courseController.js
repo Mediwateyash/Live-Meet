@@ -5,6 +5,7 @@ import Progress   from '../models/Progress.js'
 import Enrollment from '../models/Enrollment.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
+import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
 
 export async function browse(req, res, next) {
   try {
@@ -102,13 +103,15 @@ export async function createCourse(req, res, next) {
     const { title, subtitle, description, category, level, language, tags, whatYouLearn, requirements, curriculum, thumbnail, price, isFree, status } = req.body
     if (!title || !category) throw new ApiError(400, 'Title and category required')
 
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
+
     const courseData = {
       title, subtitle, description, category, language,
       tags:         Array.isArray(tags)         ? tags         : [],
       whatYouLearn: Array.isArray(whatYouLearn) ? whatYouLearn : [],
       requirements: Array.isArray(requirements) ? requirements : [],
       curriculum:   Array.isArray(curriculum)   ? curriculum   : [],
-      thumbnail,
+      thumbnail:    uploadedThumbnail,
       price:        isFree ? 0 : (Number(price) || 0),
       isFree:       !!isFree,
       status:       status || 'draft',
@@ -131,8 +134,10 @@ export async function updateCourse(req, res, next) {
     if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       throw new ApiError(403, 'Not authorized')
     }
-    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, finalExam, ...rest } = req.body
+    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, finalExam, thumbnail, ...rest } = req.body
     const finalCurriculum = Array.isArray(curriculum) ? curriculum : course.curriculum
+
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
 
     // Recalculate totals (pre('save') doesn't run on findByIdAndUpdate)
     let totalDuration = 0, totalLessons = 0
@@ -153,6 +158,9 @@ export async function updateCourse(req, res, next) {
       isFree:       isFree || price === 0,
       totalDuration,
       totalLessons,
+    }
+    if (uploadedThumbnail !== undefined) {
+      updateData.thumbnail = uploadedThumbnail
     }
     if (finalExam !== undefined) {
       updateData.finalExam = finalExam || null

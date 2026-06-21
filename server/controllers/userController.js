@@ -3,6 +3,7 @@ import InstructorRequest from '../models/InstructorRequest.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { validatePassword } from '../utils/passwordValidator.js'
+import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
 
 export async function getProfile(req, res, next) {
   try {
@@ -25,7 +26,10 @@ export async function updateProfile(req, res, next) {
       : typeof raw === 'string' && raw.trim()
         ? raw.split(',').map(s => s.trim()).filter(Boolean)
         : undefined
-    const update = { fullName, bio, avatar, linkedin, portfolio, phone, department }
+
+    const uploadedAvatar = await uploadBase64Image(avatar, 'zenius/avatars')
+
+    const update = { fullName, bio, avatar: uploadedAvatar, linkedin, portfolio, phone, department }
     if (expertise !== undefined) update.expertise = expertise
     const user = await User.findByIdAndUpdate(
       req.user._id,
