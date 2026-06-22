@@ -76,49 +76,31 @@ const io         = new Server(httpServer, {
 registerLiveRoomSocket(io)
 
 // Security middleware
-if (process.env.NODE_ENV === 'production') {
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", 'https://*.youtube.com', 'https://*.ytimg.com'],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
-        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co', 'https://*.ytimg.com'],
-        connectSrc: ["'self'", 'wss:', 'https:'],
-        frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com', 'https://res.cloudinary.com', 'https://docs.google.com'],
-        mediaSrc: ["'self'", 'https://res.cloudinary.com', 'data:', 'blob:'],
-      },
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      defaultSrc: ["'self'", 'http://localhost:*', 'ws://localhost:*'],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://*.youtube.com', 'https://*.ytimg.com'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+      imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co', 'https://*.ytimg.com', 'https:'],
+      connectSrc: ["'self'", 'ws:', 'wss:', 'https:', 'http://localhost:*', 'ws://localhost:*', 'https://live-meet.onrender.com', 'wss://live-meet.onrender.com'],
+      frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com', 'https://res.cloudinary.com', 'https://docs.google.com'],
+      mediaSrc: ["'self'", 'https://res.cloudinary.com', 'data:', 'blob:', 'https:'],
     },
-    crossOriginResourcePolicy: { policy: 'cross-origin' },
-    hsts: {
-      maxAge: 31536000,      // 1 year
-      includeSubDomains: true,
-      preload: true,
-    },
-    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-    frameguard: { action: 'deny' },
-    noSniff: true,
-    xssFilter: true,
-  }));
-} else {
-  // Enforce security headers in development but relax CSP/CORP for local embeds
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'", 'http://localhost:*', 'ws://localhost:*'],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://*.youtube.com', 'https://*.ytimg.com'],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
-        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co', 'https://*.ytimg.com'],
-        connectSrc: ["'self'", 'ws:', 'wss:', 'https:'],
-        frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com', 'https://res.cloudinary.com', 'https://docs.google.com'],
-        mediaSrc: ["'self'", 'https://res.cloudinary.com', 'data:', 'blob:'],
-      }
-    },
-    crossOriginResourcePolicy: { policy: 'cross-origin' }
-  }));
-}
+  },
+  frameguard: { action: 'deny' },
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  hsts: process.env.NODE_ENV === 'production' ? {
+    maxAge: 31536000,      // 1 year
+    includeSubDomains: true,
+    preload: true,
+  } : false,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  noSniff: true,
+  xssFilter: true,
+}));
 
 app.use(cors(corsOptions))
 app.use(express.json({ limit: '10mb' }))
@@ -463,11 +445,15 @@ if (process.env.NODE_ENV === 'production') {
         }
       }
 
-      const schemaScripts = schemas.map(schema => `
-    <script type="application/ld+json">
-      ${JSON.stringify(schema, null, 2)}
-    </script>
-      `).join('\n')
+      const schemaScripts = schemas.map(schema => {
+        const jsonString = JSON.stringify(schema)
+          .replace(/</g, '\\u003c')
+          .replace(/>/g, '\\u003e')
+          .replace(/&/g, '\\u0026')
+          .replace(/\u2028/g, '\\u2028')
+          .replace(/\u2029/g, '\\u2029');
+        return `<script type="application/ld+json">${jsonString}</script>`;
+      }).join('\n')
 
       // Escape all values before injecting into HTML
       const safeTitle = escapeHtml(title)

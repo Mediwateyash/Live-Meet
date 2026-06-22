@@ -143,7 +143,7 @@ export async function forgotPassword(req, res, next) {
     user.resetPasswordExpires = expires
     await user.save({ validateBeforeSave: false })
 
-    const resetURL = `${process.env.CLIENT_URL}/reset-password#token=${token}`
+    const resetURL = `${process.env.CLIENT_URL}/reset-password?token=${token}`
     await sendEmail({
       to: email,
       subject: 'Password Reset — Zenius AI',
