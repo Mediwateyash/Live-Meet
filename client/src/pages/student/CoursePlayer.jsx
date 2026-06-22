@@ -12,6 +12,7 @@ import { formatDuration } from '../../utils/formatters.js'
 import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
 import CertificateTemplate from '../../components/certificate/CertificateTemplate.jsx'
 import api from '../../api/axios.js'
+import { motion, AnimatePresence } from 'framer-motion'
 
 function getDownloadUrl(url) {
   if (!url) return '';
