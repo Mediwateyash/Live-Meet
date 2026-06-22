@@ -6,6 +6,7 @@ import Enrollment from '../models/Enrollment.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
+import jwt from 'jsonwebtoken'
 
 export async function browse(req, res, next) {
   try {
@@ -13,14 +14,15 @@ export async function browse(req, res, next) {
 
     const filter = { status: 'published' }
     if (q) {
+      const escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const matchingInstructors = await User.find(
-        { fullName: { $regex: q, $options: 'i' } },
+        { fullName: { $regex: escapedQ, $options: 'i' } },
         '_id'
       )
       const instructorIds = matchingInstructors.map(u => u._id)
       filter.$or = [
-        { title:       { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
+        { title:       { $regex: escapedQ, $options: 'i' } },
+        { description: { $regex: escapedQ, $options: 'i' } },
         ...(instructorIds.length ? [{ instructor: { $in: instructorIds } }] : []),
       ]
     }
@@ -94,17 +96,54 @@ export async function getBySlug(req, res, next) {
       .populate('student', 'fullName avatar')
       .sort({ createdAt: -1 })
 
+    // Check if the user is logged in and authorized (enrolled, instructor, or admin)
+    let isEnrolled = false
+    const token = req.cookies?.accessToken
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+        const user = await User.findById(decoded.userId)
+        if (user) {
+          isEnrolled = user.enrolledCourses.some(id => id.toString() === course._id.toString()) ||
+                       user.role === 'admin' ||
+                       course.instructor.toString() === user._id.toString()
+        }
+      } catch (err) {
+        // invalid token, treat as visitor
+      }
+    }
+
     const courseObj = course.toObject()
     courseObj.reviews = reviews
     if (courseObj.enrolledStudents) {
       courseObj.enrolledStudents = Array(courseObj.enrolledStudents.length).fill(null)
     }
-    // Strip video URLs from public course detail — full URLs only via authenticated getLearn()
-    if (courseObj.curriculum) {
-      courseObj.curriculum = courseObj.curriculum.map(section => ({
-        ...section,
-        lessons: (section.lessons || []).map(({ videoUrl, ...lesson }) => lesson)
-      }))
+
+    // Strip video URLs and resources from public course detail for non-enrolled users
+    if (!isEnrolled) {
+      if (courseObj.curriculum) {
+        courseObj.curriculum = courseObj.curriculum.map(section => ({
+          ...section,
+          lessons: (section.lessons || []).map(lesson => {
+            if (lesson.isFree) {
+              return {
+                _id: lesson._id,
+                title: lesson.title,
+                duration: lesson.duration,
+                isFree: true,
+                videoUrl: lesson.videoUrl, // Keep for preview
+              }
+            } else {
+              return {
+                _id: lesson._id,
+                title: lesson.title,
+                duration: lesson.duration,
+                isFree: false,
+              }
+            }
+          })
+        }))
+      }
     }
 
     res.json(new ApiResponse(200, courseObj))
@@ -300,12 +339,30 @@ export async function getYoutubeMeta(req, res, next) {
       throw new ApiError(400, 'Only YouTube URLs are allowed');
     }
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-      }
-    })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
+    let response;
+    try {
+      response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+        }
+      })
+    } catch (fetchErr) {
+      clearTimeout(timeout)
+      throw new ApiError(400, 'Failed to connect to YouTube or request timed out')
+    } finally {
+      clearTimeout(timeout)
+    }
+
     if (!response.ok) throw new ApiError(400, 'Failed to fetch YouTube page')
+    
+    const contentLength = response.headers.get('content-length')
+    if (contentLength && parseInt(contentLength, 10) > 1024 * 1024) {
+      throw new ApiError(400, 'YouTube response content too large')
+    }
+
     const html = await response.text()
 
     // Title

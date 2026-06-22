@@ -115,7 +115,10 @@ export async function getUsers(req, res, next) {
     const { role, search, page = 1, limit = 20 } = req.query
     const filter = {}
     if (role)   filter.role = role
-    if (search) filter.$or  = [{ fullName: { $regex: search, $options: 'i' } }, { email: { $regex: search, $options: 'i' } }]
+    if (search) {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      filter.$or = [{ fullName: { $regex: escapedSearch, $options: 'i' } }, { email: { $regex: escapedSearch, $options: 'i' } }]
+    }
     const users = await User.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(Number(limit)).select('-password -refreshToken -resetPasswordToken')
     const total = await User.countDocuments(filter)
     res.json(new ApiResponse(200, users, 'Users fetched', { total }))

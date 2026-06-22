@@ -40,3 +40,11 @@ export const enrollLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+export const courseCreateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: process.env.NODE_ENV === 'production' ? 5 : 50,                     // 5 attempts in prod, 50 in dev
+  message: { success: false, message: 'Too many courses created. Please try again in 1 hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+

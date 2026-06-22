@@ -4,7 +4,7 @@ import {
 } from '../controllers/courseController.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { requireRole }   from '../middleware/role.js'
-import { writeLimiter, enrollLimiter } from '../middleware/rateLimiter.js'
+import { writeLimiter, enrollLimiter, courseCreateLimiter } from '../middleware/rateLimiter.js'
 
 const router = Router()
 
@@ -12,7 +12,7 @@ router.get ('/',              browse)
 router.get ('/featured',      getFeatured)
 router.get ('/youtube-meta',  authMiddleware, requireRole('instructor', 'admin'), getYoutubeMeta)
 router.get ('/:slug',         getBySlug)
-router.post('/',              authMiddleware, requireRole('instructor', 'admin'), writeLimiter, createCourse)
+router.post('/',              authMiddleware, requireRole('instructor', 'admin'), courseCreateLimiter, writeLimiter, createCourse)
 router.put ('/:id',           authMiddleware, requireRole('instructor', 'admin'), writeLimiter, updateCourse)
 router.delete('/:id',         authMiddleware, requireRole('instructor', 'admin'), deleteCourse)
 router.post('/:id/enroll',    authMiddleware, enrollLimiter, enroll)

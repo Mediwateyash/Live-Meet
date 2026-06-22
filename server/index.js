@@ -35,6 +35,7 @@ import Course             from './models/Course.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { authLimiter, apiLimiter } from './middleware/rateLimiter.js'
 import { mongoSanitize } from './middleware/mongoSanitize.js'
+import { csrfMiddleware } from './middleware/csrf.js'
 
 // Socket handlers
 import { registerLiveRoomSocket } from './socket/liveRoom.js'
@@ -123,6 +124,7 @@ app.use(cors(corsOptions))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+app.use(csrfMiddleware)
 
 // Rate limiting & NoSQL query sanitization (sanitize first)
 app.use(mongoSanitize)
