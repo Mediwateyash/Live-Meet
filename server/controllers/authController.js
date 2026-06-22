@@ -139,6 +139,12 @@ export async function forgotPassword(req, res, next) {
     if (!process.env.JWT_SECRET) {
       throw new ApiError(500, 'Secure key not configured on server')
     }
+    // Invalidate any existing reset tokens
+    await User.updateOne(
+      { _id: user._id },
+      { $unset: { resetPasswordToken: 1, resetPasswordExpires: 1 } }
+    )
+
     user.resetPasswordToken   = crypto.createHmac('sha256', process.env.JWT_SECRET).update(token).digest('hex')
     user.resetPasswordExpires = expires
     await user.save({ validateBeforeSave: false })
@@ -147,7 +153,12 @@ export async function forgotPassword(req, res, next) {
     await sendEmail({
       to: email,
       subject: 'Password Reset — Zenius AI',
-      html: `<p>Reset your password: <a href="${resetURL}">${resetURL}</a> (valid for 1 hour)</p>`,
+      html: `
+<p>You requested a password reset.</p>
+<p>Click the link below to reset your password (valid for 1 hour):</p>
+<p><a href="${resetURL}" style="color:#1a73e8;font-size:16px;">Reset Your Password</a></p>
+<p>If you didn't request this, you can safely ignore this email.</p>
+`,
     })
 
     res.json(new ApiResponse(200, null, 'Reset link sent'))
