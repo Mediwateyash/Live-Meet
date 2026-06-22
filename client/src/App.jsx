@@ -49,6 +49,7 @@ import InstructorDashboard  from './pages/instructor/Dashboard.jsx'
 import InstructorCourses    from './pages/instructor/Courses.jsx'
 import CourseBuilder        from './pages/instructor/CourseBuilder.jsx'
 import InstructorLiveLectures from './pages/instructor/LiveLectures.jsx'
+import UploadNotes          from './pages/instructor/UploadNotes.jsx'
 
 // Admin pages
 import AdminDashboard        from './pages/admin/Dashboard.jsx'
@@ -166,6 +167,7 @@ export default function App() {
       <Route path="/instructor/courses"   element={<RequireAuth><RequireRole role="instructor"><InstructorCourses /></RequireRole></RequireAuth>} />
       <Route path="/instructor/courses/new"   element={<RequireAuth><RequireRole role="instructor"><CourseBuilder /></RequireRole></RequireAuth>} />
       <Route path="/instructor/courses/:id/edit"    element={<RequireAuth><RequireRole role="instructor"><CourseBuilder /></RequireRole></RequireAuth>} />
+      <Route path="/instructor/courses/:id/notes"   element={<RequireAuth><RequireRole role="instructor"><UploadNotes /></RequireRole></RequireAuth>} />
       <Route path="/instructor/live-lectures"       element={<RequireAuth><RequireRole role="instructor"><InstructorLiveLectures /></RequireRole></RequireAuth>} />
       <Route path="/instructor/quizzes"             element={<RequireAuth><RequireRole role="instructor"><ManageQuizzes /></RequireRole></RequireAuth>} />
       <Route path="/instructor/quizzes/create"      element={<RequireAuth><RequireRole role="instructor"><CreateQuiz /></RequireRole></RequireAuth>} />

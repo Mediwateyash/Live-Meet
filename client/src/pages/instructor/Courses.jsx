@@ -90,7 +90,7 @@ export default function InstructorCourses() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
                         {[
-                          { icon: FileText,      title: 'Notes',         color: '#7C3AED', bg: 'rgba(109,40,217,0.12)',  path: (id) => `/instructor/quizzes/create?courseId=${id}` },
+                          { icon: FileText,      title: 'Notes',         color: '#7C3AED', bg: 'rgba(109,40,217,0.12)',  path: (id) => `/instructor/courses/${id}/notes` },
                           { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: 'rgba(37,99,235,0.12)',   path: (id) => `/instructor/quizzes?courseId=${id}` },
                           { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: 'rgba(16,185,129,0.12)',  path: (id) => `/instructor/quizzes/create?courseId=${id}` },
                           { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  path: (id) => `/instructor/live-lectures?courseId=${id}` },

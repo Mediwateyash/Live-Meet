@@ -171,7 +171,7 @@ export default function AdminInstructorManage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
                         {[
-                          { icon: FileText,      title: 'Notes',         color: '#7C3AED', bg: '#F0EEFF', path: (id) => `/instructor/quizzes/create?courseId=${id}` },
+                          { icon: FileText,      title: 'Notes',         color: '#7C3AED', bg: '#F0EEFF', path: (id) => `/instructor/courses/${id}/notes` },
                           { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: '#EFF6FF', path: (id) => `/instructor/quizzes?courseId=${id}` },
                           { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: '#F0FDF4', path: (id) => `/instructor/quizzes/create?courseId=${id}` },
                           { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: '#FFFBEB', path: (id) => `/admin/live-lectures?courseId=${id}` },
