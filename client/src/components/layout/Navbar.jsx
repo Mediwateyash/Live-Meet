@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Search, BookOpen, ChevronDown, LogOut, User, LayoutDashboard, GraduationCap, Heart, Bell, Sun, Moon, Video } from 'lucide-react'
+import { Search, BookOpen, ChevronDown, LogOut, User, LayoutDashboard, GraduationCap, Heart, Bell, Sun, Moon, Video, Mail } from 'lucide-react'
+
 import { motion, AnimatePresence } from 'framer-motion'
 import useAuthStore from '../../store/authStore.js'
 import useUIStore from '../../store/uiStore.js'
@@ -170,6 +171,13 @@ export default function Navbar() {
                       <DropItem to="/notifications" icon={Bell} label="Notifications" onClick={() => setProfileOpen(false)} />
                       <DropItem to={getDashboardLink()} icon={LayoutDashboard} label="Dashboard" onClick={() => setProfileOpen(false)} />
                       <DropItem to="/profile" icon={User} label="Profile" onClick={() => setProfileOpen(false)} />
+                      <DropItem
+                        to={user?.role === 'admin' ? '/admin/support' : '/contact'}
+                        icon={Mail}
+                        label={user?.role === 'admin' ? 'Student Feedback' : 'Contact Us'}
+                        onClick={() => setProfileOpen(false)}
+                      />
+
                       {user?.role === 'student' && (
                         <DropItem to="/become-instructor" icon={GraduationCap} label="Teach on Zenius" onClick={() => setProfileOpen(false)} />
                       )}

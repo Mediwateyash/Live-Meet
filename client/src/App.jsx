@@ -30,8 +30,10 @@ import BecomeInstructor   from './pages/student/BecomeInstructor.jsx'
 import Profile            from './pages/student/Profile.jsx'
 import LiveRoom           from './pages/student/LiveRoom.jsx'
 import StudentLiveLectures from './pages/student/LiveLectures.jsx'
+import Contact            from './pages/student/Contact.jsx'
 
 // Quiz pages
+
 import TakeQuiz           from './pages/quizzes/TakeQuiz.jsx'
 import QuizResult         from './pages/quizzes/QuizResult.jsx'
 import CreateQuiz         from './pages/quizzes/CreateQuiz.jsx'
@@ -57,6 +59,8 @@ import AdminInstructors      from './pages/admin/Instructors.jsx'
 import AdminInstructorManage from './pages/admin/InstructorManage.jsx'
 import AdminLiveLectures     from './pages/admin/LiveLectures.jsx'
 import AdminTestimonials     from './pages/admin/Testimonials.jsx'
+import AdminSupport          from './pages/admin/Support.jsx'
+
 
 function RequireAuth({ children }) {
   const { isAuthenticated } = useAuthStore()
@@ -151,6 +155,8 @@ export default function App() {
       <Route path="/student/live-lectures" element={<RequireAuth><StudentLiveLectures /></RequireAuth>} />
       <Route path="/live-lectures"        element={<RequireAuth><LiveLecturesRedirect /></RequireAuth>} />
       <Route path="/notifications"        element={<RequireAuth><Notifications /></RequireAuth>} />
+      <Route path="/contact"              element={<RequireAuth><Contact /></RequireAuth>} />
+
 
       <Route path="/quizzes/:quizId/take"   element={<RequireAuth><TakeQuiz /></RequireAuth>} />
       <Route path="/student/results/:resultId" element={<RequireAuth><QuizResult /></RequireAuth>} />
@@ -177,6 +183,8 @@ export default function App() {
       <Route path="/admin/instructors/:instructorId/courses/:id/edit" element={<RequireAuth><RequireRole role="admin"><CourseBuilder /></RequireRole></RequireAuth>} />
       <Route path="/admin/live-lectures"            element={<RequireAuth><RequireRole role="admin"><AdminLiveLectures /></RequireRole></RequireAuth>} />
       <Route path="/admin/testimonials"             element={<RequireAuth><RequireRole role="admin"><AdminTestimonials /></RequireRole></RequireAuth>} />
+      <Route path="/admin/support"                  element={<RequireAuth><RequireRole role="admin"><AdminSupport /></RequireRole></RequireAuth>} />
+
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

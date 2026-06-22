@@ -26,6 +26,8 @@ import resultRoutes       from './routes/resultRoutes.js'
 import analyticsRoutes    from './routes/analyticsRoutes.js'
 import quickQuizRoutes    from './routes/quickQuizRoutes.js'
 import uploadRoutes       from './routes/uploadRoutes.js'
+import supportRoutes      from './routes/support.js'
+
 
 // Middlewares
 import { errorHandler } from './middleware/errorHandler.js'
@@ -147,6 +149,8 @@ app.use('/api/result',        resultRoutes)
 app.use('/api/analytics',     analyticsRoutes)
 app.use('/api/quick-quiz',    quickQuizRoutes)
 app.use('/api/upload',        uploadRoutes)
+app.use('/api/support',       supportRoutes)
+
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))

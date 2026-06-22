@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, BookOpen, GraduationCap, TrendingUp,
-  AlertCircle, ChevronRight, Shield, ClipboardList, Star
+  AlertCircle, ChevronRight, Shield, ClipboardList, Star, MessageSquare
 } from 'lucide-react'
+
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import { SkeletonStat } from '../../components/ui/Skeleton.jsx'
 import { adminAPI } from '../../api/admin.js'
@@ -33,7 +34,9 @@ export default function AdminDashboard() {
     { label: 'Manage Instructors',  desc: 'Manage instructors and their courses',       icon: GraduationCap,  path: '/admin/instructors',         color: '#10B981', bg: '#F0FDF4' },
     { label: 'Instructor Requests', desc: 'Review pending instructor applications',     icon: ClipboardList,  path: '/admin/instructor-requests', color: '#F59E0B', bg: '#FFFBEB' },
     { label: 'Manage Reviews',      desc: 'Update platform testimonials and reviews',   icon: Star,           path: '/admin/testimonials',        color: '#EC4899', bg: '#FDF2F8' },
+    { label: 'Student Feedback',    desc: 'Read and respond to student reports/feedback', icon: MessageSquare, path: '/admin/support',            color: '#F43F5E', bg: '#FFF1F2' },
   ]
+
 
   return (
     <PageLayout>
