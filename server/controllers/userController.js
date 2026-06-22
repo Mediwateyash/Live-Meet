@@ -9,6 +9,7 @@ import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
 
 export async function getProfile(req, res, next) {
   try {
+    // Check authorization BEFORE querying DB to prevent user enumeration
     if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin') {
       throw new ApiError(403, 'Access denied')
     }
@@ -17,7 +18,7 @@ export async function getProfile(req, res, next) {
       selectFields += ' -enrolledCourses -wishlist';
     }
     const user = await User.findById(req.params.id).select(selectFields)
-    if (!user) throw new ApiError(404, 'User not found')
+    if (!user) throw new ApiError(403, 'Access denied')
     res.json(new ApiResponse(200, user))
   } catch (err) { next(err) }
 }

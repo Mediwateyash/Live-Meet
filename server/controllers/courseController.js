@@ -37,9 +37,12 @@ export async function browse(req, res, next) {
       'price-desc':{ price: -1 },
     }
 
+    // Only select public catalog fields — never expose curriculum/video URLs
+    const publicFields = 'title slug subtitle thumbnail category level price isFree avgRating reviewCount totalDuration totalLessons enrolledStudents tags language createdAt'
+
     const skip = (Number(page) - 1) * Number(limit)
     const [courses, total] = await Promise.all([
-      Course.find(filter).sort(sortMap[sort] || sortMap.popular).skip(skip).limit(Number(limit)).populate('instructor', 'fullName avatar'),
+      Course.find(filter).select(publicFields).sort(sortMap[sort] || sortMap.popular).skip(skip).limit(Number(limit)).populate('instructor', 'fullName avatar'),
       Course.countDocuments(filter),
     ])
 
@@ -57,7 +60,10 @@ export async function browse(req, res, next) {
 
 export async function getFeatured(req, res, next) {
   try {
+    const publicFields = 'title slug subtitle thumbnail category level price isFree avgRating reviewCount totalDuration totalLessons enrolledStudents tags language createdAt'
+
     const courses = await Course.find({ status: 'published' })
+      .select(publicFields)
       .sort({ avgRating: -1, 'enrolledStudents': -1 })
       .limit(6)
       .populate('instructor', 'fullName avatar')
@@ -92,6 +98,13 @@ export async function getBySlug(req, res, next) {
     courseObj.reviews = reviews
     if (courseObj.enrolledStudents) {
       courseObj.enrolledStudents = Array(courseObj.enrolledStudents.length).fill(null)
+    }
+    // Strip video URLs from public course detail — full URLs only via authenticated getLearn()
+    if (courseObj.curriculum) {
+      courseObj.curriculum = courseObj.curriculum.map(section => ({
+        ...section,
+        lessons: (section.lessons || []).map(({ videoUrl, ...lesson }) => lesson)
+      }))
     }
 
     res.json(new ApiResponse(200, courseObj))

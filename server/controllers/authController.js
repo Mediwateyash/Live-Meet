@@ -19,7 +19,7 @@ export async function register(req, res, next) {
     validatePassword(password)
 
     const exists = await User.findOne({ email })
-    if (exists) throw new ApiError(409, 'Email already registered')
+    if (exists) throw new ApiError(409, 'Account creation failed. Please try again or use a different email.')
 
     if (role && !['student', 'instructor'].includes(role)) throw new ApiError(400, 'Invalid role')
 

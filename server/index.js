@@ -249,6 +249,14 @@ if (process.env.NODE_ENV === 'production') {
       const baseUrl = `${protocol}://${host}`
       const fullUrl = `${baseUrl}${req.originalUrl}`
 
+      // XSS protection: escape all user-sourced data before HTML interpolation
+      const escapeHtml = (str) => String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+
       // Default values
       let title = 'Zenius AI — Learn Without Limits'
       let description = 'Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes.'
@@ -459,27 +467,33 @@ if (process.env.NODE_ENV === 'production') {
     </script>
       `).join('\n')
 
+      // Escape all values before injecting into HTML
+      const safeTitle = escapeHtml(title)
+      const safeDesc  = escapeHtml(description)
+      const safeImage = escapeHtml(image)
+      const safeUrl   = escapeHtml(fullUrl)
+
       const seoTags = `
-    <meta name="description" content="${description}" />
-    <link rel="canonical" href="${fullUrl}" />
+    <meta name="description" content="${safeDesc}" />
+    <link rel="canonical" href="${safeUrl}" />
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="${fullUrl}" />
-    <meta property="og:title" content="${title}" />
-    <meta property="og:description" content="${description}" />
-    <meta property="og:image" content="${image}" />
+    <meta property="og:url" content="${safeUrl}" />
+    <meta property="og:title" content="${safeTitle}" />
+    <meta property="og:description" content="${safeDesc}" />
+    <meta property="og:image" content="${safeImage}" />
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="${fullUrl}" />
-    <meta property="twitter:title" content="${title}" />
-    <meta property="twitter:description" content="${description}" />
-    <meta property="twitter:image" content="${image}" />
+    <meta property="twitter:url" content="${safeUrl}" />
+    <meta property="twitter:title" content="${safeTitle}" />
+    <meta property="twitter:description" content="${safeDesc}" />
+    <meta property="twitter:image" content="${safeImage}" />
     <!-- Schema Markup -->
     ${schemaScripts}
   `
 
       // Replace default Title tag
-      html = html.replace(/<title>.*?<\/title>/g, `<title>${title}</title>`)
+      html = html.replace(/<title>.*?<\/title>/g, `<title>${safeTitle}</title>`)
       // Inject tags before </head>
       html = html.replace('</head>', `${seoTags}\n  </head>`)
 
