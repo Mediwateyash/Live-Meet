@@ -254,14 +254,18 @@ if (process.env.NODE_ENV === 'production') {
       let description = 'Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes.'
       let image = `${baseUrl}/favicon.svg`
       let statusCode = 200
-      let schemaJson = {
+      let schemas = []
+
+      // Organization Schema (default on all pages)
+      schemas.push({
         "@context": "https://schema.org",
-        "@type": "OnlineBusiness",
+        "@type": "Organization",
+        "@id": `${baseUrl}/#organization`,
         "name": "Zenius AI",
         "url": baseUrl,
         "logo": `${baseUrl}/favicon.svg`,
-        "description": description
-      }
+        "description": "Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes."
+      })
 
       // Check route pattern for Course detail page: /course/:slug
       const courseMatch = req.path.match(/^\/course\/([^/]+)$/)
@@ -274,9 +278,12 @@ if (process.env.NODE_ENV === 'production') {
           if (course.thumbnail) {
             image = course.thumbnail
           }
-          schemaJson = {
+          
+          // 1. Course Schema
+          schemas.push({
             "@context": "https://schema.org",
             "@type": "Course",
+            "@id": `${baseUrl}/course/${course.slug}/#course`,
             "name": course.title,
             "description": course.description ? course.description.slice(0, 250) : '',
             "provider": {
@@ -290,7 +297,33 @@ if (process.env.NODE_ENV === 'production') {
               "price": course.price || 0,
               "priceCurrency": "INR"
             }
-          }
+          })
+
+          // 2. Breadcrumb Schema: Home > Browse Courses > Course Name
+          schemas.push({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": baseUrl
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Browse Courses",
+                "item": `${baseUrl}/browse`
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": course.title,
+                "item": `${baseUrl}/course/${course.slug}`
+              }
+            ]
+          })
         } else {
           // SEO-friendly 404 Status Code response!
           statusCode = 404
@@ -300,7 +333,131 @@ if (process.env.NODE_ENV === 'production') {
       } else if (req.path === '/browse') {
         title = 'Browse Courses | Zenius AI'
         description = 'Explore professional AI-powered learning courses on Zenius AI.'
+
+        // Breadcrumb Schema: Home > Browse Courses
+        schemas.push({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": baseUrl
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Browse Courses",
+              "item": `${baseUrl}/browse`
+            }
+          ]
+        })
+      } else if (req.path === '/' || req.path === '') {
+        // 1. Website Schema (with SearchAction)
+        schemas.push({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "@id": `${baseUrl}/#website`,
+          "name": "Zenius AI",
+          "url": baseUrl,
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": `${baseUrl}/browse?q={search_term_string}`
+            },
+            "query-input": "required name=search_term_string"
+          }
+        })
+
+        // 2. FAQ Schema
+        schemas.push({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is Zenius AI and who can use it?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Zenius AI is an advanced, AI-powered Learning Management System (LMS) designed for both students and instructors. Students can enroll in interactive courses, take generated quizzes, and attend live lectures, while educators can manage curriculums, host live sessions, and review student progress."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does the AI MCQ and Test Generator work?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Zenius AI features a built-in AI MCQ Generator. Instructors can select course materials or specify custom topics, and our AI automatically analyzes the context to generate multiple-choice questions, making exam creation fast and efficient."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can students interact with instructors during Live Lectures?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! Zenius AI provides a custom virtual classroom experience. Students can join scheduled live streams, access real-time video/audio controls, interact with peers and instructors via the chat dock, and view attendance metrics."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do certificates work on Zenius AI?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Once a student successfully completes all modules of a course and passes the required course quizzes, Zenius AI automatically generates a personalized, downloadable certificate of completion that can be shared with employers."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How can I submit feedback or report a bug to the administrator?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Logged-in users can open their profile menu and click 'Contact Us' (or 'Student Feedback' for admins) to submit tickets. You can categorise your request, write your feedback, and receive direct responses from platform administrators in your inbox."
+              }
+            }
+          ]
+        })
+      } else {
+        // Generic Breadcrumb for other pages (e.g. /login, /register, /contact)
+        const pathClean = req.path.replace(/^\/|\/$/g, '')
+        const pageTitleMap = {
+          'login': 'Login',
+          'register': 'Register',
+          'forgot-password': 'Forgot Password',
+          'contact': 'Contact Us',
+          'about': 'About Us',
+          'admin/support': 'Admin Support'
+        }
+        const pageName = pageTitleMap[pathClean] || (pathClean ? pathClean.charAt(0).toUpperCase() + pathClean.slice(1) : '')
+        
+        if (pageName && !req.path.startsWith('/api') && !req.path.startsWith('/socket.io')) {
+          schemas.push({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": baseUrl
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": pageName,
+                "item": `${baseUrl}${req.path}`
+              }
+            ]
+          })
+        }
       }
+
+      const schemaScripts = schemas.map(schema => `
+    <script type="application/ld+json">
+      ${JSON.stringify(schema, null, 2)}
+    </script>
+      `).join('\n')
 
       const seoTags = `
     <meta name="description" content="${description}" />
@@ -318,9 +475,7 @@ if (process.env.NODE_ENV === 'production') {
     <meta property="twitter:description" content="${description}" />
     <meta property="twitter:image" content="${image}" />
     <!-- Schema Markup -->
-    <script type="application/ld+json">
-      ${JSON.stringify(schemaJson, null, 2)}
-    </script>
+    ${schemaScripts}
   `
 
       // Replace default Title tag
