@@ -106,7 +106,7 @@ export async function getBySlug(req, res, next) {
         if (user) {
           isEnrolled = user.enrolledCourses.some(id => id.toString() === course._id.toString()) ||
                        user.role === 'admin' ||
-                       course.instructor.toString() === user._id.toString()
+                       (course.instructor?._id || course.instructor).toString() === user._id.toString()
         }
       } catch (err) {
         // invalid token, treat as visitor
