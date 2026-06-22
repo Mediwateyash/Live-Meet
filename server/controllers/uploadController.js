@@ -36,10 +36,12 @@ export const uploadResource = async (req, res) => {
             console.error('Cleanup error:', cleanupError);
         }
 
+        const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+
         res.status(200).json({
             message: 'File uploaded successfully',
             url: result.secure_url,
-            name: req.file.originalname
+            name: safeName
         });
     } catch (error) {
         console.error('Error uploading resource:', error);

@@ -45,8 +45,9 @@ export const uploadMaterial = async (req, res) => {
             return res.status(400).json({ message: 'End page must be greater than or equal to start page.' });
         }
 
+        const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
         const material = await Material.create({
-            fileName: req.file.originalname,
+            fileName: safeName,
             fileType: path.extname(req.file.originalname).toLowerCase().replace('.', ''),
             chapterName: chapterName,
             startPage: startPage,
