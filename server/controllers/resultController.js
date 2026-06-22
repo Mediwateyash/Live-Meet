@@ -102,8 +102,15 @@ export const getResultById = async (req, res) => {
         const studentIdStr = result.studentId ? result.studentId._id.toString() : null;
         const reqUserIdStr = req.user._id.toString();
 
-        if (studentIdStr !== reqUserIdStr && req.user.role !== 'admin' && req.user.role !== 'instructor') {
-            return res.status(403).json({ message: 'Not authorized' });
+        if (studentIdStr !== reqUserIdStr && req.user.role !== 'admin') {
+            if (req.user.role === 'instructor') {
+                const quiz = await Quiz.findById(result.quizId);
+                if (!quiz || quiz.createdBy.toString() !== reqUserIdStr) {
+                    return res.status(403).json({ message: 'Not authorized' });
+                }
+            } else {
+                return res.status(403).json({ message: 'Not authorized' });
+            }
         }
 
         res.json(result);

@@ -5,7 +5,7 @@ export function generateAccessToken(userId) {
 }
 
 export function generateRefreshToken(userId) {
-  return jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' })
+  return jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '1d' })
 }
 
 export function setTokenCookies(res, accessToken, refreshToken) {
@@ -22,7 +22,7 @@ export function setTokenCookies(res, accessToken, refreshToken) {
     httpOnly: true,
     secure:   isProd,
     sameSite: 'strict',
-    maxAge:   7 * 24 * 60 * 60 * 1000,
+    maxAge:   1 * 24 * 60 * 60 * 1000, // 1 day
     path:     '/api/auth/refresh',
   })
 }

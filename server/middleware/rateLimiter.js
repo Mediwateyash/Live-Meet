@@ -48,3 +48,11 @@ export const courseCreateLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+export const profileLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 100 : 500,                   // 100 attempts in prod, 500 in dev
+  message: { success: false, message: 'Too many profile lookups. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+

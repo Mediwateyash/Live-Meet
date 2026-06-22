@@ -254,6 +254,12 @@ export async function enroll(req, res, next) {
     const user = await User.findById(req.user._id)
     if (isEnrolledIn(user, course._id)) throw new ApiError(400, 'Already enrolled')
 
+    // Prevent enrollment abuse by capping at 50 courses per student
+    const enrolledCount = await Enrollment.countDocuments({ student: req.user._id })
+    if (enrolledCount >= 50) {
+      throw new ApiError(400, 'Enrollment limit reached (maximum 50 courses per student)')
+    }
+
     user.enrolledCourses.push(course._id)
     await user.save({ validateBeforeSave: false })
 
@@ -333,9 +339,8 @@ export async function getYoutubeMeta(req, res, next) {
       throw new ApiError(400, 'Invalid protocol');
     }
 
-    const allowedHostnames = ['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com'];
-    const isAllowedHost = allowedHostnames.includes(parsedUrl.hostname) || parsedUrl.hostname.endsWith('.youtube.com');
-    if (!isAllowedHost) {
+    const allowedHostnames = new Set(['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com']);
+    if (!allowedHostnames.has(parsedUrl.hostname)) {
       throw new ApiError(400, 'Only YouTube URLs are allowed');
     }
 
