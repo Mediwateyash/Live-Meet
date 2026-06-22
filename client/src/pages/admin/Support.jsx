@@ -107,7 +107,7 @@ export default function AdminSupport() {
 
   return (
     <PageLayout noFooter={true}>
-      <div className="max-w-6xl mx-auto px-6 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
 
         {/* Back navigation */}
         <button
@@ -131,28 +131,30 @@ export default function AdminSupport() {
 
         {/* Controls Row: Tabs on Left, Search on Right */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          {/* Tabs */}
-          <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: 'var(--z-purple-100)' }}>
-            <button
-              onClick={() => setTab('pending')}
-              className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
-              style={{
-                background: tab === 'pending' ? '#7C3AED' : 'transparent',
-                color: tab === 'pending' ? 'white' : 'var(--text-secondary)',
-              }}
-            >
-              Pending ({tickets.filter(t => t.status === 'pending').length})
-            </button>
-            <button
-              onClick={() => setTab('replied')}
-              className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
-              style={{
-                background: tab === 'replied' ? '#7C3AED' : 'transparent',
-                color: tab === 'replied' ? 'white' : 'var(--text-secondary)',
-              }}
-            >
-              Replied ({tickets.filter(t => t.status === 'replied').length})
-            </button>
+          {/* Tabs with horizontal scroll wrapper on mobile */}
+          <div className="overflow-x-auto -webkit-overflow-scrolling-touch pb-1 scrollbar-none">
+            <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: 'var(--z-purple-100)' }}>
+              <button
+                onClick={() => setTab('pending')}
+                className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all whitespace-nowrap"
+                style={{
+                  background: tab === 'pending' ? '#7C3AED' : 'transparent',
+                  color: tab === 'pending' ? 'white' : 'var(--text-secondary)',
+                }}
+              >
+                Pending ({tickets.filter(t => t.status === 'pending').length})
+              </button>
+              <button
+                onClick={() => setTab('replied')}
+                className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all whitespace-nowrap"
+                style={{
+                  background: tab === 'replied' ? '#7C3AED' : 'transparent',
+                  color: tab === 'replied' ? 'white' : 'var(--text-secondary)',
+                }}
+              >
+                Replied ({tickets.filter(t => t.status === 'replied').length})
+              </button>
+            </div>
           </div>
 
           {/* Search bar */}
@@ -217,11 +219,11 @@ export default function AdminSupport() {
                   {/* Student Card Header */}
                   <div
                     onClick={() => toggleExpandStudent(studentId)}
-                    className="p-5 flex items-center justify-between gap-4 cursor-pointer hover:bg-opacity-50 transition-colors"
+                    className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-opacity-50 transition-colors"
                     style={{ backgroundColor: isExpanded ? 'var(--bg-hover)' : 'transparent' }}
                   >
                     {/* Student Info */}
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
                       {group.student?.avatar ? (
                         <img
                           src={group.student.avatar}
@@ -236,23 +238,23 @@ export default function AdminSupport() {
                           {group.student?.fullName?.charAt(0).toUpperCase() || 'S'}
                         </div>
                       )}
-                      <div>
-                        <span className="text-base font-bold block" style={{ color: 'var(--text-primary)' }}>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-base font-bold block truncate" style={{ color: 'var(--text-primary)' }}>
                           {group.student?.fullName || 'Unknown Student'}
                         </span>
-                        <span className="text-xs flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                          <Mail size={12} />
-                          {group.student?.email || 'N/A'}
+                        <span className="text-xs flex items-center gap-1 truncate" style={{ color: 'var(--text-muted)' }}>
+                          <Mail size={12} className="shrink-0" />
+                          <span className="truncate">{group.student?.email || 'N/A'}</span>
                         </span>
                       </div>
                     </div>
 
                     {/* Messages indicator info */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 gap-3">
                       <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: 'var(--z-purple-100)', color: '#7C3AED' }}>
                         {ticketCount} {ticketCount === 1 ? 'Message' : 'Messages'}
                       </span>
-                      <div style={{ color: 'var(--text-secondary)' }}>
+                      <div style={{ color: 'var(--text-secondary)' }} className="shrink-0">
                         {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                       </div>
                     </div>
@@ -276,11 +278,11 @@ export default function AdminSupport() {
                             >
                               {/* Message Header */}
                               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b" style={{ borderColor: 'var(--border-default)' }}>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                   <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded" style={{ background: 'var(--z-purple-100)', color: '#7C3AED' }}>
                                     {ticket.category}
                                   </span>
-                                  <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                                  <span className="text-xs font-bold break-words" style={{ color: 'var(--text-primary)' }}>
                                     Subject: {ticket.subject}
                                   </span>
                                 </div>
@@ -332,11 +334,13 @@ export default function AdminSupport() {
                                     borderColor: 'rgba(16, 185, 129, 0.25)',
                                   }}
                                 >
-                                  <div className="flex items-center gap-1.5 mb-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                    <CheckCircle2 size={13} />
-                                    <span>Admin Response</span>
+                                  <div className="flex flex-wrap items-center gap-1.5 mb-2.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                    <div className="flex items-center gap-1.5">
+                                      <CheckCircle2 size={13} />
+                                      <span>Admin Response</span>
+                                    </div>
                                     {ticket.repliedAt && (
-                                      <span className="font-normal text-muted-foreground flex items-center gap-1 ml-auto" style={{ color: 'var(--text-muted)' }}>
+                                      <span className="font-normal flex items-center gap-1 sm:ml-auto" style={{ color: 'var(--text-muted)' }}>
                                         <Clock size={11} />
                                         {formatDateTime(ticket.repliedAt)}
                                       </span>

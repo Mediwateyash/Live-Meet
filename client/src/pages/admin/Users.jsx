@@ -63,11 +63,11 @@ export default function AdminUsers() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Users</h1>
 
-        <div className="flex gap-3 mb-6">
-          <div className="relative flex-1 max-w-sm">
+        <div className="flex flex-wrap gap-3 mb-6">
+          <div className="relative flex-1 max-w-sm min-w-[240px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" color="var(--text-muted)" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users..." className="input-field" style={{ paddingLeft: '2.25rem' }} />
           </div>
@@ -90,54 +90,110 @@ export default function AdminUsers() {
             <p className="text-base font-medium">No users found</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-card" style={{ border: '1px solid var(--border-default)' }}>
-            <table className="w-full">
-              <thead>
-                <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
-                  {['User', 'Email', 'Role', 'Joined', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u, i) => (
-                  <tr key={u._id} className="transition-colors hover:bg-[#FAFAFE]" style={{ borderBottom: i < users.length - 1 ? '1px solid var(--border-default)' : 'none' }}>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        {u.avatar ? <img src={u.avatar} className="w-9 h-9 rounded-full" alt="" /> : (
-                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
-                            {u.fullName?.charAt(0)}
+          <>
+            {/* Desktop Table View */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-card hidden md:block" style={{ border: '1px solid var(--border-default)' }}>
+              <div className="table-responsive">
+                <table className="w-full min-w-[640px]">
+                  <thead>
+                    <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
+                      {['User', 'Email', 'Role', 'Joined', 'Actions'].map(h => (
+                        <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u, i) => (
+                      <tr key={u._id} className="transition-colors hover:bg-[#FAFAFE]" style={{ borderBottom: i < users.length - 1 ? '1px solid var(--border-default)' : 'none' }}>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            {u.avatar ? <img src={u.avatar} className="w-9 h-9 rounded-full" alt="" /> : (
+                              <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
+                                {u.fullName?.charAt(0)}
+                              </div>
+                            )}
+                            <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{u.fullName}</span>
                           </div>
-                        )}
-                        <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{u.fullName}</span>
+                        </td>
+                        <td className="px-5 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
+                        <td className="px-5 py-4"><Badge variant={ROLE_BADGE[u.role]}>{u.role}</Badge></td>
+                        <td className="px-5 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>{formatDate(u.createdAt)}</td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => { setRoleModal(u); setNewRole(u.role) }}
+                              className="p-2 rounded-lg transition-all hover:bg-[#F0EEFF] hover:shadow-sm touch-target flex items-center justify-center"
+                              title="Change role"
+                            >
+                              <Shield size={15} color="#7C3AED" />
+                            </button>
+                            <button
+                              onClick={() => setDeleteModal(u)}
+                              className="p-2 rounded-lg transition-all hover:bg-red-50 hover:shadow-sm touch-target flex items-center justify-center"
+                              title="Delete"
+                            >
+                              <Trash2 size={15} color="#EF4444" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Stacked Card View */}
+            <div className="space-y-4 md:hidden">
+              {users.map(u => (
+                <div 
+                  key={u._id} 
+                  className="rounded-2xl p-4 shadow-sm border flex flex-col gap-3 bg-white"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}
+                >
+                  <div className="flex items-center gap-3">
+                    {u.avatar ? <img src={u.avatar} className="w-10 h-10 rounded-full object-cover shrink-0" alt="" /> : (
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
+                        {u.fullName?.charAt(0).toUpperCase()}
                       </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm" style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
-                    <td className="px-5 py-4"><Badge variant={ROLE_BADGE[u.role]}>{u.role}</Badge></td>
-                    <td className="px-5 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>{formatDate(u.createdAt)}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => { setRoleModal(u); setNewRole(u.role) }}
-                          className="p-2 rounded-lg transition-all hover:bg-[#F0EEFF] hover:shadow-sm"
-                          title="Change role"
-                        >
-                          <Shield size={15} color="#7C3AED" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteModal(u)}
-                          className="p-2 rounded-lg transition-all hover:bg-red-50 hover:shadow-sm"
-                          title="Delete"
-                        >
-                          <Trash2 size={15} color="#EF4444" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{u.fullName}</p>
+                      <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{u.email}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Role</span>
+                      <Badge variant={ROLE_BADGE[u.role]}>{u.role}</Badge>
+                    </div>
+                    <div className="flex flex-col gap-0.5 text-right">
+                      <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Joined</span>
+                      <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{formatDate(u.createdAt)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2.5 justify-end border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                    <button
+                      onClick={() => { setRoleModal(u); setNewRole(u.role) }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-bold hover:bg-[#F0EEFF] transition-all touch-target"
+                      style={{ color: '#7C3AED', borderColor: 'var(--border-purple)', background: 'var(--bg-surface)' }}
+                    >
+                      <Shield size={14} /> Role
+                    </button>
+                    <button
+                      onClick={() => setDeleteModal(u)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-bold hover:bg-red-50 transition-all touch-target"
+                      style={{ color: '#EF4444', borderColor: 'rgba(239,68,68,0.2)', background: 'var(--bg-surface)' }}
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Themed Delete Confirm Modal */}

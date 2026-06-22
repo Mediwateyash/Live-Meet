@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ReactPlayer from 'react-player'
-import { ArrowLeft, CheckCircle2, ChevronDown, Check, FileText, ClipboardList, Brain, TrendingUp, Video, Award, Download } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, ChevronDown, Check, FileText, ClipboardList, Brain, TrendingUp, Video, Award, Download, X } from 'lucide-react'
 import { coursesAPI } from '../../api/courses.js'
 import { progressAPI } from '../../api/progress.js'
 import ProgressBar from '../../components/ui/ProgressBar.jsx'
@@ -41,6 +41,7 @@ export default function CoursePlayer() {
   const [tab,        setTab]        = useState(() => searchParams.get('tab') || 'overview')
   const [marking,    setMarking]    = useState(false)
   const [videoEnded, setVideoEnded] = useState(false)
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false)
 
   // Quick Quiz State
   const [quickQuizLoading, setQuickQuizLoading] = useState(false)
@@ -187,14 +188,23 @@ export default function CoursePlayer() {
   return (
     <div className="flex flex-col" style={{ height: '100vh', background: '#0F0F0F' }}>
       {/* Top bar */}
-      <div className="h-16 flex items-center px-6 gap-4 shrink-0" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-base font-medium" style={{ color: '#A78BFA' }}>
-          <ArrowLeft size={18} /> Back
+      <div className="h-16 flex items-center px-4 md:px-6 gap-3 md:gap-4 shrink-0 pt-safe" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-base font-medium touch-target" style={{ color: '#A78BFA' }}>
+          <ArrowLeft size={18} /> <span className="hidden xs:inline">Back</span>
         </button>
-        <span className="text-base font-semibold text-white truncate flex-1">{course?.title || 'Course Player'}</span>
-        <div className="w-48">
+        <span className="text-sm md:text-base font-semibold text-white truncate flex-1">{course?.title || 'Course Player'}</span>
+        
+        {/* Course content toggle button for mobile */}
+        <button 
+          onClick={() => setShowMobileSidebar(true)} 
+          className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.15)] text-white text-xs font-semibold transition-colors touch-target"
+        >
+          Content
+        </button>
+
+        <div className="w-24 sm:w-48 hidden xs:block">
           <ProgressBar percent={progress?.percentComplete || 0} size="sm" />
-          <p className="text-sm mt-1.5 font-medium" style={{ color: '#A78BFA' }}>{Math.round(progress?.percentComplete || 0)}% complete</p>
+          <p className="text-xs sm:text-sm mt-1 sm:mt-1.5 font-medium text-right sm:text-left" style={{ color: '#A78BFA' }}>{Math.round(progress?.percentComplete || 0)}% complete</p>
         </div>
       </div>
 
@@ -202,7 +212,7 @@ export default function CoursePlayer() {
         {/* Video + tabs */}
         <div className="flex-1 flex flex-col overflow-auto">
           {/* Video / PDF / Quiz */}
-          <div style={{ background: '#000', aspectRatio: '16/9', maxHeight: '60vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          <div style={{ background: '#000', aspectRatio: '16/9', maxHeight: 'min(60vh, calc(100vw * 9/16))', display: 'flex', flexDirection: 'column', position: 'relative' }}>
             {quickQuizActive ? (
                 <div className="w-full h-full bg-[#1A1A2E] text-white p-8 overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
@@ -306,10 +316,10 @@ export default function CoursePlayer() {
           </div>
 
           {/* Below player */}
-          <div className="p-8 max-w-4xl">
+          <div className="p-4 sm:p-8 max-w-4xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-              <h2 className="text-xl font-bold text-white">{currentLesson?.title}</h2>
-              <div className="flex gap-3">
+              <h2 className="text-lg sm:text-xl font-bold text-white">{currentLesson?.title}</h2>
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                   {!currentLesson?.videoUrl && currentLesson?.resources?.length > 0 && (
                       <button
                         onClick={handleGenerateQuickQuiz}
@@ -497,7 +507,7 @@ export default function CoursePlayer() {
         </div>
 
         {/* Curriculum panel */}
-        <aside className="w-96 shrink-0 overflow-y-auto" style={{ background: '#1A1A2E', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
+        <aside className="hidden md:block w-96 shrink-0 overflow-y-auto" style={{ background: '#1A1A2E', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
           <div className="px-5 py-4 text-base font-bold text-white border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
             Course Content
           </div>
@@ -539,6 +549,77 @@ export default function CoursePlayer() {
           ))}
         </aside>
       </div>
+
+      {/* Mobile Curriculum Drawer */}
+      <AnimatePresence>
+        {showMobileSidebar && (
+          <div className="fixed inset-0 z-50 flex justify-end md:hidden">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowMobileSidebar(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            {/* Sidebar Drawer */}
+            <motion.aside
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.25 }}
+              className="relative w-80 max-w-[85vw] h-full flex flex-col z-10 shadow-2xl"
+              style={{ background: '#1A1A2E', borderLeft: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              <div className="px-5 py-4 text-base font-bold text-white border-b flex items-center justify-between" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <span>Course Content</span>
+                <button onClick={() => setShowMobileSidebar(false)} className="text-gray-400 hover:text-white p-1 touch-target flex items-center justify-center">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto pb-safe">
+                {/* Render Curriculum */}
+                {course?.curriculum?.map((section, si) => (
+                  <div key={si}>
+                    <button
+                      onClick={() => setOpenSec(o => ({ ...o, [si]: !o[si] }))}
+                      className="w-full px-5 py-3.5 flex items-center justify-between text-left"
+                      style={{ background: 'rgba(124,58,237,0.08)' }}
+                    >
+                      <span className="text-sm font-semibold text-white">{section.title}</span>
+                      <ChevronDown size={14} color="#666" className={`transition-transform ${openSections[si] ? 'rotate-180' : ''}`} />
+                    </button>
+                    {openSections[si] && section.lessons.map((lesson, li) => (
+                      <button
+                        key={li}
+                        onClick={() => { setCurrent(lesson); setShowMobileSidebar(false) }}
+                        className="w-full px-5 py-3 flex items-center gap-3 text-left border-b transition-colors touch-target"
+                        style={{
+                          background:  currentLesson?._id === lesson._id ? 'rgba(124,58,237,0.2)' : 'transparent',
+                          borderColor: 'rgba(255,255,255,0.04)',
+                          borderLeft:  currentLesson?._id === lesson._id ? '3px solid #7C3AED' : '3px solid transparent',
+                        }}
+                      >
+                        {isCompleted(lesson._id) ? (
+                          <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{ background: '#10B981' }}>
+                            <Check size={10} color="white" strokeWidth={3.5} />
+                          </div>
+                        ) : (
+                          <div className="w-4 h-4 rounded-full border shrink-0" style={{ borderColor: '#555' }} />
+                        )}
+                        <span className="text-xs flex-1 text-left" style={{ color: currentLesson?._id === lesson._id ? '#A78BFA' : '#999', lineHeight: 1.4 }}>
+                          {lesson.title}
+                        </span>
+                        {lesson.duration > 0 && <span className="text-xs shrink-0" style={{ color: '#555' }}>{formatDuration(lesson.duration)}</span>}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

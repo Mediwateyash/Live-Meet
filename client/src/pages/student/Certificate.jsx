@@ -132,20 +132,21 @@ export default function Certificate() {
         </div>
 
         {/* Certificate */}
-        <div
-          ref={certRef}
-          data-certificate-container="true"
-          className="relative mx-auto shadow-xl"
-          style={{
-            width: '800px',
-            height: '565px',
-            background: '#FFFDF9',
-            borderRadius: '12px',
-            boxSizing: 'border-box',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
+        <div className="table-responsive select-none py-2 px-1 rounded-xl border border-dashed border-[#DDD6FE]/40" style={{ maxWidth: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div
+            ref={certRef}
+            data-certificate-container="true"
+            className="relative mx-auto shadow-xl shrink-0"
+            style={{
+              width: '800px',
+              height: '565px',
+              background: '#FFFDF9',
+              borderRadius: '12px',
+              boxSizing: 'border-box',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
           {/* SVG Borders & Corner Decorations to prevent html2canvas line crossover rendering artifacts */}
           <svg
             width="800"
@@ -390,8 +391,12 @@ export default function Certificate() {
             }}>Issued By</div>
           </div>
         </div>
+      </div>
+      <p className="text-center text-xs text-[var(--text-muted)] mt-2 md:hidden">
+        Rotate your screen or scroll horizontally to view the full preview
+      </p>
 
-        <div className="flex justify-center mt-8">
+      <div className="flex justify-center mt-8">
           <Button onClick={handleDownload} size="lg">
             <Download size={18} /> Download Certificate
           </Button>

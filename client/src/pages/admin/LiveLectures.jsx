@@ -256,8 +256,8 @@ export default function AdminLiveLectures() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
               Live Lectures
@@ -271,9 +271,9 @@ export default function AdminLiveLectures() {
           <Button onClick={openNew}><Plus size={15} /> Schedule Lecture</Button>
         </div>
 
-        {/* Search + filter */}
-        <div className="flex gap-3 mb-6">
-          <div className="relative flex-1 max-w-sm">
+        {/* Search + filter with responsive wrapping */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1 max-w-sm min-w-[240px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" color="var(--text-muted)" />
             <input
               value={search}
@@ -291,7 +291,7 @@ export default function AdminLiveLectures() {
               ...instructors.map(i => ({ value: i._id, label: i.fullName }))
             ]}
             placeholder="All Instructors"
-            className="w-48"
+            className="w-full sm:w-48"
           />
           <Select
             value={statusFilter}
@@ -303,7 +303,7 @@ export default function AdminLiveLectures() {
               { value: 'ended',     label: 'Ended' },
             ]}
             placeholder="All statuses"
-            className="w-44"
+            className="w-full sm:w-44"
           />
         </div>
 
@@ -326,196 +326,374 @@ export default function AdminLiveLectures() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-card" style={{ border: '1px solid var(--border-default)' }}>
-            <table className="w-full">
-              <thead>
-                <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
-                  {['Lecture', 'Instructor', 'Course', 'Scheduled', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((lec, i) => {
-                  const isExpanded = expandedLecId === lec._id
-                  return (
-                    <React.Fragment key={lec._id}>
-                      <tr className="transition-colors hover:bg-[#FAFAFE]"
-                        style={{ borderBottom: i < filtered.length - 1 && !isExpanded ? '1px solid var(--border-default)' : 'none' }}>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                              style={{ background: lec.status === 'live' ? '#F0FDF4' : '#FEF2F2' }}>
-                              {lec.status === 'live'
-                                ? <Radio size={16} color="#10B981" />
-                                : <Video size={16} color="#DC2626" />}
-                            </div>
-                            <div>
-                              <p className="text-sm font-semibold line-clamp-1" style={{ color: 'var(--text-primary)' }}>{lec.title}</p>
-                              {lec.description && (
-                                <p className="text-xs line-clamp-1" style={{ color: 'var(--text-muted)' }}>{lec.description}</p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            {lec.instructor?.avatar ? (
-                              <img src={lec.instructor.avatar} className="w-7 h-7 rounded-full" alt="" />
-                            ) : (
-                              <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                                style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
-                                {lec.instructor?.fullName?.charAt(0)}
+          <>
+            {/* Desktop Table View */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-card hidden md:block" style={{ border: '1px solid var(--border-default)' }}>
+              <div className="table-responsive">
+                <table className="w-full min-w-[640px]">
+                  <thead>
+                    <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
+                      {['Lecture', 'Instructor', 'Course', 'Scheduled', 'Status', 'Actions'].map(h => (
+                        <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((lec, i) => {
+                      const isExpanded = expandedLecId === lec._id
+                      return (
+                        <React.Fragment key={lec._id}>
+                          <tr className="transition-colors hover:bg-[#FAFAFE]"
+                            style={{ borderBottom: i < filtered.length - 1 && !isExpanded ? '1px solid var(--border-default)' : 'none' }}>
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                                  style={{ background: lec.status === 'live' ? '#F0FDF4' : '#FEF2F2' }}>
+                                  {lec.status === 'live'
+                                    ? <Radio size={16} color="#10B981" />
+                                    : <Video size={16} color="#DC2626" />}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-semibold line-clamp-1" style={{ color: 'var(--text-primary)' }}>{lec.title}</p>
+                                  {lec.description && (
+                                    <p className="text-xs line-clamp-1" style={{ color: 'var(--text-muted)' }}>{lec.description}</p>
+                                  )}
+                                </div>
                               </div>
-                            )}
-                            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                              {lec.instructor?.fullName || '—'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          {lec.courseId ? (
-                            <span className="text-xs px-2 py-1 rounded-lg font-medium"
-                              style={{ background: '#EDE9FE', color: '#7C3AED' }}>
-                              {lec.courseId.title}
-                            </span>
-                          ) : (
-                            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>General</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                            <Calendar size={12} /> {fmtDate(lec.scheduledAt)}
-                          </div>
-                          <div className="flex items-center gap-1 text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                            <Clock size={12} /> {fmtTime(lec.scheduledAt)} · {lec.duration} min
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <Badge variant={STATUS_BADGE[lec.status] || 'gray'}>{STATUS_LABEL[lec.status] || lec.status}</Badge>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-1.5">
-                            {lec.status === 'ended' && (
-                              <button
-                                onClick={() => setExpandedLecId(isExpanded ? null : lec._id)}
-                                className={`p-2 rounded-lg transition-all ${isExpanded ? 'bg-[#EDE9FE]' : 'hover:bg-[#EDE9FE]'}`}
-                                title="View Attendance"
-                              >
-                                <Users size={15} color="#7C3AED" />
-                              </button>
-                            )}
-                            {lec.type === 'inapp' ? (
-                              (lec.status === 'live' || lec.status === 'scheduled') && (
-                                <a
-                                  href={`/live/${lec._id}`}
-                                  className="p-2 rounded-lg transition-all hover:bg-[#F0FDF4]"
-                                  title={lec.status === 'live' ? 'Open Room' : 'Preview'}
-                                >
-                                  <Monitor size={15} color="#10B981" />
-                                </a>
-                              )
-                            ) : (
-                              lec.meetingUrl && (
-                                <a
-                                  href={lec.meetingUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="p-2 rounded-lg transition-all hover:bg-[#F0FDF4]"
-                                  title="Open meeting"
-                                >
-                                  <ExternalLink size={15} color="#10B981" />
-                                </a>
-                              )
-                            )}
-                            {lec.status !== 'ended' && (
-                              <button
-                                onClick={() => openEdit(lec)}
-                                className="p-2 rounded-lg transition-all hover:bg-[#EDE9FE]"
-                                title="Edit"
-                              >
-                                <Edit2 size={15} color="#7C3AED" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => setDeleteId(lec._id)}
-                              className="p-2 rounded-lg transition-all hover:bg-red-50"
-                              title="Delete"
-                            >
-                              <Trash2 size={15} color="#EF4444" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      {isExpanded && (
-                        <tr className="bg-[#FAF9FF]" style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border-default)' : 'none' }}>
-                          <td colSpan={6} className="px-8 py-5">
-                            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                              <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
-                                <Users size={16} /> Attendance Report ({lec.attendance?.length || 0} {lec.attendance?.length === 1 ? 'student' : 'students'})
-                              </h4>
-                              {(lec.attendance?.length > 0) && (
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-2">
+                                {lec.instructor?.avatar ? (
+                                  <img src={lec.instructor.avatar} className="w-7 h-7 rounded-full" alt="" />
+                                ) : (
+                                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                                    style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
+                                    {lec.instructor?.fullName?.charAt(0)}
+                                  </div>
+                                )}
+                                <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                                  {lec.instructor?.fullName || '—'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-4">
+                              {lec.courseId ? (
+                                <span className="text-xs px-2 py-1 rounded-lg font-medium"
+                                  style={{ background: '#EDE9FE', color: '#7C3AED' }}>
+                                  {lec.courseId.title}
+                                </span>
+                              ) : (
+                                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>General</span>
+                              )}
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                                <Calendar size={12} /> {fmtDate(lec.scheduledAt)}
+                              </div>
+                              <div className="flex items-center gap-1 text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                                <Clock size={12} /> {fmtTime(lec.scheduledAt)} · {lec.duration} min
+                              </div>
+                            </td>
+                            <td className="px-5 py-4">
+                              <Badge variant={STATUS_BADGE[lec.status] || 'gray'}>{STATUS_LABEL[lec.status] || lec.status}</Badge>
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-1.5">
+                                {lec.status === 'ended' && (
+                                  <button
+                                    onClick={() => setExpandedLecId(isExpanded ? null : lec._id)}
+                                    className={`p-2 rounded-lg transition-all touch-target flex items-center justify-center ${isExpanded ? 'bg-[#EDE9FE]' : 'hover:bg-[#EDE9FE]'}`}
+                                    title="View Attendance"
+                                  >
+                                    <Users size={15} color="#7C3AED" />
+                                  </button>
+                                )}
+                                {lec.type === 'inapp' ? (
+                                  (lec.status === 'live' || lec.status === 'scheduled') && (
+                                    <a
+                                      href={`/live/${lec._id}`}
+                                      className="p-2 rounded-lg transition-all hover:bg-[#F0FDF4] touch-target flex items-center justify-center"
+                                      title={lec.status === 'live' ? 'Open Room' : 'Preview'}
+                                    >
+                                      <Monitor size={15} color="#10B981" />
+                                    </a>
+                                  )
+                                ) : (
+                                  lec.meetingUrl && (
+                                    <a
+                                      href={lec.meetingUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="p-2 rounded-lg transition-all hover:bg-[#F0FDF4] touch-target flex items-center justify-center"
+                                      title="Open meeting"
+                                    >
+                                      <ExternalLink size={15} color="#10B981" />
+                                    </a>
+                                  )
+                                )}
+                                {lec.status !== 'ended' && (
+                                  <button
+                                    onClick={() => openEdit(lec)}
+                                    className="p-2 rounded-lg transition-all hover:bg-[#EDE9FE] touch-target flex items-center justify-center"
+                                    title="Edit"
+                                  >
+                                    <Edit2 size={15} color="#7C3AED" />
+                                  </button>
+                                )}
                                 <button
-                                  onClick={() => handleDownloadCSV(lec)}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 shrink-0"
-                                  style={{ background: '#10B981', color: '#FFFFFF' }}
+                                  onClick={() => setDeleteId(lec._id)}
+                                  className="p-2 rounded-lg transition-all hover:bg-red-50 touch-target flex items-center justify-center"
+                                  title="Delete"
                                 >
-                                  <Download size={14} /> Download Attendance (CSV)
+                                  <Trash2 size={15} color="#EF4444" />
                                 </button>
-                              )}
-                            </div>
-                            {(!lec.attendance || lec.attendance.length === 0) ? (
-                              <p className="text-xs text-center py-4" style={{ color: 'var(--text-muted)' }}>
-                                No students attended this session.
-                              </p>
-                            ) : (
-                              <div className="max-h-64 overflow-y-auto border rounded-xl" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
-                                <table className="w-full text-xs">
-                                  <thead>
-                                  <tr className="attendance-header-row">
-                                    <th className="text-left px-4 py-2.5 attendance-header-th">Student</th>
-                                    <th className="text-left px-4 py-2.5 attendance-header-th">Email</th>
-                                    <th className="text-left px-4 py-2.5 attendance-header-th">First Joined</th>
-                                    <th className="text-left px-4 py-2.5 attendance-header-th">Last Left</th>
-                                    <th className="text-left px-4 py-2.5 attendance-header-th">Total Duration</th>
-                                  </tr>
-                                  </thead>
-                                  <tbody>
-                                    {lec.attendance.map((att, idx) => {
-                                      const details = getAttendanceDetails(att, lec)
-                                      return (
-                                        <tr key={idx} className="border-b last:border-b-0" style={{ borderColor: 'var(--border-default)' }}>
-                                          <td className="px-4 py-2.5 font-bold" style={{ color: 'var(--text-primary)' }}>
-                                            {att.user?.fullName || 'Deleted User'}
-                                          </td>
-                                          <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
-                                            {att.user?.email || '—'}
-                                          </td>
-                                          <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
-                                            {details.firstJoined ? formatAttendanceTime(details.firstJoined) : '—'}
-                                          </td>
-                                          <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
-                                            {details.lastLeft ? formatAttendanceTime(details.lastLeft) : '—'}
-                                          </td>
-                                          <td className="px-4 py-2.5 font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                                            {details.durationText}
-                                          </td>
-                                        </tr>
-                                      )
-                                    })}
-                                  </tbody>
-                                </table>
                               </div>
-                            )}
-                          </td>
-                        </tr>
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr className="bg-[#FAF9FF]" style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border-default)' : 'none' }}>
+                              <td colSpan={6} className="px-8 py-5">
+                                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                                  <h4 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
+                                    <Users size={16} /> Attendance Report ({lec.attendance?.length || 0} {lec.attendance?.length === 1 ? 'student' : 'students'})
+                                  </h4>
+                                  {(lec.attendance?.length > 0) && (
+                                    <button
+                                      onClick={() => handleDownloadCSV(lec)}
+                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-90 shrink-0"
+                                      style={{ background: '#10B981', color: '#FFFFFF' }}
+                                    >
+                                      <Download size={14} /> Download Attendance (CSV)
+                                    </button>
+                                  )}
+                                </div>
+                                {(!lec.attendance || lec.attendance.length === 0) ? (
+                                  <p className="text-xs text-center py-4" style={{ color: 'var(--text-muted)' }}>
+                                    No students attended this session.
+                                  </p>
+                                ) : (
+                                  <div className="max-h-64 overflow-y-auto border rounded-xl" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
+                                    <table className="w-full text-xs">
+                                      <thead>
+                                      <tr className="attendance-header-row">
+                                        <th className="text-left px-4 py-2.5 attendance-header-th">Student</th>
+                                        <th className="text-left px-4 py-2.5 attendance-header-th">Email</th>
+                                        <th className="text-left px-4 py-2.5 attendance-header-th">First Joined</th>
+                                        <th className="text-left px-4 py-2.5 attendance-header-th">Last Left</th>
+                                        <th className="text-left px-4 py-2.5 attendance-header-th">Total Duration</th>
+                                      </tr>
+                                      </thead>
+                                      <tbody>
+                                        {lec.attendance.map((att, idx) => {
+                                          const details = getAttendanceDetails(att, lec)
+                                          return (
+                                            <tr key={idx} className="border-b last:border-b-0" style={{ borderColor: 'var(--border-default)' }}>
+                                              <td className="px-4 py-2.5 font-bold" style={{ color: 'var(--text-primary)' }}>
+                                                {att.user?.fullName || 'Deleted User'}
+                                              </td>
+                                              <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                                {att.user?.email || '—'}
+                                              </td>
+                                              <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                                {details.firstJoined ? formatAttendanceTime(details.firstJoined) : '—'}
+                                              </td>
+                                              <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                                {details.lastLeft ? formatAttendanceTime(details.lastLeft) : '—'}
+                                              </td>
+                                              <td className="px-4 py-2.5 font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                                {details.durationText}
+                                              </td>
+                                            </tr>
+                                          )
+                                        })}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Stacked Card View */}
+            <div className="space-y-4 md:hidden">
+              {filtered.map(lec => {
+                const isExpanded = expandedLecId === lec._id
+                return (
+                  <div 
+                    key={lec._id}
+                    className="rounded-2xl p-4 border flex flex-col gap-3.5 bg-white shadow-sm"
+                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                          style={{ background: lec.status === 'live' ? '#F0FDF4' : '#FEF2F2' }}>
+                          {lec.status === 'live'
+                            ? <Radio size={18} color="#10B981" />
+                            : <Video size={18} color="#DC2626" />}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-bold leading-snug break-words" style={{ color: 'var(--text-primary)' }}>{lec.title}</h4>
+                          {lec.description && (
+                            <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>{lec.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Badge variant={STATUS_BADGE[lec.status] || 'gray'}>{STATUS_LABEL[lec.status] || lec.status}</Badge>
+                    </div>
+
+                    <div className="flex flex-col gap-2 border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                      <div className="flex items-center gap-2">
+                        {lec.instructor?.avatar ? (
+                          <img src={lec.instructor.avatar} className="w-6 h-6 rounded-full object-cover shrink-0" alt="" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                            style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
+                            {lec.instructor?.fullName?.charAt(0)}
+                          </div>
+                        )}
+                        <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                          {lec.instructor?.fullName || '—'}
+                        </span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                        {lec.courseId ? (
+                          <span className="text-xs px-2 py-0.5 rounded font-medium"
+                            style={{ background: '#EDE9FE', color: '#7C3AED' }}>
+                            {lec.courseId.title}
+                          </span>
+                        ) : (
+                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>General</span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs mt-1 text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <Calendar size={12} /> {fmtDate(lec.scheduledAt)}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock size={12} /> {fmtTime(lec.scheduledAt)} ({lec.duration} min)
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="flex flex-wrap gap-2 border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                      {lec.status === 'ended' && (
+                        <button
+                          onClick={() => setExpandedLecId(isExpanded ? null : lec._id)}
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold transition-all touch-target ${isExpanded ? 'bg-[#EDE9FE]' : 'bg-var(--bg-surface) hover:bg-[#EDE9FE]'}`}
+                          style={{ color: '#7C3AED', borderColor: 'var(--border-purple)' }}
+                        >
+                          <Users size={14} /> Attendance
+                        </button>
                       )}
-                    </React.Fragment>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                      {lec.type === 'inapp' ? (
+                        (lec.status === 'live' || lec.status === 'scheduled') && (
+                          <a
+                            href={`/live/${lec._id}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-[#F0FDF4] transition-all touch-target text-center"
+                            style={{ color: '#10B981', borderColor: 'rgba(16,185,129,0.2)', background: 'var(--bg-surface)' }}
+                          >
+                            <Monitor size={14} /> Join
+                          </a>
+                        )
+                      ) : (
+                        lec.meetingUrl && (
+                          <a
+                            href={lec.meetingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-[#F0FDF4] transition-all touch-target text-center"
+                            style={{ color: '#10B981', borderColor: 'rgba(16,185,129,0.2)', background: 'var(--bg-surface)' }}
+                          >
+                            <ExternalLink size={14} /> Open Link
+                          </a>
+                        )
+                      )}
+                      {lec.status !== 'ended' && (
+                        <button
+                          onClick={() => openEdit(lec)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-[#EDE9FE] transition-all touch-target"
+                          style={{ color: '#7C3AED', borderColor: 'var(--border-purple)', background: 'var(--bg-surface)' }}
+                        >
+                          <Edit2 size={14} /> Edit
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setDeleteId(lec._id)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-red-50 transition-all touch-target"
+                        style={{ color: '#EF4444', borderColor: 'rgba(239,68,68,0.2)', background: 'var(--bg-surface)' }}
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
+
+                    {/* Attendance inside card on mobile */}
+                    {isExpanded && (
+                      <div className="border-t pt-4 mt-2" style={{ borderColor: 'var(--border-default)' }}>
+                        <div className="flex flex-col gap-2 mb-3">
+                          <h5 className="text-xs font-bold flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+                            <Users size={14} /> Attendance Report ({lec.attendance?.length || 0})
+                          </h5>
+                          {(lec.attendance?.length > 0) && (
+                            <button
+                              onClick={() => handleDownloadCSV(lec)}
+                              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-90 w-full"
+                              style={{ background: '#10B981', color: '#FFFFFF' }}
+                            >
+                              <Download size={14} /> Download CSV
+                            </button>
+                          )}
+                        </div>
+                        {(!lec.attendance || lec.attendance.length === 0) ? (
+                          <p className="text-[11px] text-center py-3" style={{ color: 'var(--text-muted)' }}>
+                            No students attended.
+                          </p>
+                        ) : (
+                          <div className="overflow-x-auto border rounded-xl" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
+                            <table className="w-full text-[11px] min-w-[440px]">
+                              <thead>
+                                <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
+                                  <th className="text-left px-3 py-2 font-semibold" style={{ color: '#5B21B6' }}>Student</th>
+                                  <th className="text-left px-3 py-2 font-semibold" style={{ color: '#5B21B6' }}>Joined</th>
+                                  <th className="text-left px-3 py-2 font-semibold" style={{ color: '#5B21B6' }}>Duration</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {lec.attendance.map((att, idx) => {
+                                  const details = getAttendanceDetails(att, lec)
+                                  return (
+                                    <tr key={idx} className="border-b last:border-b-0" style={{ borderColor: 'var(--border-default)' }}>
+                                      <td className="px-3 py-2.5 font-bold" style={{ color: 'var(--text-primary)' }}>
+                                        {att.user?.fullName || 'Deleted User'}
+                                      </td>
+                                      <td className="px-3 py-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                        {details.firstJoined ? formatAttendanceTime(details.firstJoined) : '—'}
+                                      </td>
+                                      <td className="px-3 py-2.5 font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                        {details.durationText}
+                                      </td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </>
         )}
 
         {/* Delete modal */}
@@ -540,14 +718,14 @@ export default function AdminLiveLectures() {
             {/* Type toggle */}
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Session Type</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
                   { value: 'link',  icon: Link2,   label: 'External Link', sub: 'Zoom, Google Meet, Teams…', color: '#DC2626', bg: 'rgba(220,38,38,0.1)', border: 'rgba(220,38,38,0.3)' },
                   { value: 'inapp', icon: Monitor,  label: 'In-App Session', sub: 'Built-in live room',       color: '#7C3AED', bg: 'rgba(109,40,217,0.1)', border: 'rgba(109,40,217,0.3)' },
                 ].map(({ value, icon: Icon, label, sub, color, bg, border }) => (
                   <button type="button" key={value}
                     onClick={() => setForm(p => ({ ...p, type: value }))}
-                    className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all"
+                    className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all w-full"
                     style={{ border: `2px solid ${form.type === value ? color : 'var(--border-default)'}`,
                       background: form.type === value ? bg : 'var(--bg-muted)' }}>
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
@@ -568,7 +746,7 @@ export default function AdminLiveLectures() {
               <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Introduction to React Hooks" className="input-field" required />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-secondary)' }}>Instructor *</label>
                 <Select value={form.instructor} onChange={handleInstructorChange} options={instructorOptions} placeholder="Select Instructor" required />
@@ -579,7 +757,7 @@ export default function AdminLiveLectures() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-secondary)' }}>Date & Time *</label>
                 <input type="datetime-local" value={form.scheduledAt} onChange={e => setForm(p => ({ ...p, scheduledAt: e.target.value }))} className="input-field" required />

@@ -67,23 +67,25 @@ export default function AdminRequests() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h1 className="text-3xl font-bold mb-6" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
           Instructor Requests
         </h1>
 
-        {/* Tabs */}
-        <div className="flex gap-1 p-1 rounded-xl mb-8 w-fit" style={{ background: 'var(--z-purple-100)' }}>
-          {STATUS_TABS.map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className="px-5 py-2 rounded-lg text-sm font-medium capitalize transition-all"
-              style={{ background: tab === t ? '#7C3AED' : 'transparent', color: tab === t ? 'white' : 'var(--text-secondary)' }}
-            >
-              {t}
-            </button>
-          ))}
+        {/* Tabs with horizontal scroll wrapper on mobile */}
+        <div className="overflow-x-auto -webkit-overflow-scrolling-touch mb-8 pb-1 scrollbar-none">
+          <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: 'var(--z-purple-100)' }}>
+            {STATUS_TABS.map(t => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className="px-5 py-2 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap"
+                style={{ background: tab === t ? '#7C3AED' : 'transparent', color: tab === t ? 'white' : 'var(--text-secondary)' }}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
 
         {loading ? (
@@ -97,87 +99,159 @@ export default function AdminRequests() {
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-card" style={{ border: '1px solid var(--border-default)' }}>
-            <table className="w-full">
-              <thead>
-                <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
-                  {['#', 'Applicant', 'Contact', 'Expertise', 'Applied', 'Status', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((req, i) => (
-                  <tr key={req._id} className="transition-colors hover:bg-[#FAFAFE]" style={{ borderBottom: i < requests.length - 1 ? '1px solid var(--border-default)' : 'none' }}>
-                    <td className="px-5 py-4 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>{i + 1}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
-                          {req.fullName?.charAt(0)}
-                        </div>
-                        <div>
-                          <span className="text-sm font-semibold block" style={{ color: 'var(--text-primary)' }}>{req.fullName}</span>
-                          {req.department && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{req.department}</span>}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="text-xs space-y-0.5" style={{ color: 'var(--text-secondary)' }}>
-                        <div className="flex items-center gap-1"><Mail size={11} /> {req.email}</div>
-                        {req.phone && <div className="flex items-center gap-1"><Phone size={11} /> {req.phone}</div>}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {req.expertise?.slice(0, 3).map(e => <Badge key={e} variant="purple">{e}</Badge>)}
-                        {req.expertise?.length > 3 && <Badge variant="gray">+{req.expertise.length - 3}</Badge>}
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>{formatDate(req.createdAt)}</td>
-                    <td className="px-5 py-4"><Badge variant={BADGE[req.status]}>{req.status}</Badge></td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5">
-                        {req.status === 'pending' && (
-                          <>
+          <>
+            {/* Desktop Table View */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-card hidden md:block" style={{ border: '1px solid var(--border-default)' }}>
+              <div className="table-responsive">
+                <table className="w-full min-w-[640px]">
+                  <thead>
+                    <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
+                      {['#', 'Applicant', 'Contact', 'Expertise', 'Applied', 'Status', 'Actions'].map(h => (
+                        <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {requests.map((req, i) => (
+                      <tr key={req._id} className="transition-colors hover:bg-[#FAFAFE]" style={{ borderBottom: i < requests.length - 1 ? '1px solid var(--border-default)' : 'none' }}>
+                        <td className="px-5 py-4 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>{i + 1}</td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
+                              {req.fullName?.charAt(0)}
+                            </div>
+                            <div>
+                              <span className="text-sm font-semibold block" style={{ color: 'var(--text-primary)' }}>{req.fullName}</span>
+                              {req.department && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{req.department}</span>}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="text-xs space-y-0.5" style={{ color: 'var(--text-secondary)' }}>
+                            <div className="flex items-center gap-1"><Mail size={11} /> {req.email}</div>
+                            {req.phone && <div className="flex items-center gap-1"><Phone size={11} /> {req.phone}</div>}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex flex-wrap gap-1">
+                            {req.expertise?.slice(0, 3).map(e => <Badge key={e} variant="purple">{e}</Badge>)}
+                            {req.expertise?.length > 3 && <Badge variant="gray">+{req.expertise.length - 3}</Badge>}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>{formatDate(req.createdAt)}</td>
+                        <td className="px-5 py-4"><Badge variant={BADGE[req.status]}>{req.status}</Badge></td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-1.5">
+                            {req.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => setApproveModal(req)}
+                                  title="Approve"
+                                  className="p-2 rounded-lg transition-all hover:bg-green-50 hover:shadow-sm touch-target flex items-center justify-center"
+                                  style={{ border: '1px solid transparent' }}
+                                  onMouseEnter={e => e.currentTarget.style.borderColor = '#10B981'}
+                                  onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                                >
+                                  <Check size={16} color="#10B981" />
+                                </button>
+                                <button
+                                  onClick={() => setRejectModal(req)}
+                                  title="Reject"
+                                  className="p-2 rounded-lg transition-all hover:bg-red-50 hover:shadow-sm touch-target flex items-center justify-center"
+                                  style={{ border: '1px solid transparent' }}
+                                  onMouseEnter={e => e.currentTarget.style.borderColor = '#EF4444'}
+                                  onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                                >
+                                  <X size={16} color="#EF4444" />
+                                </button>
+                              </>
+                            )}
                             <button
-                              onClick={() => setApproveModal(req)}
-                              title="Approve"
-                              className="p-2 rounded-lg transition-all hover:bg-green-50 hover:shadow-sm"
+                              onClick={() => setViewModal(req)}
+                              title="View Details"
+                              className="p-2 rounded-lg transition-all hover:bg-[#F0EEFF] hover:shadow-sm touch-target flex items-center justify-center"
                               style={{ border: '1px solid transparent' }}
-                              onMouseEnter={e => e.currentTarget.style.borderColor = '#10B981'}
+                              onMouseEnter={e => e.currentTarget.style.borderColor = '#7C3AED'}
                               onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
                             >
-                              <Check size={16} color="#10B981" />
+                              <Eye size={16} color="#7C3AED" />
                             </button>
-                            <button
-                              onClick={() => setRejectModal(req)}
-                              title="Reject"
-                              className="p-2 rounded-lg transition-all hover:bg-red-50 hover:shadow-sm"
-                              style={{ border: '1px solid transparent' }}
-                              onMouseEnter={e => e.currentTarget.style.borderColor = '#EF4444'}
-                              onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
-                            >
-                              <X size={16} color="#EF4444" />
-                            </button>
-                          </>
-                        )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Stacked Card View */}
+            <div className="space-y-4 md:hidden">
+              {requests.map((req, i) => (
+                <div 
+                  key={req._id}
+                  className="rounded-2xl p-4 border flex flex-col gap-3.5 bg-white shadow-sm"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
+                        {req.fullName?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-sm font-bold block truncate" style={{ color: 'var(--text-primary)' }}>{req.fullName}</span>
+                        {req.department && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{req.department}</span>}
+                      </div>
+                    </div>
+                    <Badge variant={BADGE[req.status]}>{req.status}</Badge>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 border-t pt-3 text-xs" style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}>
+                    <div className="flex items-center gap-1.5 truncate"><Mail size={12} className="shrink-0" /> {req.email}</div>
+                    {req.phone && <div className="flex items-center gap-1.5"><Phone size={12} className="shrink-0" /> {req.phone}</div>}
+                  </div>
+
+                  {req.expertise?.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {req.expertise.map(e => <Badge key={e} variant="purple">{e}</Badge>)}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    <span>Applied: {formatDate(req.createdAt)}</span>
+                  </div>
+
+                  <div className="flex gap-2 border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                    {req.status === 'pending' && (
+                      <>
                         <button
-                          onClick={() => setViewModal(req)}
-                          title="View Details"
-                          className="p-2 rounded-lg transition-all hover:bg-[#F0EEFF] hover:shadow-sm"
-                          style={{ border: '1px solid transparent' }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = '#7C3AED'}
-                          onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                          onClick={() => setApproveModal(req)}
+                          className="flex-1 flex items-center justify-center gap-1 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-green-50 transition-all touch-target"
+                          style={{ color: '#10B981', borderColor: 'rgba(16,185,129,0.2)', background: 'var(--bg-surface)' }}
                         >
-                          <Eye size={16} color="#7C3AED" />
+                          <Check size={14} /> Approve
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        <button
+                          onClick={() => setRejectModal(req)}
+                          className="flex-1 flex items-center justify-center gap-1 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-red-50 transition-all touch-target"
+                          style={{ color: '#EF4444', borderColor: 'rgba(239,68,68,0.2)', background: 'var(--bg-surface)' }}
+                        >
+                          <X size={14} /> Reject
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => setViewModal(req)}
+                      className="flex-1 flex items-center justify-center gap-1 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-[#F0EEFF] transition-all touch-target"
+                      style={{ color: '#7C3AED', borderColor: 'var(--border-purple)', background: 'var(--bg-surface)' }}
+                    >
+                      <Eye size={14} /> Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* ── View Detail Modal ── */}
@@ -199,12 +273,12 @@ export default function AdminRequests() {
               </div>
 
               {/* Contact info */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex items-center gap-2.5 p-3 rounded-xl" style={{ background: 'var(--bg-muted)', border: '1px solid var(--border-default)' }}>
                   <Mail size={16} color="#7C3AED" />
-                  <div>
+                  <div className="min-w-0">
                     <span className="text-[10px] font-semibold uppercase tracking-wider block" style={{ color: 'var(--text-muted)' }}>Email</span>
-                    <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{viewModal.email}</span>
+                    <span className="text-sm font-medium truncate block" style={{ color: 'var(--text-primary)' }}>{viewModal.email}</span>
                   </div>
                 </div>
                 {viewModal.phone && (
@@ -240,7 +314,7 @@ export default function AdminRequests() {
 
               {/* Links */}
               {(viewModal.linkedin || viewModal.portfolio) && (
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {viewModal.linkedin && (
                     <a href={viewModal.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors hover:bg-[#F0EEFF]" style={{ color: '#7C3AED' }}>
                       <ExternalLink size={14} /> LinkedIn
@@ -270,11 +344,11 @@ export default function AdminRequests() {
 
               {/* Action buttons for pending */}
               {viewModal.status === 'pending' && (
-                <div className="flex gap-3 justify-end pt-2">
-                  <Button variant="danger" size="sm" onClick={() => { setViewModal(null); setRejectModal(viewModal) }}>
+                <div className="flex flex-wrap gap-2 sm:gap-3 justify-end pt-2">
+                  <Button variant="danger" size="sm" className="w-full sm:w-auto" onClick={() => { setViewModal(null); setRejectModal(viewModal) }}>
                     Reject
                   </Button>
-                  <Button size="sm" onClick={() => { setViewModal(null); setApproveModal(viewModal) }}>
+                  <Button size="sm" className="w-full sm:w-auto" onClick={() => { setViewModal(null); setApproveModal(viewModal) }}>
                     Approve
                   </Button>
                 </div>

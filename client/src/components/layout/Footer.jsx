@@ -12,7 +12,7 @@ const links = {
 export default function Footer() {
   return (
     <footer className="border-t mt-auto" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 pb-safe">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">

@@ -40,16 +40,16 @@ export default function AdminDashboard() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#7C3AED' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#7C3AED' }}>
               <Shield size={20} color="white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold leading-tight" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+              <h1 className="text-2xl sm:text-3xl font-bold leading-tight" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
                 Admin Dashboard
               </h1>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Platform overview and management</p>
@@ -61,8 +61,8 @@ export default function AdminDashboard() {
         {!loading && stats?.pendingRequests > 0 && (
           <div
             onClick={() => navigate('/admin/instructor-requests')}
-            className="flex items-center gap-3 px-5 py-4 rounded-2xl cursor-pointer mb-6 transition-all hover:shadow-md"
-            style={{ background: '#FFFBEB', border: '1.5px solid #F59E0B' }}
+            className="flex items-center gap-3 px-4 py-3 sm:px-5 sm:py-4 rounded-2xl cursor-pointer mb-6 transition-all hover:shadow-md border border-amber-300"
+            style={{ background: '#FFFBEB' }}
           >
             <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#FEF3C7' }}>
               <AlertCircle size={17} color="#D97706" />
@@ -80,13 +80,13 @@ export default function AdminDashboard() {
         )}
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
           {loading
             ? [...Array(4)].map((_, i) => <SkeletonStat key={i} />)
             : statCards.map(({ label, value, icon: Icon, color, bg }) => (
               <div
                 key={label}
-                className="rounded-2xl p-5 transition-all"
+                className="rounded-2xl p-4 sm:p-5 transition-all"
                 style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: bg }}>

@@ -375,7 +375,7 @@ const TakeQuiz = () => {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fadeIn">
             <div className="grid grid-cols-1 xl:grid-cols-[280px_1fr] gap-8">
-                <aside className="bg-white dark:bg-[var(--bg-surface)] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] sticky top-8 h-fit max-h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar">
+                <aside className="bg-white dark:bg-[var(--bg-surface)] p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] sticky top-8 h-fit max-h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar">
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Progress</h2>
@@ -430,19 +430,19 @@ const TakeQuiz = () => {
                 </aside>
 
                 <main className="space-y-6">
-                    <header className="bg-white dark:bg-[var(--bg-surface)] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/20 rounded-xl flex items-center justify-center text-primary dark:text-indigo-400 font-bold border border-indigo-100 dark:border-indigo-900/30 shadow-sm">
+                    <header className="bg-white dark:bg-[var(--bg-surface)] p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-50 dark:bg-indigo-950/20 rounded-xl flex items-center justify-center text-primary dark:text-indigo-400 font-bold border border-indigo-100 dark:border-indigo-900/30 shadow-sm shrink-0">
                                 Q{currentIdx + 1}
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-1">{quiz.title}</h1>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Subjective MCQ Assessment</p>
+                                <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white line-clamp-1">{quiz.title}</h1>
+                                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Subjective MCQ Assessment</p>
                             </div>
                         </div>
                         
-                        <div className="flex items-center gap-3">
-                            <div className="flex bg-gray-50 dark:bg-gray-800/50 p-1 rounded-xl border border-gray-200 dark:border-gray-700 mr-2">
+                        <div className="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
+                            <div className="flex bg-gray-50 dark:bg-gray-800/50 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
                                 <button 
                                     onClick={() => setShowCalculator(true)}
                                     className="flex items-center gap-2 px-4 py-2 hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm rounded-lg transition text-gray-700 dark:text-gray-300 text-sm font-semibold"
@@ -456,14 +456,14 @@ const TakeQuiz = () => {
                                     <FileText className="w-4 h-4 text-primary" /> Notes
                                 </button>
                             </div>
-                            <div className={`flex items-center gap-3 font-mono font-bold px-5 py-2.5 rounded-xl border-2 ${timeLeft < 60 ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450 border-rose-200 dark:border-rose-900/30 animate-pulse' : 'bg-indigo-50 dark:bg-indigo-950/20 text-primary dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30 shadow-sm'}`}>
-                                <Clock className="w-5 h-5"/>
-                                <span className="text-xl tracking-wider">{formatTime(timeLeft)}</span>
+                            <div className={`flex items-center gap-2 sm:gap-3 font-mono font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 ${timeLeft < 60 ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450 border-rose-200 dark:border-rose-900/30 animate-pulse' : 'bg-indigo-50 dark:bg-indigo-950/20 text-primary dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30 shadow-sm'}`}>
+                                <Clock className="w-4 h-4 sm:w-5 sm:h-5"/>
+                                <span className="text-lg sm:text-xl tracking-wider">{formatTime(timeLeft)}</span>
                             </div>
                         </div>
                     </header>
 
-                    <section className="bg-white dark:bg-[var(--bg-surface)] p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] min-h-[450px] flex flex-col relative overflow-hidden">
+                    <section className="bg-white dark:bg-[var(--bg-surface)] p-4 sm:p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] min-h-[400px] sm:min-h-[450px] flex flex-col relative overflow-hidden">
                         {/* Subtle Progress Bar at top of card */}
                         <div className="absolute top-0 left-0 h-1 bg-primary/10 w-full">
                             <div 
@@ -472,11 +472,11 @@ const TakeQuiz = () => {
                             />
                         </div>
 
-                        <div className="mb-10">
-                            <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-widest mb-4 inline-block">
+                        <div className="mb-6 sm:mb-10">
+                            <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-widest mb-3 sm:mb-4 inline-block">
                                 Question {currentIdx + 1} of {quiz.mcqIds.length}
                             </span>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight">{currentMcq.question}</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white leading-tight">{currentMcq.question}</h2>
                         </div>
                         
                         <div className="grid grid-cols-1 gap-4 flex-1">
@@ -486,7 +486,7 @@ const TakeQuiz = () => {
                                     <label 
                                         key={i} 
                                         onClick={() => handleOptionSelect(currentMcq._id, opt)}
-                                        className={`group relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                                        className={`group relative flex items-center p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
                                             isSelected 
                                             ? 'border-primary bg-indigo-50/50 dark:bg-indigo-900/20 ring-4 ring-indigo-50 dark:ring-indigo-900/30 shadow-md' 
                                             : 'border-gray-100 dark:border-gray-800 hover:border-indigo-200 dark:hover:border-indigo-500 hover:bg-gray-50 dark:hover:bg-gray-800/40'
@@ -497,7 +497,7 @@ const TakeQuiz = () => {
                                         }`}>
                                             {String.fromCharCode(65 + i)}
                                         </div>
-                                        <span className={`ml-4 text-lg transition-colors ${isSelected ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-750 dark:text-gray-300'}`}>
+                                        <span className={`ml-4 text-base sm:text-lg transition-colors ${isSelected ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-750 dark:text-gray-300'}`}>
                                             {opt}
                                         </span>
                                         {isSelected && (
@@ -510,22 +510,22 @@ const TakeQuiz = () => {
                             })}
                         </div>
 
-                        <footer className="mt-10 flex flex-col sm:flex-row justify-between items-center pt-8 border-t border-gray-50 dark:border-gray-800 gap-4">
-                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
+                        <footer className="mt-6 sm:mt-10 flex flex-col sm:flex-row justify-between items-center pt-6 sm:pt-8 border-t border-gray-50 dark:border-gray-800 gap-4">
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium text-sm">
                                 <Info className="w-4 h-4" />
                                 {Object.keys(answers).length} of {quiz.mcqIds.length} Answered
                             </div>
                             <div className="flex gap-4 w-full sm:w-auto">
                                 <button
                                     onClick={handleSkip}
-                                    className="flex-1 sm:flex-none px-8 py-3 text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-100 dark:hover:bg-gray-850 rounded-xl transition shadow-sm"
+                                    className="flex-1 sm:flex-none px-6 sm:px-8 py-3 text-gray-500 dark:text-gray-400 font-bold hover:bg-gray-100 dark:hover:bg-gray-850 rounded-xl transition shadow-sm touch-target"
                                 >
                                     Skip
                                 </button>
                                 {currentIdx < quiz.mcqIds.length - 1 ? (
                                     <button 
                                         onClick={handleNext}
-                                        className="flex-1 sm:flex-none px-10 py-3 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-250 rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-gray-750 transition shadow-lg hover:shadow-gray-200"
+                                        className="flex-1 sm:flex-none px-8 sm:px-10 py-3 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-250 rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-gray-750 transition shadow-lg hover:shadow-gray-200 touch-target"
                                     >
                                         Next Question
                                     </button>
@@ -533,7 +533,7 @@ const TakeQuiz = () => {
                                     <button 
                                         onClick={() => handleCompleteSubmit(false)}
                                         disabled={submitting}
-                                        className="flex-1 sm:flex-none px-10 py-3 bg-primary text-white rounded-xl font-black hover:bg-indigo-700 transition shadow-xl hover:shadow-indigo-200 disabled:opacity-50"
+                                        className="flex-1 sm:flex-none px-8 sm:px-10 py-3 bg-primary text-white rounded-xl font-black hover:bg-indigo-700 transition shadow-xl hover:shadow-indigo-200 disabled:opacity-50 touch-target"
                                     >
                                         {submitting ? 'Submitting...' : 'Finish & Submit'}
                                     </button>
@@ -552,14 +552,11 @@ const TakeQuiz = () => {
             {/* Calculator Modal */}
             {showCalculator && (
                 <div 
-                    style={{
-                        position: 'fixed',
-                        right: '40px',
-                        top: '120px',
+                    className="fixed z-50 bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl border border-gray-200 dark:border-[var(--border-default)] overflow-hidden w-[calc(100%-32px)] sm:w-[280px] bottom-4 sm:bottom-auto sm:top-[120px] left-4 sm:left-auto right-4 sm:right-10"
+                    style={window.innerWidth >= 640 ? {
                         transform: `translate(${calcPos.x}px, ${calcPos.y}px)`,
                         touchAction: 'none'
-                    }}
-                    className="bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl w-full max-w-[280px] overflow-hidden border border-gray-200 dark:border-[var(--border-default)] z-50"
+                    } : {}}
                 >
                     <div 
                         onPointerDown={(e) => startDrag(e, setCalcPos)}
@@ -602,14 +599,11 @@ const TakeQuiz = () => {
             {/* Notes Modal */}
             {showNotes && (
                 <div 
-                    style={{
-                        position: 'fixed',
-                        left: '40px',
-                        top: '120px',
+                    className="fixed z-50 bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl border border-gray-200 dark:border-[var(--border-default)] overflow-hidden w-[calc(100%-32px)] sm:w-full sm:max-w-lg bottom-4 sm:bottom-auto sm:top-[120px] left-4 sm:left-10 right-4 sm:right-auto"
+                    style={window.innerWidth >= 640 ? {
                         transform: `translate(${notesPos.x}px, ${notesPos.y}px)`,
                         touchAction: 'none'
-                    }}
-                    className="bg-white dark:bg-[var(--bg-surface)] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200 dark:border-[var(--border-default)] z-50"
+                    } : {}}
                 >
                     <div 
                         onPointerDown={(e) => startDrag(e, setNotesPos)}

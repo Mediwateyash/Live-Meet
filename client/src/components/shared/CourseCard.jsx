@@ -83,10 +83,10 @@ export default function CourseCard({ course, showProgress = false, compact = fal
           {!showProgress && (
             <button
               onClick={handleWishlist}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm shadow transition-transform hover:scale-110"
+              className="absolute top-3 right-3 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-sm shadow transition-transform hover:scale-110 touch-target"
               style={{ background: 'rgba(255,255,255,0.88)' }}
             >
-              <Heart size={14} fill={isWishlisted ? '#EF4444' : 'none'} color={isWishlisted ? '#EF4444' : '#64748B'} />
+              <Heart size={18} fill={isWishlisted ? '#EF4444' : 'none'} color={isWishlisted ? '#EF4444' : '#64748B'} />
             </button>
           )}
         </div>
@@ -102,7 +102,7 @@ export default function CourseCard({ course, showProgress = false, compact = fal
 
           {/* Title — always 2 lines */}
           <h3
-            className="font-semibold text-[15px] leading-snug mt-2.5"
+            className="font-semibold text-[15px] leading-snug mt-2.5 break-words"
             style={{ color: 'var(--text-primary)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.6em' }}
           >
             {course.title}

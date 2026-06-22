@@ -97,11 +97,11 @@ export default function Notifications() {
 
   return (
     <PageLayout>
-      <div className="max-w-2xl mx-auto px-6 py-10">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
               Notifications
             </h1>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -109,16 +109,16 @@ export default function Notifications() {
             </p>
           </div>
           {items.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {unread > 0 && (
                 <button onClick={handleMarkAllRead}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all touch-target"
                   style={{ background: 'rgba(124,58,237,0.12)', color: '#7C3AED', border: '1px solid var(--border-purple)' }}>
                   <CheckCheck size={13} /> Mark all read
                 </button>
               )}
               <button onClick={() => setShowClearConfirm(true)} disabled={clearing}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all touch-target"
                 style={{ background: 'rgba(220,38,38,0.1)', color: '#DC2626', border: '1px solid rgba(220,38,38,0.25)' }}>
                 <Trash2 size={13} /> Clear all
               </button>

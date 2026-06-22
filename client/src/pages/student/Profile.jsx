@@ -83,14 +83,14 @@ export default function Profile() {
 
   return (
     <PageLayout>
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h1 className="text-3xl font-bold mb-8" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
           My Profile
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
           {/* Left Column: Profile form */}
-          <div className="bg-white rounded-2xl shadow-card p-6" style={{ border: '1px solid var(--border-purple)' }}>
+          <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6" style={{ border: '1px solid var(--border-purple)' }}>
             {/* Avatar */}
             <div className="flex items-center gap-5 mb-8">
               <div className="relative">
@@ -172,7 +172,7 @@ export default function Profile() {
           {/* Right Column: Account Details & Update Password */}
           <div className="space-y-6">
             {/* Account Details */}
-            <div className="bg-white rounded-2xl shadow-card p-6" style={{ border: '1px solid var(--border-default)' }}>
+            <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6" style={{ border: '1px solid var(--border-default)' }}>
               <h2 className="font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Account Details</h2>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
@@ -191,7 +191,7 @@ export default function Profile() {
             </div>
 
             {/* Update Password */}
-            <div className="bg-white rounded-2xl shadow-card p-6" style={{ border: '1px solid var(--border-purple)' }}>
+            <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6" style={{ border: '1px solid var(--border-purple)' }}>
               <h2 className="font-semibold mb-4 flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
                 <Lock size={18} /> Update Password
               </h2>

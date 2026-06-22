@@ -47,19 +47,19 @@ export default function StudentDashboard() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             {getGreeting()}, {user?.fullName?.split(' ')[0]} 👋
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>Ready to continue learning?</p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10">
           {loading ? [...Array(4)].map((_, i) => <SkeletonStat key={i} />) : stats.map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="stat-card">
+            <div key={label} className="stat-card p-4 sm:p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="stat-icon" style={{ background: `${color}15`, color }}>
                   <Icon size={20} />
@@ -78,7 +78,7 @@ export default function StudentDashboard() {
               <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Continue Learning</h2>
               <button onClick={() => navigate('/my-learning')} className="text-sm font-medium" style={{ color: '#7C3AED' }}>View all →</button>
             </div>
-            <motion.div variants={containerVariants} initial="initial" animate="animate" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div variants={containerVariants} initial="initial" animate="animate" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {enrolled.slice(0, 3).map(course => (
                 <CourseCard key={course._id} course={course} showProgress progress={progresses[course._id]?.percentComplete || 0} />
               ))}

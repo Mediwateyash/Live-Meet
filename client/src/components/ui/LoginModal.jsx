@@ -242,17 +242,20 @@ export default function LoginModal({ isOpen, onClose, onSuccess, hint, defaultTa
               position:'relative',
               width:'100%',
               maxWidth: tab === 'register' ? 440 : 420,
+              maxHeight: '90vh',
+              overflowY: 'auto',
               background:'var(--bg-surface)',
               border:'1px solid var(--border-purple)',
               borderRadius:24,
-              padding:'32px 32px 28px',
+              padding:'clamp(16px, 5vw, 32px)',
               boxShadow:'0 24px 64px rgba(109,40,217,0.2), 0 4px 24px rgba(0,0,0,0.12)',
-              transition:'max-width 0.25s ease',
+              transition:'max-width 0.25s ease, padding 0.25s ease',
             }}
           >
             {/* Close */}
             <button onClick={handleClose}
-              style={{ position:'absolute', top:16, right:16, background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', display:'flex', borderRadius:8, padding:4 }}
+              className="touch-target flex items-center justify-center"
+              style={{ position:'absolute', top:12, right:12, background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', display:'inline-flex', borderRadius:8, padding:6 }}
               onMouseEnter={e => e.currentTarget.style.background='var(--bg-hover)'}
               onMouseLeave={e => e.currentTarget.style.background='none'}>
               <X size={17}/>

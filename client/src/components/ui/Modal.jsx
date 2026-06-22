@@ -29,17 +29,17 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
             initial="initial"
             animate="animate"
             exit="exit"
-            className={`relative rounded-2xl shadow-glass w-full ${widths[size]} z-10`}
+            className={`relative rounded-2xl shadow-glass w-full ${widths[size]} z-10 flex flex-col max-h-[85vh] md:max-h-[90vh]`}
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-purple)' }}
           >
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b rounded-t-2xl overflow-hidden" style={{ borderColor: 'var(--border-default)' }}>
+              <div className="flex items-center justify-between px-6 py-4 border-b rounded-t-2xl overflow-hidden shrink-0" style={{ borderColor: 'var(--border-default)' }}>
                 <h3 className="font-semibold text-lg" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
                   {title}
                 </h3>
                 <button
                   onClick={onClose}
-                  className="p-1 rounded-lg transition-colors"
+                  className="p-1 rounded-lg transition-colors touch-target flex items-center justify-center"
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
@@ -47,7 +47,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
                 </button>
               </div>
             )}
-            <div className="p-6">{children}</div>
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
           </motion.div>
         </div>
       )}

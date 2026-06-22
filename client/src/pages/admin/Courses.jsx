@@ -88,8 +88,8 @@ export default function AdminCourses() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             All Courses
           </h1>
@@ -101,8 +101,8 @@ export default function AdminCourses() {
         </div>
 
         {/* Search + filter bar */}
-        <div className="flex gap-3 mb-6">
-          <div className="relative flex-1 max-w-sm">
+        <div className="flex flex-wrap gap-3 mb-6">
+          <div className="relative flex-1 max-w-sm min-w-[240px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" color="var(--text-muted)" />
             <input
               value={search}
@@ -139,74 +139,141 @@ export default function AdminCourses() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-card" style={{ border: '1px solid var(--border-default)' }}>
-            <table className="w-full">
-              <thead>
-                <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--border-purple)' }}>
-                  {['Course', 'Instructor', 'Students', 'Status', 'Created', 'Actions'].map(h => (
-                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((course, i) => (
-                  <tr key={course._id} className="transition-colors hover:bg-[#FAFAFE]" style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border-default)' : 'none' }}>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={course.thumbnail || 'https://placehold.co/48x34/EDE9FE/7C3AED?text=C'}
-                          className="w-12 h-8 rounded-lg object-cover shrink-0"
-                          alt=""
-                        />
-                        <span className="text-sm font-medium line-clamp-1" style={{ color: 'var(--text-primary)' }}>{course.title}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                        {course.instructor?.fullName || '—'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                      {course.enrolledStudents?.length || 0}
-                    </td>
-                    <td className="px-5 py-4">
+          <>
+            {/* Desktop Table View */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-card hidden md:block" style={{ border: '1px solid var(--border-default)' }}>
+              <div className="table-responsive">
+                <table className="w-full min-w-[640px]">
+                  <thead>
+                    <tr style={{ background: '#EDE9FE', borderBottom: '1px solid var(--purple-200)' }}>
+                      {['Course', 'Instructor', 'Students', 'Status', 'Created', 'Actions'].map(h => (
+                        <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#5B21B6' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((course, i) => (
+                      <tr key={course._id} className="transition-colors hover:bg-[#FAFAFE]" style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border-default)' : 'none' }}>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={course.thumbnail || 'https://placehold.co/48x34/EDE9FE/7C3AED?text=C'}
+                              className="w-12 h-8 rounded-lg object-cover shrink-0"
+                              alt=""
+                            />
+                            <span className="text-sm font-medium line-clamp-1" style={{ color: 'var(--text-primary)' }}>{course.title}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                            {course.instructor?.fullName || '—'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                          {course.enrolledStudents?.length || 0}
+                        </td>
+                        <td className="px-5 py-4">
+                          <Badge variant={STATUS_BADGE[course.status] || 'gray'}>{course.status}</Badge>
+                        </td>
+                        <td className="px-5 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+                          {formatDate(course.createdAt)}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => navigate(`/course/${course.slug}`)}
+                              className="p-2 rounded-lg transition-all hover:bg-[#F0EEFF] hover:shadow-sm touch-target flex items-center justify-center"
+                              title="View Course"
+                            >
+                              <Eye size={15} color="#7C3AED" />
+                            </button>
+                            <button
+                              onClick={() => setSuspendModal(course)}
+                              className="p-2 rounded-lg transition-all hover:bg-amber-50 hover:shadow-sm touch-target flex items-center justify-center"
+                              title={course.status === 'published' ? 'Archive Course' : 'Publish Course'}
+                            >
+                              {course.status === 'published'
+                                ? <ToggleRight size={15} color="#D97706" />
+                                : <ToggleLeft size={15} color="#16A34A" />}
+                            </button>
+                            <button
+                              onClick={() => setDeleteModal(course)}
+                              className="p-2 rounded-lg transition-all hover:bg-red-50 hover:shadow-sm touch-target flex items-center justify-center"
+                              title="Delete Course"
+                            >
+                              <Trash2 size={15} color="#EF4444" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Stacked Card View */}
+            <div className="space-y-4 md:hidden">
+              {filtered.map(course => (
+                <div 
+                  key={course._id} 
+                  className="rounded-2xl p-4 shadow-sm border flex flex-col gap-3 bg-white"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}
+                >
+                  <div className="flex items-start gap-3">
+                    <img
+                      src={course.thumbnail || 'https://placehold.co/48x34/EDE9FE/7C3AED?text=C'}
+                      className="w-16 h-10 rounded-lg object-cover shrink-0 mt-0.5"
+                      alt=""
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white leading-snug break-words">{course.title}</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Instructor: {course.instructor?.fullName || '—'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Status</span>
                       <Badge variant={STATUS_BADGE[course.status] || 'gray'}>{course.status}</Badge>
-                    </td>
-                    <td className="px-5 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {formatDate(course.createdAt)}
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => navigate(`/course/${course.slug}`)}
-                          className="p-2 rounded-lg transition-all hover:bg-[#F0EEFF] hover:shadow-sm"
-                          title="View Course"
-                        >
-                          <Eye size={15} color="#7C3AED" />
-                        </button>
-                        <button
-                          onClick={() => setSuspendModal(course)}
-                          className="p-2 rounded-lg transition-all hover:bg-amber-50 hover:shadow-sm"
-                          title={course.status === 'published' ? 'Archive Course' : 'Publish Course'}
-                        >
-                          {course.status === 'published'
-                            ? <ToggleRight size={15} color="#D97706" />
-                            : <ToggleLeft size={15} color="#16A34A" />}
-                        </button>
-                        <button
-                          onClick={() => setDeleteModal(course)}
-                          className="p-2 rounded-lg transition-all hover:bg-red-50 hover:shadow-sm"
-                          title="Delete Course"
-                        >
-                          <Trash2 size={15} color="#EF4444" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <div className="flex flex-col gap-0.5 text-center">
+                      <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Students</span>
+                      <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{course.enrolledStudents?.length || 0}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5 text-right">
+                      <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>Created</span>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatDate(course.createdAt)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 justify-end border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                    <button
+                      onClick={() => navigate(`/course/${course.slug}`)}
+                      className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-xl border text-xs font-bold hover:bg-[#F0EEFF] transition-all touch-target"
+                      style={{ color: '#7C3AED', borderColor: 'var(--border-purple)', background: 'var(--bg-surface)' }}
+                    >
+                      <Eye size={14} /> View
+                    </button>
+                    <button
+                      onClick={() => setSuspendModal(course)}
+                      className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-xl border text-xs font-bold hover:bg-amber-50 transition-all touch-target"
+                      style={{ color: '#D97706', borderColor: 'rgba(217,119,6,0.2)', background: 'var(--bg-surface)' }}
+                    >
+                      {course.status === 'published' ? 'Archive' : 'Publish'}
+                    </button>
+                    <button
+                      onClick={() => setDeleteModal(course)}
+                      className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-xl border text-xs font-bold hover:bg-red-50 transition-all touch-target"
+                      style={{ color: '#EF4444', borderColor: 'rgba(239,68,68,0.2)', background: 'var(--bg-surface)' }}
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Delete modal */}

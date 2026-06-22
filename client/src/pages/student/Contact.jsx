@@ -107,7 +107,7 @@ export default function Contact() {
 
   return (
     <PageLayout noFooter={true}>
-      <div className="max-w-4xl mx-auto px-6 py-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         
         {/* Back button */}
         <button
@@ -130,7 +130,7 @@ export default function Contact() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b mb-6" style={{ borderColor: 'var(--border-default)' }}>
+        <div className="flex flex-wrap sm:flex-nowrap border-b mb-6" style={{ borderColor: 'var(--border-default)' }}>
           <button
             onClick={() => setActiveTab('new')}
             className="flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all"
@@ -164,7 +164,7 @@ export default function Contact() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl p-6 md:p-8 border shadow-sm"
+              className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 border shadow-sm"
               style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}
             >
               <form onSubmit={handleSubmit} className="space-y-6">

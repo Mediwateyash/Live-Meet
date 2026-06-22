@@ -40,7 +40,7 @@ const TeacherResults = () => {
 
     return (
         <PageLayout noFooter={true}>
-            <div className="w-full max-w-[1536px] mx-auto px-6 lg:px-10 py-8" style={{ background: 'var(--bg-page)' }}>
+            <div className="w-full max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8" style={{ background: 'var(--bg-page)' }}>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-4">
                         <Link to="/instructor/dashboard" className="text-gray-500 hover:text-primary transition-colors">
@@ -69,77 +69,135 @@ const TeacherResults = () => {
                     </div>
                 </div>
 
-                <div className="rounded-xl shadow-sm border overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead style={{ backgroundColor: 'var(--bg-muted)', borderBottom: '1px solid var(--border-default)' }}>
-                                <tr>
-                                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Student</th>
-                                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Quiz Title</th>
-                                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Score</th>
-                                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Date</th>
-                                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Status</th>
-                                    <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-secondary)' }}>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y" style={{ divideColor: 'var(--border-default)' }}>
-                                {filteredResults.length > 0 ? (
-                                    filteredResults.map((res) => (
-                                        <tr key={res._id} className="hover:bg-gray-50/50 dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs shrink-0">
-                                                        {res.studentId?.name?.charAt(0).toUpperCase() || '?'}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{res.studentId?.name || 'Unknown'}</div>
-                                                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{res.studentId?.email || 'N/A'}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                                {res.quizId?.title || 'Practice Quiz'}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold ${
-                                                    res.score >= 70 ? 'text-green-700 bg-green-100 dark:bg-emerald-950/20 dark:text-emerald-400' : 
-                                                    res.score >= 40 ? 'text-yellow-700 bg-yellow-100 dark:bg-amber-950/20 dark:text-amber-400' : 
-                                                    'text-red-700 bg-red-100 dark:bg-rose-950/20 dark:text-rose-400'
-                                                }`}>
-                                                    {res.score}%
-                                                </span>
-                                            </td>
-                                            <td className="text-sm px-6 py-4" style={{ color: 'var(--text-muted)' }}>
-                                                {new Date(res.createdAt).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                {res.score >= 40 ? (
-                                                    <span className="text-green-600 dark:text-emerald-400 text-sm font-medium">Passed</span>
-                                                ) : (
-                                                    <span className="text-red-600 dark:text-rose-400 text-sm font-medium">Failed</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <Link 
-                                                    to={`/student/results/${res._id}`}
-                                                    className="text-primary hover:text-indigo-800 dark:text-[#A78BFA] dark:hover:text-[#C4B5FD] font-semibold text-sm"
-                                                >
-                                                    View Details
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-gray-500" style={{ color: 'var(--text-muted)' }}>
-                                            No results found matching your criteria.
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                {loading ? (
+                    <div className="skeleton h-64 rounded-2xl" />
+                ) : filteredResults.length === 0 ? (
+                    <div className="text-center py-16 rounded-2xl border" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
+                        <p className="text-gray-500 font-medium">No results found matching your criteria.</p>
                     </div>
-                </div>
+                ) : (
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="rounded-xl shadow-sm border overflow-hidden hidden md:block" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
+                            <div className="table-responsive">
+                                <table className="w-full min-w-[640px] text-left">
+                                    <thead style={{ backgroundColor: 'var(--bg-muted)', borderBottom: '1px solid var(--border-default)' }}>
+                                        <tr>
+                                            <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Student</th>
+                                            <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Quiz Title</th>
+                                            <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Score</th>
+                                            <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Date</th>
+                                            <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Status</th>
+                                            <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-secondary)' }}>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y" style={{ divideColor: 'var(--border-default)' }}>
+                                        {filteredResults.map((res) => (
+                                            <tr key={res._id} className="hover:bg-gray-50/50 dark:hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                                            {res.studentId?.name?.charAt(0).toUpperCase() || '?'}
+                                                        </div>
+                                                        <div>
+                                                          <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{res.studentId?.name || 'Unknown'}</div>
+                                                          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{res.studentId?.email || 'N/A'}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 font-medium" style={{ color: 'var(--text-secondary)' }}>
+                                                    {res.quizId?.title || 'Practice Quiz'}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold ${
+                                                        res.score >= 70 ? 'text-green-700 bg-green-100 dark:bg-emerald-950/20 dark:text-emerald-400' : 
+                                                        res.score >= 40 ? 'text-yellow-700 bg-yellow-100 dark:bg-amber-950/20 dark:text-amber-400' : 
+                                                        'text-red-700 bg-red-100 dark:bg-rose-950/20 dark:text-rose-400'
+                                                    }`}>
+                                                        {res.score}%
+                                                    </span>
+                                                </td>
+                                                <td className="text-sm px-6 py-4" style={{ color: 'var(--text-muted)' }}>
+                                                    {new Date(res.createdAt).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {res.score >= 40 ? (
+                                                        <span className="text-green-600 dark:text-emerald-400 text-sm font-medium">Passed</span>
+                                                    ) : (
+                                                        <span className="text-red-600 dark:text-rose-400 text-sm font-medium">Failed</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <Link 
+                                                        to={`/student/results/${res._id}`}
+                                                        className="text-primary hover:text-indigo-800 dark:text-[#A78BFA] dark:hover:text-[#C4B5FD] font-semibold text-sm touch-target"
+                                                    >
+                                                        View Details
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Mobile Stacked Card View */}
+                        <div className="space-y-4 md:hidden">
+                            {filteredResults.map(res => (
+                                <div 
+                                    key={res._id}
+                                    className="rounded-2xl p-4 border flex flex-col gap-3.5 bg-white shadow-sm"
+                                    style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}
+                                >
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                                                {res.studentId?.name?.charAt(0).toUpperCase() || '?'}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{res.studentId?.name || 'Unknown'}</p>
+                                                <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{res.studentId?.email || 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                                            res.score >= 70 ? 'text-green-700 bg-green-100 dark:bg-emerald-950/20 dark:text-emerald-400' : 
+                                            res.score >= 40 ? 'text-yellow-700 bg-yellow-100 dark:bg-amber-950/20 dark:text-amber-400' : 
+                                            'text-red-700 bg-red-100 dark:bg-rose-950/20 dark:text-rose-400'
+                                        }`}>
+                                            {res.score}%
+                                        </span>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2 border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                                        <div className="flex items-center justify-between text-xs">
+                                            <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>{res.quizId?.title || 'Practice Quiz'}</span>
+                                            <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{new Date(res.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between text-xs">
+                                            <span style={{ color: 'var(--text-muted)' }}>Status</span>
+                                            {res.score >= 40 ? (
+                                                <span className="text-green-600 dark:text-emerald-400 font-medium">Passed</span>
+                                            ) : (
+                                                <span className="text-red-600 dark:text-rose-400 font-medium">Failed</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t pt-3 flex" style={{ borderColor: 'var(--border-default)' }}>
+                                        <Link 
+                                            to={`/student/results/${res._id}`}
+                                            className="flex-1 flex items-center justify-center py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-[#F0EEFF] transition-all touch-target text-center"
+                                            style={{ color: '#7C3AED', borderColor: 'var(--border-purple)', background: 'var(--bg-surface)' }}
+                                        >
+                                            View Details
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
             </div>
         </PageLayout>
     );

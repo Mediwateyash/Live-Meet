@@ -58,11 +58,39 @@ export default function StudentLayout({ children }) {
           variants={pageVariants}
           initial="initial"
           animate="animate"
-          className="flex-1 min-w-0"
+          className="flex-1 min-w-0 pb-16 md:pb-0"
         >
           {children}
         </motion.main>
       </div>
+
+      {/* Mobile Bottom Nav */}
+      <div 
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t flex items-center justify-around h-16 pb-safe px-4 shadow-lg backdrop-blur-md" 
+        style={{ 
+          background: 'var(--bg-surface)', 
+          borderColor: 'var(--border-default)',
+        }}
+      >
+        {NAV.map(({ to, icon: Icon, label }) => {
+          const active = pathname === to
+          return (
+            <Link
+              key={to}
+              to={to}
+              className="flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] transition-all touch-target"
+              style={{
+                color: active ? '#7C3AED' : 'var(--text-secondary)',
+                fontWeight: active ? 600 : 500,
+              }}
+            >
+              <Icon size={20} className={active ? 'scale-110 text-[#7C3AED] transition-transform' : ''} />
+              <span className="mt-1">{label}</span>
+            </Link>
+          )
+        })}
+      </div>
+
       <Footer />
     </div>
   )
