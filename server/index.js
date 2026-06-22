@@ -27,6 +27,7 @@ import analyticsRoutes    from './routes/analyticsRoutes.js'
 import quickQuizRoutes    from './routes/quickQuizRoutes.js'
 import uploadRoutes       from './routes/uploadRoutes.js'
 import supportRoutes      from './routes/support.js'
+import Course             from './models/Course.js'
 
 
 // Middlewares
@@ -154,6 +155,75 @@ app.use('/api/support',       supportRoutes)
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))
+
+// Sitemap.xml dynamic route
+app.get('/sitemap.xml', async (req, res, next) => {
+  try {
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+
+    // Get all published courses
+    const courses = await Course.find({ status: 'published' }).select('slug updatedAt')
+
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Static Pages -->
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/browse</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/login</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/register</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/forgot-password</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+`;
+
+    // Dynamic course routes
+    courses.forEach(course => {
+      const courseUrl = `${baseUrl}/course/${course.slug}`;
+      const lastMod = course.updatedAt 
+        ? new Date(course.updatedAt).toISOString().split('T')[0] 
+        : new Date().toISOString().split('T')[0];
+      xml += `  <url>
+    <loc>${courseUrl}</loc>
+    <lastmod>${lastMod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+`;
+    });
+
+    xml += `</urlset>`;
+
+    res.header('Content-Type', 'application/xml');
+    res.status(200).send(xml);
+  } catch (error) {
+    next(error);
+  }
+})
 
 if (process.env.NODE_ENV === 'production') {
   const __filename = fileURLToPath(import.meta.url)
