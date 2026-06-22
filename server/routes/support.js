@@ -3,7 +3,8 @@ import {
   createTicket,
   getMyTickets,
   adminGetAllTickets,
-  adminReplyTicket
+  adminReplyTicket,
+  markTicketAsRead
 } from '../controllers/supportController.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { requireRole } from '../middleware/role.js'
@@ -16,6 +17,7 @@ router.use(authMiddleware)
 // Student routes
 router.post('/', createTicket)
 router.get('/my-tickets', getMyTickets)
+router.patch('/:id/read', markTicketAsRead)
 
 // Admin routes
 router.get('/admin/all', requireRole('admin'), adminGetAllTickets)

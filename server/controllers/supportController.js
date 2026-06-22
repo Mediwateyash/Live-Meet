@@ -59,6 +59,7 @@ export const adminReplyTicket = async (req, res, next) => {
 
     ticket.status = 'replied'
     ticket.reply = reply
+    ticket.readByStudent = false
     ticket.repliedBy = req.user._id
     ticket.repliedAt = new Date()
     await ticket.save()
@@ -73,6 +74,23 @@ export const adminReplyTicket = async (req, res, next) => {
       actorName: 'Admin',
     })
 
+    res.json({ success: true, data: ticket })
+  } catch (error) {
+    next(error)
+  }
+}
+
+// Student: Mark ticket as read
+export const markTicketAsRead = async (req, res, next) => {
+  try {
+    const ticket = await Support.findOneAndUpdate(
+      { _id: req.params.id, student: req.user._id },
+      { readByStudent: true },
+      { new: true }
+    )
+    if (!ticket) {
+      return res.status(404).json({ success: false, message: 'Ticket not found' })
+    }
     res.json({ success: true, data: ticket })
   } catch (error) {
     next(error)

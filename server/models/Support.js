@@ -29,6 +29,10 @@ const supportSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  readByStudent: {
+    type: Boolean,
+    default: true
+  },
   repliedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

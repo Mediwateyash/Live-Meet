@@ -9,20 +9,24 @@ export default function FAQ() {
 
   const faqs = [
     {
-      question: "How does the AI Tutor work?",
-      answer: "Our AI Tutor analyzes your learning patterns, identifies areas where you struggle, and provides personalized explanations, practice exercises, and study recommendations in real-time."
+      question: "What is Zenius AI and who can use it?",
+      answer: "Zenius AI is an advanced, AI-powered Learning Management System (LMS) designed for both students and instructors. Students can enroll in interactive courses, take generated quizzes, and attend live lectures, while educators can manage curriculums, host live sessions, and review student progress."
     },
     {
-      question: "Are the certificates recognized by employers?",
-      answer: "Yes! Our certificates are industry-recognized and can be directly added to your LinkedIn profile. Many of our top corporate partners use our platform for internal training."
+      question: "How does the AI MCQ and Test Generator work?",
+      answer: "Zenius AI features a built-in AI MCQ Generator. Instructors can select course materials or specify custom topics, and our AI automatically analyzes the context to generate multiple-choice questions, making exam creation fast and efficient."
     },
     {
-      question: "Can I access the courses on mobile?",
-      answer: "Absolutely. Our platform is fully responsive and we have dedicated mobile apps for iOS and Android, allowing you to download lessons for offline viewing."
+      question: "Can students interact with instructors during Live Lectures?",
+      answer: "Yes! Zenius AI provides a custom virtual classroom experience. Students can join scheduled live streams, access real-time video/audio controls, interact with peers and instructors via the chat dock, and view attendance metrics."
     },
     {
-      question: "Do you offer refunds?",
-      answer: "We offer a 30-day money-back guarantee. If you're not completely satisfied with your learning experience, you can request a full refund within the first 30 days."
+      question: "How do certificates work on Zenius AI?",
+      answer: "Once a student successfully completes all modules of a course and passes the required course quizzes, Zenius AI automatically generates a personalized, downloadable certificate of completion that can be shared with employers."
+    },
+    {
+      question: "How can I submit feedback or report a bug to the administrator?",
+      answer: "Logged-in users can open their profile menu and click 'Contact Us' (or 'Student Feedback' for admins) to submit tickets. You can categorise your request, write your feedback, and receive direct responses from platform administrators in your inbox."
     }
   ];
 

@@ -11,6 +11,8 @@ import Select from '../../components/ui/Select.jsx'
 import { supportAPI } from '../../api/support.js'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../store/authStore.js'
+import { formatDateTime } from '../../utils/formatters.js'
+
 
 export default function Contact() {
   const navigate = useNavigate()
@@ -48,6 +50,10 @@ export default function Contact() {
   }
 
   useEffect(() => {
+    fetchTickets()
+  }, [])
+
+  useEffect(() => {
     if (activeTab === 'list') {
       fetchTickets()
     }
@@ -79,21 +85,34 @@ export default function Contact() {
     }
   }
 
-  const toggleExpand = (ticketId) => {
+  const toggleExpand = async (ticketId) => {
+    const isExpanding = !expandedTickets[ticketId]
     setExpandedTickets(prev => ({
       ...prev,
-      [ticketId]: !prev[ticketId]
+      [ticketId]: isExpanding
     }))
+
+    if (isExpanding) {
+      const ticket = tickets.find(t => t._id === ticketId)
+      if (ticket && ticket.status === 'replied' && !ticket.readByStudent) {
+        try {
+          await supportAPI.markAsRead(ticketId)
+          setTickets(prev => prev.map(t => t._id === ticketId ? { ...t, readByStudent: true } : t))
+        } catch (err) {
+          console.error('Failed to mark ticket as read:', err)
+        }
+      }
+    }
   }
 
   return (
     <PageLayout noFooter={true}>
-      <div className="max-w-4xl mx-auto px-6 py-10">
+      <div className="max-w-4xl mx-auto px-6 py-6">
         
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm font-medium mb-6 hover:text-[#7C3AED] transition-colors"
+          className="flex items-center gap-1.5 text-sm font-medium mb-4 hover:text-[#7C3AED] transition-colors"
           style={{ color: 'var(--text-secondary)' }}
         >
           <ArrowLeft size={16} />
@@ -101,17 +120,17 @@ export default function Contact() {
         </button>
 
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold leading-tight" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+        <div className="mb-4">
+          <h1 className="text-2xl font-extrabold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Contact Support & Feedback
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Send us feedback, request features, or report bugs.
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b mb-8" style={{ borderColor: 'var(--border-default)' }}>
+        <div className="flex border-b mb-6" style={{ borderColor: 'var(--border-default)' }}>
           <button
             onClick={() => setActiveTab('new')}
             className="flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all"
@@ -133,7 +152,7 @@ export default function Contact() {
           >
             <Inbox size={16} />
             My Messages
-            {tickets.some(t => t.status === 'replied') && (
+            {tickets.some(t => t.status === 'replied' && !t.readByStudent) && (
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#7C3AED]" />
             )}
           </button>
@@ -244,11 +263,7 @@ export default function Contact() {
                               {ticket.category}
                             </span>
                             <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                              {new Date(ticket.createdAt).toLocaleDateString(undefined, {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })}
+                              {formatDateTime(ticket.createdAt)}
                             </span>
                           </div>
                           <h4 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -301,7 +316,7 @@ export default function Contact() {
                                     {ticket.repliedAt && (
                                       <span className="font-normal text-muted-foreground flex items-center gap-1 ml-auto" style={{ color: 'var(--text-muted)' }}>
                                         <Clock size={12} />
-                                        {new Date(ticket.repliedAt).toLocaleDateString()}
+                                        {formatDateTime(ticket.repliedAt)}
                                       </span>
                                     )}
                                   </div>

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { MessageSquare, ArrowLeft, Send, CheckCircle2, Mail, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { MessageSquare, ArrowLeft, Send, CheckCircle2, Mail, Clock, ChevronDown, ChevronUp, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+
 import { motion, AnimatePresence } from 'framer-motion'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Badge from '../../components/ui/Badge.jsx'
 import Button from '../../components/ui/Button.jsx'
 import { supportAPI } from '../../api/support.js'
-import { formatDate } from '../../utils/formatters.js'
+import { formatDateTime } from '../../utils/formatters.js'
 import toast from 'react-hot-toast'
 
 export default function AdminSupport() {
@@ -17,6 +18,8 @@ export default function AdminSupport() {
   const [replyText, setReplyText] = useState({}) // ticketId -> text
   const [replying, setReplying] = useState({}) // ticketId -> bool
   const [expandedStudents, setExpandedStudents] = useState({})
+  const [searchQuery, setSearchQuery] = useState('')
+
 
   const loadTickets = async () => {
     setLoading(true)
@@ -65,8 +68,24 @@ export default function AdminSupport() {
     }))
   }
 
-  // Filter tickets by the active tab
-  const filteredTickets = tickets.filter(t => t.status === tab)
+  // Filter tickets by active tab and search query
+  const filteredTickets = tickets.filter(t => {
+    if (t.status !== tab) return false
+    if (!searchQuery.trim()) return true
+
+    const query = searchQuery.toLowerCase().trim()
+    const studentName = t.student?.fullName?.toLowerCase() || ''
+    const studentEmail = t.student?.email?.toLowerCase() || ''
+    const ticketSubject = t.subject?.toLowerCase() || ''
+    const ticketMessage = t.message?.toLowerCase() || ''
+    const ticketCategory = t.category?.toLowerCase() || ''
+
+    return studentName.includes(query) ||
+           studentEmail.includes(query) ||
+           ticketSubject.includes(query) ||
+           ticketMessage.includes(query) ||
+           ticketCategory.includes(query)
+  })
 
   // Group filtered tickets by student
   const groupTicketsByStudent = (ticketsList) => {
@@ -88,12 +107,12 @@ export default function AdminSupport() {
 
   return (
     <PageLayout noFooter={true}>
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-6xl mx-auto px-6 py-6">
 
         {/* Back navigation */}
         <button
           onClick={() => navigate('/admin/dashboard')}
-          className="flex items-center gap-1.5 text-sm font-medium mb-6 hover:text-[#7C3AED] transition-colors"
+          className="flex items-center gap-1.5 text-sm font-medium mb-4 hover:text-[#7C3AED] transition-colors"
           style={{ color: 'var(--text-secondary)' }}
         >
           <ArrowLeft size={16} />
@@ -101,37 +120,61 @@ export default function AdminSupport() {
         </button>
 
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+        <div className="mb-4">
+          <h1 className="text-2xl font-extrabold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Student Support & Feedback
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Read reports, general feedback, and reply to student queries.
           </p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 p-1 rounded-xl mb-8 w-fit" style={{ background: 'var(--z-purple-100)' }}>
-          <button
-            onClick={() => setTab('pending')}
-            className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
-            style={{
-              background: tab === 'pending' ? '#7C3AED' : 'transparent',
-              color: tab === 'pending' ? 'white' : 'var(--text-secondary)',
-            }}
-          >
-            Pending ({tickets.filter(t => t.status === 'pending').length})
-          </button>
-          <button
-            onClick={() => setTab('replied')}
-            className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
-            style={{
-              background: tab === 'replied' ? '#7C3AED' : 'transparent',
-              color: tab === 'replied' ? 'white' : 'var(--text-secondary)',
-            }}
-          >
-            Replied ({tickets.filter(t => t.status === 'replied').length})
-          </button>
+        {/* Controls Row: Tabs on Left, Search on Right */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          {/* Tabs */}
+          <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: 'var(--z-purple-100)' }}>
+            <button
+              onClick={() => setTab('pending')}
+              className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
+              style={{
+                background: tab === 'pending' ? '#7C3AED' : 'transparent',
+                color: tab === 'pending' ? 'white' : 'var(--text-secondary)',
+              }}
+            >
+              Pending ({tickets.filter(t => t.status === 'pending').length})
+            </button>
+            <button
+              onClick={() => setTab('replied')}
+              className="px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
+              style={{
+                background: tab === 'replied' ? '#7C3AED' : 'transparent',
+                color: tab === 'replied' ? 'white' : 'var(--text-secondary)',
+              }}
+            >
+              Replied ({tickets.filter(t => t.status === 'replied').length})
+            </button>
+          </div>
+
+          {/* Search bar */}
+          <div className="relative w-full md:w-80">
+            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2" color="var(--text-secondary)" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search student, email, subject..."
+              className="w-full pl-11 pr-4 py-2 rounded-xl text-sm outline-none transition-all border font-medium placeholder:text-[#94A3B8]"
+              style={{
+                background: 'var(--bg-surface)',
+                borderColor: 'var(--border-default)',
+                color: 'var(--text-primary)',
+                fontFamily: 'Inter, sans-serif',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+              }}
+              onFocus={e => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.15)' }}
+              onBlur={e =>  { e.target.style.borderColor = 'var(--border-default)'; e.target.style.boxShadow = 'none' }}
+            />
+          </div>
         </div>
 
         {/* Student Grouped List */}
@@ -242,7 +285,7 @@ export default function AdminSupport() {
                                   </span>
                                 </div>
                                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                  {formatDate(ticket.createdAt)}
+                                  {formatDateTime(ticket.createdAt)}
                                 </span>
                               </div>
 
@@ -295,7 +338,7 @@ export default function AdminSupport() {
                                     {ticket.repliedAt && (
                                       <span className="font-normal text-muted-foreground flex items-center gap-1 ml-auto" style={{ color: 'var(--text-muted)' }}>
                                         <Clock size={11} />
-                                        {formatDate(ticket.repliedAt)}
+                                        {formatDateTime(ticket.repliedAt)}
                                       </span>
                                     )}
                                   </div>
