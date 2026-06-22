@@ -1,6 +1,7 @@
 import express        from 'express'
 import { createServer } from 'http'
 import { Server }       from 'socket.io'
+import fs               from 'fs'
 import path             from 'path'
 import { fileURLToPath } from 'url'
 import cors            from 'cors'
@@ -129,8 +130,11 @@ app.use('/api', apiLimiter)
 
 // Robots.txt
 app.get('/robots.txt', (req, res) => {
+  const protocol = req.protocol
+  const host = req.get('host')
+  const baseUrl = `${protocol}://${host}`
   res.type('text/plain')
-  res.send(`User-agent: *\nDisallow: /api/\nDisallow: /admin/\nAllow: /`)
+  res.send(`User-agent: *\nDisallow: /api/\nDisallow: /admin/\nAllow: /\n\nSitemap: ${baseUrl}/sitemap.xml`)
 })
 
 // Routes
@@ -228,10 +232,106 @@ app.get('/sitemap.xml', async (req, res, next) => {
 if (process.env.NODE_ENV === 'production') {
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
+  const distPath = path.join(__dirname, '../client/dist')
   
-  app.use(express.static(path.join(__dirname, '../client/dist')))
-  app.get(/(.*)/, (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../client/dist/index.html'))
+  app.use(express.static(distPath))
+  
+  app.get(/(.*)/, async (req, res, next) => {
+    const indexPath = path.resolve(distPath, 'index.html')
+    if (!fs.existsSync(indexPath)) {
+      return res.status(404).send('Application index.html shell not found')
+    }
+
+    try {
+      let html = fs.readFileSync(indexPath, 'utf8')
+      const protocol = req.protocol
+      const host = req.get('host')
+      const baseUrl = `${protocol}://${host}`
+      const fullUrl = `${baseUrl}${req.originalUrl}`
+
+      // Default values
+      let title = 'Zenius AI — Learn Without Limits'
+      let description = 'Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes.'
+      let image = `${baseUrl}/favicon.svg`
+      let statusCode = 200
+      let schemaJson = {
+        "@context": "https://schema.org",
+        "@type": "OnlineBusiness",
+        "name": "Zenius AI",
+        "url": baseUrl,
+        "logo": `${baseUrl}/favicon.svg`,
+        "description": description
+      }
+
+      // Check route pattern for Course detail page: /course/:slug
+      const courseMatch = req.path.match(/^\/course\/([^/]+)$/)
+      if (courseMatch) {
+        const slug = courseMatch[1]
+        const course = await Course.findOne({ slug }).populate('instructor', 'fullName')
+        if (course) {
+          title = `${course.title} | Zenius AI`
+          description = course.subtitle || (course.description ? course.description.slice(0, 155).replace(/\s+/g, ' ').trim() + '...' : '')
+          if (course.thumbnail) {
+            image = course.thumbnail
+          }
+          schemaJson = {
+            "@context": "https://schema.org",
+            "@type": "Course",
+            "name": course.title,
+            "description": course.description ? course.description.slice(0, 250) : '',
+            "provider": {
+              "@type": "Organization",
+              "name": "Zenius AI",
+              "sameAs": baseUrl
+            },
+            "image": image,
+            "offers": {
+              "@type": "Offer",
+              "price": course.price || 0,
+              "priceCurrency": "INR"
+            }
+          }
+        } else {
+          // SEO-friendly 404 Status Code response!
+          statusCode = 404
+          title = 'Course Not Found | Zenius AI'
+          description = 'The requested course does not exist on Zenius AI.'
+        }
+      } else if (req.path === '/browse') {
+        title = 'Browse Courses | Zenius AI'
+        description = 'Explore professional AI-powered learning courses on Zenius AI.'
+      }
+
+      const seoTags = `
+    <meta name="description" content="${description}" />
+    <link rel="canonical" href="${fullUrl}" />
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="${fullUrl}" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:image" content="${image}" />
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="${fullUrl}" />
+    <meta property="twitter:title" content="${title}" />
+    <meta property="twitter:description" content="${description}" />
+    <meta property="twitter:image" content="${image}" />
+    <!-- Schema Markup -->
+    <script type="application/ld+json">
+      ${JSON.stringify(schemaJson, null, 2)}
+    </script>
+  `
+
+      // Replace default Title tag
+      html = html.replace(/<title>.*?<\/title>/g, `<title>${title}</title>`)
+      // Inject tags before </head>
+      html = html.replace('</head>', `${seoTags}\n  </head>`)
+
+      res.status(statusCode).send(html)
+    } catch (err) {
+      next(err)
+    }
   })
 } else {
   // 404 handler
