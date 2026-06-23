@@ -348,7 +348,7 @@ export async function getYoutubeMeta(req, res, next) {
     const timeout = setTimeout(() => controller.abort(), 5000)
     let response;
     try {
-      response = await fetch(url, {
+      response = await fetch(parsedUrl.href, {
         signal: controller.signal,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'

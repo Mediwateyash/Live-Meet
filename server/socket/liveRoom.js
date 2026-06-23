@@ -56,9 +56,10 @@ export function registerLiveRoomSocket(io) {
       }
 
       const cookies = parseCookies(socket.handshake.headers.cookie || '')
+      // Auth token from: (1) socket.io handshake auth object [sent over TLS], (2) httpOnly cookie
+      // NOTE: query-param tokens are intentionally NOT supported to prevent token leakage in server logs
       const token =
         socket.handshake.auth?.token ||
-        socket.handshake.headers?.authorization?.split(' ')[1] ||
         cookies.accessToken
 
       if (!token) return next(new Error('Socket authentication required'))

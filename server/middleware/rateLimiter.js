@@ -56,3 +56,10 @@ export const profileLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+export const supportTicketLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 5 : 100,                    // 5 tickets / 15 min in prod
+  message: { success: false, message: 'Too many support tickets submitted. Please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})

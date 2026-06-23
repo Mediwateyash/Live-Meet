@@ -16,6 +16,7 @@ export function setTokenCookies(res, accessToken, refreshToken) {
     secure:   isProd,
     sameSite: 'strict',
     maxAge:   15 * 60 * 1000,
+    path:     '/api',
   })
 
   res.cookie('refreshToken', refreshToken, {
@@ -28,6 +29,6 @@ export function setTokenCookies(res, accessToken, refreshToken) {
 }
 
 export function clearTokenCookies(res) {
-  res.clearCookie('accessToken')
+  res.clearCookie('accessToken', { path: '/api' })
   res.clearCookie('refreshToken', { path: '/api/auth/refresh' })
 }

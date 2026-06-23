@@ -7,6 +7,26 @@ import { generateAccessToken, generateRefreshToken, setTokenCookies, clearTokenC
 import { sendEmail }   from '../config/nodemailer.js'
 import { validatePassword } from '../utils/passwordValidator.js'
 
+// ── In-memory access token blacklist (15-min TTL matches token expiry) ────────
+const tokenBlacklist = new Map()  // token → expiresAt (ms)
+const BLACKLIST_TTL  = 15 * 60 * 1000
+
+export function isTokenBlacklisted(token) {
+  const expiresAt = tokenBlacklist.get(token)
+  if (!expiresAt) return false
+  if (Date.now() > expiresAt) { tokenBlacklist.delete(token); return false }
+  return true
+}
+
+// Periodically prune expired tokens every 5 minutes
+setInterval(() => {
+  const now = Date.now()
+  for (const [t, exp] of tokenBlacklist) {
+    if (now > exp) tokenBlacklist.delete(t)
+  }
+}, 5 * 60 * 1000)
+// ─────────────────────────────────────────────────────────────────────────────
+
 export async function register(req, res, next) {
   try {
     let { fullName, email, password, role } = req.body
@@ -83,6 +103,11 @@ export async function login(req, res, next) {
 
 export async function logout(req, res, next) {
   try {
+    // Blacklist the current access token to prevent replay attacks
+    const token = req.cookies?.accessToken
+    if (token) {
+      tokenBlacklist.set(token, Date.now() + BLACKLIST_TTL)
+    }
     if (req.user) {
       await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: 1 } })
     }
@@ -149,7 +174,8 @@ export async function forgotPassword(req, res, next) {
     user.resetPasswordExpires = expires
     await user.save({ validateBeforeSave: false })
 
-    const resetURL = `${process.env.CLIENT_URL}/reset-password?token=${token}`
+    // Send token as a URL fragment so it never appears in server logs or Referer headers
+    const resetURL = `${process.env.CLIENT_URL}/reset-password#token=${token}`
     await sendEmail({
       to: email,
       subject: 'Password Reset — Zenius AI',

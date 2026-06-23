@@ -1,3 +1,24 @@
+// Deep-sanitize request objects to prevent MongoDB operator injection attacks.
+// Removes keys that start with '$' or contain '.', and rejects string values
+// that look like raw MongoDB operators being smuggled inside strings.
+
+const DANGEROUS_OPERATORS = /(\$where|\$regex|\$ne|\$gt|\$lt|\$gte|\$lte|\$in|\$nin|\$or|\$and|\$nor|\$not|\$exists|\$elemMatch|\$expr|\$jsonSchema)/i
+
+function sanitizeValue(value, key, obj) {
+  if (typeof value === 'string') {
+    // Reject string values that look like JavaScript code or embedded operator objects
+    if (DANGEROUS_OPERATORS.test(value) && value.trim().startsWith('{')) {
+      console.warn(`[SECURITY] Suspicious string value for key "${key}": ${value.slice(0, 80)}`)
+      obj[key] = ''
+    }
+    // Block common $where / function injection patterns
+    if (/function\s*\(|=>|return\s+this\./i.test(value)) {
+      console.warn(`[SECURITY] JS function injection attempt in key "${key}"`)
+      obj[key] = ''
+    }
+  }
+}
+
 export function mongoSanitize(req, res, next) {
   const sanitize = (obj) => {
     if (obj && typeof obj === 'object') {
@@ -7,7 +28,7 @@ export function mongoSanitize(req, res, next) {
             sanitize(obj[i]);
             if (Object.keys(obj[i]).length === 0) {
               obj.splice(i, 1);
-              i--; 
+              i--;
             }
           }
         }
@@ -22,6 +43,8 @@ export function mongoSanitize(req, res, next) {
               if (Object.keys(obj[key]).length === 0) {
                 delete obj[key];
               }
+            } else {
+              sanitizeValue(obj[key], key, obj)
             }
           }
         }
@@ -29,10 +52,9 @@ export function mongoSanitize(req, res, next) {
     }
   };
 
-  if (req.body) sanitize(req.body);
-  if (req.query) sanitize(req.query);
+  if (req.body)   sanitize(req.body);
+  if (req.query)  sanitize(req.query);
   if (req.params) sanitize(req.params);
 
   next();
 }
-

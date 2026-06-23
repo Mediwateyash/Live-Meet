@@ -50,9 +50,17 @@ app.set('trust proxy', 1)
 
 const httpServer = createServer(app)
 
+// Validate CLIENT_URL is a proper absolute URL before adding to allowed origins
+const isValidOrigin = (url) => {
+  try {
+    const parsed = new URL(url)
+    return ['http:', 'https:'].includes(parsed.protocol)
+  } catch { return false }
+}
+
 const allowedOrigins = [
   'https://live-meet.onrender.com',
-  process.env.CLIENT_URL
+  (process.env.CLIENT_URL && isValidOrigin(process.env.CLIENT_URL)) ? process.env.CLIENT_URL : null
 ].filter(Boolean)
 
 if (process.env.NODE_ENV !== 'production') {
@@ -88,9 +96,11 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
       imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com', 'https://placehold.co', 'https://*.ytimg.com', 'https:'],
-      connectSrc: ["'self'", 'ws:', 'wss:', 'https:', 'http://localhost:*', 'ws://localhost:*', 'https://live-meet.onrender.com', 'wss://live-meet.onrender.com'],
+      connectSrc: ["'self'", 'ws:', 'wss:', 'https:', 'http://localhost:*', 'ws://localhost:*', 'https://live-meet.onrender.com', 'wss://live-meet.onrender.com', 'blob:'],
       frameSrc: ["'self'", 'https://*.youtube.com', 'https://*.youtube-nocookie.com', 'https://player.vimeo.com', 'https://res.cloudinary.com', 'https://docs.google.com'],
       mediaSrc: ["'self'", 'https://res.cloudinary.com', 'data:', 'blob:', 'https:'],
+      // Required for WebRTC getUserMedia / screen capture in modern browsers
+      workerSrc: ["'self'", 'blob:'],
     },
   },
   frameguard: { action: 'deny' },
@@ -243,6 +253,12 @@ if (process.env.NODE_ENV === 'production') {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
+
+      // Sanitize req.path for safe use in URLs — allow only alphanumeric, hyphens, slashes, underscores
+      const safePath = req.path.replace(/[^a-zA-Z0-9\-_\/]/g, '')
+
+      // Cache-Control: prevent authenticated page responses from being cached
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
 
       // Default values
       let title = 'Zenius AI — Learn Without Limits'
@@ -426,7 +442,7 @@ if (process.env.NODE_ENV === 'production') {
         }
         const pageName = pageTitleMap[pathClean] || (pathClean ? pathClean.charAt(0).toUpperCase() + pathClean.slice(1) : '')
         
-        if (pageName && !req.path.startsWith('/api') && !req.path.startsWith('/socket.io')) {
+        if (pageName && !safePath.startsWith('/api') && !safePath.startsWith('/socket.io')) {
           schemas.push({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
@@ -441,7 +457,7 @@ if (process.env.NODE_ENV === 'production') {
                 "@type": "ListItem",
                 "position": 2,
                 "name": pageName,
-                "item": `${baseUrl}${req.path}`
+                "item": `${baseUrl}${safePath}`
               }
             ]
           })

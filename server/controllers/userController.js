@@ -70,7 +70,10 @@ export async function becomeInstructor(req, res, next) {
 
 export async function getRequestStatus(req, res, next) {
   try {
-    const request = await InstructorRequest.findOne({ user: req.user._id }).sort({ createdAt: -1 })
+    const request = await InstructorRequest
+      .findOne({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .select('status createdAt reviewedAt')  // Redact admin remarks, reviewer ID, personal fields
     res.json(new ApiResponse(200, request))
   } catch (err) { next(err) }
 }
