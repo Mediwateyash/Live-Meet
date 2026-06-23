@@ -67,7 +67,7 @@ export async function getFeatured(req, res, next) {
     const courses = await Course.find({ status: 'published' })
       .select(publicFields)
       .sort({ avgRating: -1, 'enrolledStudents': -1 })
-      .limit(6)
+      .limit(8)
       .populate('instructor', 'fullName avatar')
       
     const coursesJSON = courses.map(c => {

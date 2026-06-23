@@ -63,7 +63,7 @@ export default function FeaturedCourses() {
     coursesAPI.featured()
       .then(res => {
         if (res.data && res.data.data && res.data.data.length > 0) {
-          setCourses(res.data.data.slice(0, 4));
+          setCourses(res.data.data.slice(0, 8));
         }
       })
       .catch(err => console.error("Failed to load featured courses:", err));
