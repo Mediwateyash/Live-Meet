@@ -6,6 +6,7 @@ import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { validatePassword } from '../utils/passwordValidator.js'
 import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
+import { clearTokenCookies } from '../utils/generateToken.js'
 
 export async function getProfile(req, res, next) {
   try {
@@ -134,6 +135,24 @@ export async function updatePassword(req, res, next) {
     await user.save()
 
     res.json(new ApiResponse(200, null, 'Password updated successfully'))
+  } catch (err) { next(err) }
+}
+
+export async function deleteProfile(req, res, next) {
+  try {
+    const userId = req.user._id
+    const user = await User.findById(userId)
+    if (!user) {
+      throw new ApiError(404, 'User not found')
+    }
+    if (user.role === 'admin') {
+      throw new ApiError(400, 'Admin accounts cannot be deleted directly')
+    }
+
+    await User.findByIdAndDelete(userId)
+    clearTokenCookies(res)
+
+    res.json(new ApiResponse(200, null, 'Account deleted permanently'))
   } catch (err) { next(err) }
 }
 

@@ -34,23 +34,23 @@ export default function CoursePlayer() {
   const [searchParams] = useSearchParams()
   const playerRef = useRef(null)
 
-  const [course,     setCourse]     = useState(null)
-  const [progress,   setProgress]   = useState(null)
+  const [course, setCourse] = useState(null)
+  const [progress, setProgress] = useState(null)
   const [currentLesson, setCurrent] = useState(null)
-  const [openSections, setOpenSec]  = useState({})
-  const [loading,    setLoading]    = useState(true)
-  const [tab,        setTab]        = useState(() => searchParams.get('tab') || 'overview')
-  const [marking,    setMarking]    = useState(false)
+  const [openSections, setOpenSec] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState(() => searchParams.get('tab') || 'overview')
+  const [marking, setMarking] = useState(false)
   const [videoEnded, setVideoEnded] = useState(false)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
 
   // Quick Quiz State
   const [quickQuizLoading, setQuickQuizLoading] = useState(false)
-  const [quickQuizActive, setQuickQuizActive]   = useState(false)
-  const [quickQuizMCQs, setQuickQuizMCQs]       = useState([])
+  const [quickQuizActive, setQuickQuizActive] = useState(false)
+  const [quickQuizMCQs, setQuickQuizMCQs] = useState([])
   const [quickQuizAnswers, setQuickQuizAnswers] = useState({})
   const [quickQuizSubmitted, setQuickQuizSubmitted] = useState(false)
-  const [quickQuizScore, setQuickQuizScore]     = useState(0)
+  const [quickQuizScore, setQuickQuizScore] = useState(0)
 
   // Feedback State
   const [feedbackContent, setFeedbackContent] = useState('')
@@ -63,7 +63,7 @@ export default function CoursePlayer() {
     try {
       const res = await progressAPI.get(course._id)
       setProgress(res.data.data)
-    } catch {}
+    } catch { }
   }
 
   useEffect(() => {
@@ -125,29 +125,29 @@ export default function CoursePlayer() {
     setQuickQuizSubmitted(false);
     setQuickQuizAnswers({});
     try {
-        const res = await api.post('/quick-quiz/generate', {
-            resourceUrl: currentLesson.resources[0].url,
-            title: currentLesson.title,
-            numQuestions: 5
-        });
-        setQuickQuizMCQs(res.data.questions);
+      const res = await api.post('/quick-quiz/generate', {
+        resourceUrl: currentLesson.resources[0].url,
+        title: currentLesson.title,
+        numQuestions: 5
+      });
+      setQuickQuizMCQs(res.data.questions);
     } catch (error) {
-        toast.error('Failed to generate quick quiz');
-        setQuickQuizActive(false);
+      toast.error('Failed to generate quick quiz');
+      setQuickQuizActive(false);
     } finally {
-        setQuickQuizLoading(false);
+      setQuickQuizLoading(false);
     }
   };
 
   const handleQuickQuizSubmit = () => {
-      let score = 0;
-      quickQuizMCQs.forEach((mcq, idx) => {
-          if (quickQuizAnswers[idx] === mcq.correctAnswer) {
-              score++;
-          }
-      });
-      setQuickQuizScore(Math.round((score / quickQuizMCQs.length) * 100));
-      setQuickQuizSubmitted(true);
+    let score = 0;
+    quickQuizMCQs.forEach((mcq, idx) => {
+      if (quickQuizAnswers[idx] === mcq.correctAnswer) {
+        score++;
+      }
+    });
+    setQuickQuizScore(Math.round((score / quickQuizMCQs.length) * 100));
+    setQuickQuizSubmitted(true);
   };
 
   const handleFeedbackSubmit = async (e) => {
@@ -177,13 +177,13 @@ export default function CoursePlayer() {
   )
 
   const TABS = [
-    { id: 'overview',  label: 'Overview' },
-    { id: 'notes',     label: 'Notes',         icon: FileText },
-    { id: 'tests',     label: 'Tests',          icon: ClipboardList },
-    { id: 'mcq',       label: 'MCQ Generator',  icon: Brain },
-    { id: 'live',      label: 'Live Lectures',  icon: Video },
-    { id: 'progress',  label: 'Progress',       icon: TrendingUp },
-    { id: 'certificate', label: 'Certificate',  icon: Award },
+    { id: 'overview', label: 'Overview' },
+    { id: 'notes', label: 'Notes', icon: FileText },
+    { id: 'tests', label: 'Tests', icon: ClipboardList },
+    { id: 'mcq', label: 'MCQ Generator', icon: Brain },
+    { id: 'live', label: 'Live Lectures', icon: Video },
+    { id: 'progress', label: 'Progress', icon: TrendingUp },
+    { id: 'certificate', label: 'Certificate', icon: Award },
   ]
 
   return (
@@ -194,10 +194,10 @@ export default function CoursePlayer() {
           <ArrowLeft size={18} /> <span className="hidden xs:inline">Back</span>
         </button>
         <span className="text-sm md:text-base font-semibold text-white truncate flex-1">{course?.title || 'Course Player'}</span>
-        
+
         {/* Course content toggle button for mobile */}
-        <button 
-          onClick={() => setShowMobileSidebar(true)} 
+        <button
+          onClick={() => setShowMobileSidebar(true)}
           className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.15)] text-white text-xs font-semibold transition-colors touch-target"
         >
           Content
@@ -215,52 +215,52 @@ export default function CoursePlayer() {
           {/* Video / PDF / Quiz */}
           <div style={{ background: '#000', aspectRatio: '16/9', maxHeight: 'min(60vh, calc(100vw * 9/16))', display: 'flex', flexDirection: 'column', position: 'relative' }}>
             {quickQuizActive ? (
-                <div className="w-full h-full bg-[#1A1A2E] text-white p-8 overflow-y-auto">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-2xl font-bold">Quick Quiz: {currentLesson?.title}</h3>
-                        <button onClick={() => setQuickQuizActive(false)} className="text-gray-400 hover:text-white">Close</button>
-                    </div>
-                    {quickQuizLoading ? (
-                        <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                            <Spinner size={40} color="#7C3AED" />
-                            <p className="text-[#A78BFA] animate-pulse font-medium">AI is generating your quiz...</p>
-                        </div>
-                    ) : quickQuizSubmitted ? (
-                        <div className="flex flex-col items-center justify-center h-64 space-y-4 bg-[rgba(124,58,237,0.1)] rounded-xl p-8 border border-[rgba(124,58,237,0.3)]">
-                            <h4 className="text-3xl font-bold text-white">Score: {quickQuizScore}%</h4>
-                            <p className="text-gray-400">{quickQuizScore >= 70 ? 'Great job! You grasped the key concepts.' : 'You might want to review the notes again.'}</p>
-                            <button onClick={() => setQuickQuizActive(false)} className="mt-4 bg-[#7C3AED] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#6D28D9]">Back to Lesson</button>
-                        </div>
-                    ) : (
-                        <div className="space-y-8 pb-8">
-                            {quickQuizMCQs.map((mcq, idx) => (
-                                <div key={idx} className="bg-[rgba(255,255,255,0.03)] p-6 rounded-xl border border-[rgba(255,255,255,0.05)]">
-                                    <p className="text-lg font-medium mb-4"><span className="text-[#A78BFA] mr-2">Q{idx + 1}.</span> {mcq.question}</p>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {mcq.options.map((opt, oIdx) => (
-                                            <button
-                                                key={oIdx}
-                                                onClick={() => setQuickQuizAnswers(prev => ({ ...prev, [idx]: opt }))}
-                                                className={`p-3 rounded-lg text-left transition-all ${quickQuizAnswers[idx] === opt ? 'bg-[rgba(124,58,237,0.2)] border-[#7C3AED] border' : 'bg-[rgba(0,0,0,0.2)] border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.05)]'}`}
-                                            >
-                                                {String.fromCharCode(65 + oIdx)}. {opt}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                            <div className="flex justify-end">
-                                <button
-                                    onClick={handleQuickQuizSubmit}
-                                    disabled={Object.keys(quickQuizAnswers).length < quickQuizMCQs.length}
-                                    className="bg-[#7C3AED] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#6D28D9] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                >
-                                    Submit Quick Quiz
-                                </button>
-                            </div>
-                        </div>
-                    )}
+              <div className="w-full h-full bg-[#1A1A2E] text-white p-8 overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-bold">Quick Quiz: {currentLesson?.title}</h3>
+                  <button onClick={() => setQuickQuizActive(false)} className="text-gray-400 hover:text-white">Close</button>
                 </div>
+                {quickQuizLoading ? (
+                  <div className="flex flex-col items-center justify-center h-64 space-y-4">
+                    <Spinner size={40} color="#7C3AED" />
+                    <p className="text-[#A78BFA] animate-pulse font-medium">AI is generating your quiz...</p>
+                  </div>
+                ) : quickQuizSubmitted ? (
+                  <div className="flex flex-col items-center justify-center h-64 space-y-4 bg-[rgba(124,58,237,0.1)] rounded-xl p-8 border border-[rgba(124,58,237,0.3)]">
+                    <h4 className="text-3xl font-bold text-white">Score: {quickQuizScore}%</h4>
+                    <p className="text-gray-400">{quickQuizScore >= 70 ? 'Great job! You grasped the key concepts.' : 'You might want to review the notes again.'}</p>
+                    <button onClick={() => setQuickQuizActive(false)} className="mt-4 bg-[#7C3AED] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#6D28D9]">Back to Lesson</button>
+                  </div>
+                ) : (
+                  <div className="space-y-8 pb-8">
+                    {quickQuizMCQs.map((mcq, idx) => (
+                      <div key={idx} className="bg-[rgba(255,255,255,0.03)] p-6 rounded-xl border border-[rgba(255,255,255,0.05)]">
+                        <p className="text-lg font-medium mb-4"><span className="text-[#A78BFA] mr-2">Q{idx + 1}.</span> {mcq.question}</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {mcq.options.map((opt, oIdx) => (
+                            <button
+                              key={oIdx}
+                              onClick={() => setQuickQuizAnswers(prev => ({ ...prev, [idx]: opt }))}
+                              className={`p-3 rounded-lg text-left transition-all ${quickQuizAnswers[idx] === opt ? 'bg-[rgba(124,58,237,0.2)] border-[#7C3AED] border' : 'bg-[rgba(0,0,0,0.2)] border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.05)]'}`}
+                            >
+                              {String.fromCharCode(65 + oIdx)}. {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex justify-end">
+                      <button
+                        onClick={handleQuickQuizSubmit}
+                        disabled={Object.keys(quickQuizAnswers).length < quickQuizMCQs.length}
+                        className="bg-[#7C3AED] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#6D28D9] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                      >
+                        Submit Quick Quiz
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : currentLesson?.videoUrl ? (
               <ReactPlayer
                 ref={playerRef}
@@ -269,7 +269,7 @@ export default function CoursePlayer() {
                 height="100%"
                 controls
                 onProgress={({ playedSeconds, played }) => {
-                  if (course) progressAPI.savePosition(course._id, { lessonId: currentLesson._id, position: Math.floor(playedSeconds) }).catch(() => {})
+                  if (course) progressAPI.savePosition(course._id, { lessonId: currentLesson._id, position: Math.floor(playedSeconds) }).catch(() => { })
                   if (played >= 0.9 && !videoEnded) {
                     setVideoEnded(true)
                     if (!isCompleted(currentLesson?._id) && !marking) {
@@ -287,28 +287,28 @@ export default function CoursePlayer() {
                 }}
               />
             ) : currentLesson?.resources?.length > 0 ? (
-                <div className="w-full h-full bg-[#121222] flex flex-col p-4">
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-800">
-                    <div className="text-left">
-                      <h4 className="text-sm font-bold text-white truncate max-w-md">{currentLesson.resources[0].name || `Notes for ${currentLesson.title}`}</h4>
-                      <p className="text-xs text-gray-400">PDF Document</p>
-                    </div>
-                    <a 
-                      href={getDownloadUrl(currentLesson.resources[0].url)}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors"
-                    >
-                      <Download size={13} /> Download PDF
-                    </a>
+              <div className="w-full h-full bg-[#121222] flex flex-col p-4">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-800">
+                  <div className="text-left">
+                    <h4 className="text-sm font-bold text-white truncate max-w-md">{currentLesson.resources[0].name || `Notes for ${currentLesson.title}`}</h4>
+                    <p className="text-xs text-gray-400">PDF Document</p>
                   </div>
-                  <iframe src={currentLesson.resources[0].url} width="100%" height="100%" className="flex-1 rounded-xl overflow-hidden border border-gray-800 bg-white" title="Notes Viewer" />
-                  <div className="mt-3 text-[11px] text-gray-405 bg-gray-950/60 p-3 rounded-lg leading-relaxed text-left border border-gray-850/80">
-                    <p className="font-semibold text-yellow-500 mb-0.5">⚠️ Cloudinary PDF Settings Info:</p>
-                    <p>If the PDF fails to display, please log into your Cloudinary Console and under <strong>Settings ➔ Security ➔ PDF and ZIP files delivery</strong>, ensure <strong>"Allow delivery of PDF and ZIP files"</strong> is enabled.</p>
-                  </div>
+                  <a
+                    href={getDownloadUrl(currentLesson.resources[0].url)}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors"
+                  >
+                    <Download size={13} /> Download PDF
+                  </a>
                 </div>
+                <iframe src={currentLesson.resources[0].url} width="100%" height="100%" className="flex-1 rounded-xl overflow-hidden border border-gray-800 bg-white" title="Notes Viewer" />
+                <div className="mt-3 text-[11px] text-gray-405 bg-gray-950/60 p-3 rounded-lg leading-relaxed text-left border border-gray-850/80">
+                  <p className="font-semibold text-yellow-500 mb-0.5">⚠️ Cloudinary PDF Settings Info:</p>
+                  <p>If the PDF fails to display, please log into your Cloudinary Console and under <strong>Settings ➔ Security ➔ PDF and ZIP files delivery</strong>, ensure <strong>"Allow delivery of PDF and ZIP files"</strong> is enabled.</p>
+                </div>
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-base" style={{ color: '#666' }}>
                 No video or notes available
@@ -321,28 +321,28 @@ export default function CoursePlayer() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
               <h2 className="text-lg sm:text-xl font-bold text-white">{currentLesson?.title}</h2>
               <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {!currentLesson?.videoUrl && currentLesson?.resources?.length > 0 && (
-                      <button
-                        onClick={handleGenerateQuickQuiz}
-                        disabled={quickQuizActive}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all bg-[rgba(124,58,237,0.15)] text-[#A78BFA] hover:bg-[rgba(124,58,237,0.25)] border border-[rgba(124,58,237,0.3)] disabled:opacity-50"
-                      >
-                        <Brain size={18} /> Take a Quick Quiz
-                      </button>
-                  )}
+                {!currentLesson?.videoUrl && currentLesson?.resources?.length > 0 && (
                   <button
-                    onClick={markComplete}
-                    disabled={marking || isCompleted(currentLesson?._id) || (currentLesson?.videoUrl && !videoEnded)}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all"
-                    style={{
-                      background: isCompleted(currentLesson?._id) ? '#10B981' : '#7C3AED',
-                      color: 'white',
-                      opacity: (marking || (currentLesson?.videoUrl && !videoEnded && !isCompleted(currentLesson?._id))) ? 0.5 : 1,
-                      cursor: (isCompleted(currentLesson?._id) || (currentLesson?.videoUrl && !videoEnded)) ? 'not-allowed' : 'pointer',
-                    }}
+                    onClick={handleGenerateQuickQuiz}
+                    disabled={quickQuizActive}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all bg-[rgba(124,58,237,0.15)] text-[#A78BFA] hover:bg-[rgba(124,58,237,0.25)] border border-[rgba(124,58,237,0.3)] disabled:opacity-50"
                   >
-                    {isCompleted(currentLesson?._id) ? <><Check size={18} /> Completed</> : <><CheckCircle2 size={18} /> Mark Complete</>}
+                    <Brain size={18} /> Take a Quick Quiz
                   </button>
+                )}
+                <button
+                  onClick={markComplete}
+                  disabled={marking || isCompleted(currentLesson?._id) || (currentLesson?.videoUrl && !videoEnded)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all"
+                  style={{
+                    background: isCompleted(currentLesson?._id) ? '#10B981' : '#7C3AED',
+                    color: 'white',
+                    opacity: (marking || (currentLesson?.videoUrl && !videoEnded && !isCompleted(currentLesson?._id))) ? 0.5 : 1,
+                    cursor: (isCompleted(currentLesson?._id) || (currentLesson?.videoUrl && !videoEnded)) ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {isCompleted(currentLesson?._id) ? <><Check size={18} /> Completed</> : <><CheckCircle2 size={18} /> Mark Complete</>}
+                </button>
               </div>
             </div>
 
@@ -354,7 +354,7 @@ export default function CoursePlayer() {
                   onClick={() => setTab(id)}
                   className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors shrink-0"
                   style={{
-                    color:        tab === id ? '#A78BFA' : '#666',
+                    color: tab === id ? '#A78BFA' : '#666',
                     borderBottom: tab === id ? '2px solid #7C3AED' : '2px solid transparent',
                   }}
                 >
@@ -432,7 +432,7 @@ export default function CoursePlayer() {
                 <p className="text-sm" style={{ color: '#666' }}>Upcoming live sessions scheduled by the instructor will appear here.</p>
               </div>
             )}
-                        {tab === 'certificate' && (
+            {tab === 'certificate' && (
               <div className="py-6">
                 {(progress?.percentComplete || 0) < 100 ? (
                   <div className="flex justify-center">
@@ -469,7 +469,7 @@ export default function CoursePlayer() {
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">Rating</label>
                         <div className="flex gap-2">
-                          {[1,2,3,4,5].map(star => (
+                          {[1, 2, 3, 4, 5].map(star => (
                             <button key={star} type="button" onClick={() => setFeedbackRating(star)} className={`text-2xl transition-colors ${star <= feedbackRating ? 'text-yellow-400' : 'text-gray-600 hover:text-yellow-200'}`}>
                               ★
                             </button>
@@ -528,9 +528,9 @@ export default function CoursePlayer() {
                   onClick={() => setCurrent(lesson)}
                   className="w-full px-5 py-3 flex items-center gap-3.5 text-left border-b transition-colors"
                   style={{
-                    background:  currentLesson?._id === lesson._id ? 'rgba(124,58,237,0.2)' : 'transparent',
+                    background: currentLesson?._id === lesson._id ? 'rgba(124,58,237,0.2)' : 'transparent',
                     borderColor: 'rgba(255,255,255,0.04)',
-                    borderLeft:  currentLesson?._id === lesson._id ? '3px solid #7C3AED' : '3px solid transparent',
+                    borderLeft: currentLesson?._id === lesson._id ? '3px solid #7C3AED' : '3px solid transparent',
                   }}
                 >
                   {isCompleted(lesson._id) ? (
@@ -596,9 +596,9 @@ export default function CoursePlayer() {
                         onClick={() => { setCurrent(lesson); setShowMobileSidebar(false) }}
                         className="w-full px-5 py-3 flex items-center gap-3 text-left border-b transition-colors touch-target"
                         style={{
-                          background:  currentLesson?._id === lesson._id ? 'rgba(124,58,237,0.2)' : 'transparent',
+                          background: currentLesson?._id === lesson._id ? 'rgba(124,58,237,0.2)' : 'transparent',
                           borderColor: 'rgba(255,255,255,0.04)',
-                          borderLeft:  currentLesson?._id === lesson._id ? '3px solid #7C3AED' : '3px solid transparent',
+                          borderLeft: currentLesson?._id === lesson._id ? '3px solid #7C3AED' : '3px solid transparent',
                         }}
                       >
                         {isCompleted(lesson._id) ? (
