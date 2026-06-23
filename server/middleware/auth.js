@@ -15,6 +15,14 @@ export async function authMiddleware(req, res, next) {
     const user    = await User.findById(decoded.userId).select('-password -refreshToken -resetPasswordToken')
     if (!user) throw new ApiError(401, 'User not found')
 
+    if (user.suspended) {
+      throw new ApiError(403, 'Account has been suspended')
+    }
+
+    if (decoded.role && user.role !== decoded.role) {
+      throw new ApiError(401, 'Session expired — please log in again')
+    }
+
     req.user = user
     next()
   } catch (err) {

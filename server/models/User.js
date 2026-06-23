@@ -28,6 +28,8 @@ const userSchema = new mongoose.Schema({
 
   loginAttempts: { type: Number, default: 0 },
   lockUntil:     { type: Date },
+  suspended:     { type: Boolean, default: false },
+  tokenVersion:  { type: Number, default: 0 },
 }, { timestamps: true })
 
 userSchema.pre('save', async function () {

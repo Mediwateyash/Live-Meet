@@ -44,7 +44,7 @@ export async function register(req, res, next) {
     if (role && !['student', 'instructor'].includes(role)) throw new ApiError(400, 'Invalid role')
 
     const user = await User.create({ fullName, email, password, role: role || 'student' })
-    const accessToken  = generateAccessToken(user._id)
+    const accessToken  = generateAccessToken(user._id, user.role)
     const refreshToken = generateRefreshToken(user._id)
 
     user.refreshToken = refreshToken
@@ -88,7 +88,7 @@ export async function login(req, res, next) {
     user.loginAttempts = 0
     user.lockUntil = undefined
 
-    const accessToken  = generateAccessToken(user._id)
+    const accessToken  = generateAccessToken(user._id, user.role)
     const refreshToken = generateRefreshToken(user._id)
 
     user.refreshToken = refreshToken
@@ -133,7 +133,7 @@ export async function refresh(req, res, next) {
       throw new ApiError(401, 'Suspicious activity detected. Please login again.')
     }
 
-    const accessToken  = generateAccessToken(user._id)
+    const accessToken  = generateAccessToken(user._id, user.role)
     const refreshToken = generateRefreshToken(user._id)
 
     user.refreshToken = refreshToken
@@ -170,7 +170,8 @@ export async function forgotPassword(req, res, next) {
       { $unset: { resetPasswordToken: 1, resetPasswordExpires: 1 } }
     )
 
-    user.resetPasswordToken   = crypto.createHmac('sha256', process.env.JWT_SECRET).update(token).digest('hex')
+    const RESET_SECRET = process.env.JWT_SECRET + (process.env.JWT_REFRESH_SECRET || '')
+    user.resetPasswordToken   = crypto.createHmac('sha256', RESET_SECRET).update(token).digest('hex')
     user.resetPasswordExpires = expires
     await user.save({ validateBeforeSave: false })
 
@@ -200,7 +201,8 @@ export async function resetPassword(req, res, next) {
     if (!process.env.JWT_SECRET) {
       throw new ApiError(500, 'Secure key not configured on server')
     }
-    const hashed = crypto.createHmac('sha256', process.env.JWT_SECRET).update(token).digest('hex')
+    const RESET_SECRET = process.env.JWT_SECRET + (process.env.JWT_REFRESH_SECRET || '')
+    const hashed = crypto.createHmac('sha256', RESET_SECRET).update(token).digest('hex')
     const user   = await User.findOne({
       resetPasswordToken:   hashed,
       resetPasswordExpires: { $gt: Date.now() },

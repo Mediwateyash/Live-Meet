@@ -9,6 +9,10 @@ export const createTicket = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'All fields are required' })
     }
 
+    if (message.length > 5000) {
+      return res.status(400).json({ success: false, message: 'Message too long (max 5000 characters)' })
+    }
+
     const ticket = await Support.create({
       student: req.user._id,
       subject,

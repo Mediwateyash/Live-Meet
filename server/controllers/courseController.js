@@ -7,6 +7,7 @@ import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
 import jwt from 'jsonwebtoken'
+import { validateUrlForSsrf } from '../utils/ssrfFilter.js'
 
 export async function browse(req, res, next) {
   try {
@@ -363,6 +364,12 @@ export async function getYoutubeMeta(req, res, next) {
     const allowedHostnames = new Set(['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com']);
     if (!allowedHostnames.has(parsedUrl.hostname)) {
       throw new ApiError(400, 'Only YouTube URLs are allowed');
+    }
+
+    try {
+      await validateUrlForSsrf(url);
+    } catch (ssrfErr) {
+      throw new ApiError(400, ssrfErr.message);
     }
 
     const controller = new AbortController()

@@ -94,7 +94,8 @@ const QuizResult = () => {
                 y = 50;
             }
 
-            const isCorrect = ans.selected === ans.mcqId.correctAnswer;
+            const showCorrectness = ans.mcqId.correctAnswer !== undefined;
+            const isCorrect = showCorrectness && ans.selected === ans.mcqId.correctAnswer;
             
             // Question
             doc.setFont('helvetica', 'bold');
@@ -103,11 +104,13 @@ const QuizResult = () => {
             y += qLines.length * lineHeight;
 
             // Status
-            doc.setFont('helvetica', 'italic');
-            doc.setTextColor(isCorrect ? 0 : 200, isCorrect ? 150 : 0, 0); // Green if correct, Red if wrong
-            doc.text(isCorrect ? 'Correct' : 'Incorrect', margin, y);
-            doc.setTextColor(0, 0, 0);
-            y += 15;
+            if (showCorrectness) {
+                doc.setFont('helvetica', 'italic');
+                doc.setTextColor(isCorrect ? 0 : 200, isCorrect ? 150 : 0, 0); // Green if correct, Red if wrong
+                doc.text(isCorrect ? 'Correct' : 'Incorrect', margin, y);
+                doc.setTextColor(0, 0, 0);
+                y += 15;
+            }
 
             // Options
             doc.setFont('helvetica', 'normal');
@@ -115,7 +118,7 @@ const QuizResult = () => {
                 let prefix = `  ${String.fromCharCode(65 + i)}. `;
                 let suffix = "";
                 if (opt === ans.selected) suffix += " (Your Answer)";
-                if (opt === ans.mcqId.correctAnswer) suffix += " [Correct Answer]";
+                if (showCorrectness && opt === ans.mcqId.correctAnswer) suffix += " [Correct Answer]";
                 
                 const optLines = doc.splitTextToSize(prefix + opt + suffix, maxWidth - 20);
                 doc.text(optLines, margin + 10, y);
@@ -123,13 +126,15 @@ const QuizResult = () => {
             });
 
             // Explanation
-            y += 5;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Explanation:', margin + 10, y);
-            doc.setFont('helvetica', 'normal');
-            const expLines = doc.splitTextToSize(ans.mcqId.explanation, maxWidth - 30);
-            doc.text(expLines, margin + 80, y);
-            y += Math.max(expLines.length * 14, 20);
+            if (showCorrectness && ans.mcqId.explanation) {
+                y += 5;
+                doc.setFont('helvetica', 'bold');
+                doc.text('Explanation:', margin + 10, y);
+                doc.setFont('helvetica', 'normal');
+                const expLines = doc.splitTextToSize(ans.mcqId.explanation, maxWidth - 30);
+                doc.text(expLines, margin + 80, y);
+                y += Math.max(expLines.length * 14, 20);
+            }
 
             y += 20; // Space between questions
         });
@@ -194,29 +199,43 @@ const QuizResult = () => {
             
             <div className="space-y-6">
                 {result.answers.map((ans, idx) => {
-                    const isCorrect = ans.mcqId && ans.selected === ans.mcqId.correctAnswer;
                     if (!ans.mcqId) return null; // skipped or deleted
 
+                    const showCorrectness = ans.mcqId.correctAnswer !== undefined;
+                    const isCorrect = showCorrectness && ans.selected === ans.mcqId.correctAnswer;
+                    
+                    const cardBorderClass = showCorrectness 
+                        ? (isCorrect ? 'border-l-4 border-green-500' : 'border-l-4 border-red-500')
+                        : 'border-l-4 border-indigo-400';
+
                     return (
-                        <div key={idx} className={`bg-white dark:bg-[var(--bg-surface)] p-6 rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] border-l-4 ${isCorrect ? 'border-green-500' : 'border-red-500'}`}>
+                        <div key={idx} className={`bg-white dark:bg-[var(--bg-surface)] p-6 rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] ${cardBorderClass}`}>
                             <div className="flex justify-between flex-start gap-4 mb-4">
                                 <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
                                     <span className="text-gray-400 dark:text-gray-500 mr-2">Q{idx+1}.</span> 
                                     {ans.mcqId.question}
                                 </h4>
-                                <div>
-                                    {isCorrect ? <CheckCircle className="w-6 h-6 text-green-500" /> : <XCircle className="w-6 h-6 text-red-500" />}
-                                </div>
+                                {showCorrectness && (
+                                    <div>
+                                        {isCorrect ? <CheckCircle className="w-6 h-6 text-green-500" /> : <XCircle className="w-6 h-6 text-red-500" />}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                 {ans.mcqId.options.map((opt, i) => {
                                     let bgClass = "bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-900/40 dark:border-gray-800 dark:text-gray-300";
                                     
-                                    if (opt === ans.mcqId.correctAnswer) {
-                                        bgClass = "bg-green-100 border-green-300 text-green-800 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-400 font-medium";
-                                    } else if (opt === ans.selected && !isCorrect) {
-                                        bgClass = "bg-red-100 border-red-300 text-red-800 dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400 line-through font-medium";
+                                    if (showCorrectness) {
+                                        if (opt === ans.mcqId.correctAnswer) {
+                                            bgClass = "bg-green-100 border-green-300 text-green-800 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-400 font-medium";
+                                        } else if (opt === ans.selected && !isCorrect) {
+                                            bgClass = "bg-red-100 border-red-300 text-red-800 dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400 line-through font-medium";
+                                        }
+                                    } else {
+                                        if (opt === ans.selected) {
+                                            bgClass = "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/20 dark:border-indigo-900/30 dark:text-indigo-400 font-medium";
+                                        }
                                     }
 
                                     return (
@@ -228,10 +247,12 @@ const QuizResult = () => {
                                 })}
                             </div>
 
-                            <div className={`mt-4 p-4 rounded-lg border ${isCorrect ? 'bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800' : 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/30'}`}>
-                                <span className={`font-semibold block mb-1 ${isCorrect ? 'text-gray-700 dark:text-gray-300' : 'text-primary dark:text-indigo-400'}`}>Explanation:</span>
-                                <p className={`${isCorrect ? 'text-gray-600 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'} text-sm leading-relaxed`}>{ans.mcqId.explanation}</p>
-                            </div>
+                            {showCorrectness && ans.mcqId.explanation && (
+                                <div className={`mt-4 p-4 rounded-lg border ${isCorrect ? 'bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800' : 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/30'}`}>
+                                    <span className={`font-semibold block mb-1 ${isCorrect ? 'text-gray-700 dark:text-gray-300' : 'text-primary dark:text-indigo-400'}`}>Explanation:</span>
+                                    <p className={`${isCorrect ? 'text-gray-600 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'} text-sm leading-relaxed`}>{ans.mcqId.explanation}</p>
+                                </div>
+                            )}
                         </div>
                     );
                 })}

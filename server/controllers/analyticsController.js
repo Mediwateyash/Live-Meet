@@ -19,7 +19,7 @@ export const getTeacherAnalytics = async (req, res) => {
             totalQuizzes,
             totalAttempts,
             averageScore,
-            recentResults: results.slice('-5').reverse() // Last 5 results
+            recentResults: results.slice(-5).reverse() // Last 5 results
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

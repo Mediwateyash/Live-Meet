@@ -1,5 +1,6 @@
 import Quiz from '../models/Quiz.js';
 import MCQ from '../models/MCQ.js';
+import Course from '../models/Course.js';
 
 export const createQuiz = async (req, res) => {
     try {
@@ -7,6 +8,14 @@ export const createQuiz = async (req, res) => {
 
         if (!title || !mcqIds || mcqIds.length === 0 || !timer || !courseId) {
             return res.status(400).json({ message: 'Please provide title, mcqs, timer, and courseId' });
+        }
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+        if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to add quiz to this course' });
         }
 
         const visibility = req.user.role === 'student' ? 'private' : 'public';
@@ -35,25 +44,19 @@ export const getQuizzes = async (req, res) => {
         if (req.user.role === 'instructor' || req.user.role === 'admin') {
             filter.createdBy = req.user._id;
         } else if (req.user.role === 'student') {
-            if (!req.query.courseId) {
-                filter.$or = [
-                    { 
-                        courseId: { $in: req.user.enrolledCourses || [] },
-                        visibility: 'public' 
-                    },
-                    { 
-                        courseId: { $in: req.user.enrolledCourses || [] },
-                        visibility: { $exists: false } 
-                    },
-                    { visibility: 'private', createdBy: req.user._id }
-                ];
-            } else {
-                filter.$or = [
-                    { visibility: 'public' },
-                    { visibility: { $exists: false } }, 
-                    { visibility: 'private', createdBy: req.user._id }
-                ];
+            const enrolledCourses = req.user.enrolledCourses || [];
+            if (req.query.courseId) {
+                if (!enrolledCourses.some(id => id.toString() === req.query.courseId.toString())) {
+                    return res.status(403).json({ message: 'Not enrolled in this course' });
+                }
             }
+            filter.$or = [
+                { 
+                    courseId: { $in: enrolledCourses },
+                    visibility: 'public' 
+                },
+                { visibility: 'private', createdBy: req.user._id }
+            ];
         }
         
         let quizzesQuery = Quiz.find(filter).sort({ createdAt: -1 });

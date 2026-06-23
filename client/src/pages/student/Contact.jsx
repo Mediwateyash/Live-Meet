@@ -66,6 +66,11 @@ export default function Contact() {
       return
     }
 
+    if (message.trim().length > 5000) {
+      toast.error('Message is too long (maximum 5000 characters)')
+      return
+    }
+
     setSubmitting(true)
     try {
       await supportAPI.submitTicket({
@@ -199,7 +204,8 @@ export default function Contact() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     className="input-field resize-none"
-                    placeholder="Provide a detailed description of your feedback, feature request, or technical issue..."
+                    placeholder="Provide a detailed description of your feedback, feature request, or technical issue... (max 5000 characters)"
+                    maxLength={5000}
                     required
                   />
                 </div>

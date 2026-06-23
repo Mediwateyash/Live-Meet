@@ -113,7 +113,19 @@ export const getResultById = async (req, res) => {
             }
         }
 
-        res.json(result);
+        const resultObj = result.toObject();
+        if (req.user.role === 'student') {
+            if (resultObj.answers) {
+                resultObj.answers.forEach(a => {
+                    if (a.mcqId) {
+                        a.mcqId.correctAnswer = undefined;
+                        a.mcqId.explanation = undefined;
+                    }
+                });
+            }
+        }
+
+        res.json(resultObj);
     } catch (error) {
         console.error(`[getResultById] Error:`, error);
         res.status(500).json({ message: error.message });
