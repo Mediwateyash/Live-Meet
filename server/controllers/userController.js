@@ -103,17 +103,26 @@ export async function toggleWishlist(req, res, next) {
       throw new ApiError(404, 'Course not found')
     }
 
-    const user     = await User.findById(req.user._id)
-    const idx      = user.wishlist.findIndex(id => id.toString() === courseId.toString())
-    if (idx > -1) {
-      user.wishlist.splice(idx, 1)
-    } else {
-      user.wishlist.push(courseId)
+    const user = await User.findById(req.user._id).select('wishlist')
+    if (!user) {
+      throw new ApiError(404, 'User not found')
     }
-    await user.save({ validateBeforeSave: false })
-    res.json(new ApiResponse(200, user.wishlist, 'Wishlist updated'))
+
+    const isWishlisted = user.wishlist.some(id => id.toString() === courseId.toString())
+    const updateQuery = isWishlisted 
+      ? { $pull: { wishlist: courseId } } 
+      : { $addToSet: { wishlist: courseId } }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      updateQuery,
+      { new: true, select: 'wishlist' }
+    )
+
+    res.json(new ApiResponse(200, updatedUser.wishlist, 'Wishlist updated'))
   } catch (err) { next(err) }
 }
+
 
 export async function updatePassword(req, res, next) {
   try {

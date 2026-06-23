@@ -22,11 +22,25 @@ export default function CourseCard({ course, showProgress = false, compact = fal
     e.preventDefault()
     e.stopPropagation()
     if (!isAuthenticated) { openAuthModal('login', 'Log in to save courses to your wishlist'); return }
+    
+    const previousWishlist = user?.wishlist || []
+    const courseIdStr = course._id.toString()
+    const isCurrentlyWishlisted = previousWishlist.some(id => id.toString() === courseIdStr)
+    const newWishlist = isCurrentlyWishlisted
+      ? previousWishlist.filter(id => id.toString() !== courseIdStr)
+      : [...previousWishlist, course._id]
+
+    // Optimistically update the store
+    updateUser({ wishlist: newWishlist })
+    const toastId = toast.success(isCurrentlyWishlisted ? 'Removed from wishlist' : 'Added to wishlist')
+
     try {
       const { data } = await usersAPI.toggleWishlist(course._id)
       updateUser({ wishlist: data.data })
-      toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist')
     } catch {
+      // Rollback on error
+      updateUser({ wishlist: previousWishlist })
+      toast.dismiss(toastId)
       toast.error('Could not update wishlist')
     }
   }
