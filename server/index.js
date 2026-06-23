@@ -117,8 +117,8 @@ app.use('/api', apiLimiter)
 
 // Robots.txt
 app.get('/robots.txt', (req, res) => {
-  const protocol = req.protocol
-  const host = req.get('host')
+  const host = req.get('host') || ''
+  const protocol = req.headers['x-forwarded-proto'] || (host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https')
   const baseUrl = `${protocol}://${host}`
   res.type('text/plain')
   res.send(`User-agent: *\nDisallow: /api/\nDisallow: /admin/\nAllow: /\n\nSitemap: ${baseUrl}/sitemap.xml`)
@@ -150,8 +150,8 @@ app.get('/api/health', (_, res) => res.json({ status: 'ok', timestamp: new Date(
 // Sitemap.xml dynamic route
 app.get('/sitemap.xml', async (req, res, next) => {
   try {
-    const protocol = req.protocol;
-    const host = req.get('host');
+    const host = req.get('host') || '';
+    const protocol = req.headers['x-forwarded-proto'] || (host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https');
     const baseUrl = `${protocol}://${host}`;
 
     // Get all published courses
@@ -231,8 +231,8 @@ if (process.env.NODE_ENV === 'production') {
 
     try {
       let html = fs.readFileSync(indexPath, 'utf8')
-      const protocol = req.protocol
-      const host = req.get('host')
+      const host = req.get('host') || ''
+      const protocol = req.headers['x-forwarded-proto'] || (host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https')
       const baseUrl = `${protocol}://${host}`
       const fullUrl = `${baseUrl}${req.originalUrl}`
 
