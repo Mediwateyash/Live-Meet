@@ -128,7 +128,15 @@ export async function getUsers(req, res, next) {
 export async function updateUserRole(req, res, next) {
   try {
     const { role } = req.body
-    const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password')
+    const updateObj = { role }
+    if (role === 'instructor') {
+      updateObj.isApprovedInstructor = true
+      updateObj.instructorRequestStatus = 'approved'
+    } else {
+      updateObj.isApprovedInstructor = false
+      updateObj.instructorRequestStatus = 'none'
+    }
+    const user = await User.findByIdAndUpdate(req.params.id, updateObj, { new: true }).select('-password')
     res.json(new ApiResponse(200, user, 'Role updated'))
   } catch (err) { next(err) }
 }

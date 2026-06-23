@@ -3,6 +3,15 @@ import User from '../models/User.js'
 
 export async function seedCybersecurityCourseIfMissing() {
   try {
+    // 0. Update manually promoted instructors who are missing isApprovedInstructor: true
+    const promotedResult = await User.updateMany(
+      { role: 'instructor', isApprovedInstructor: { $ne: true } },
+      { $set: { isApprovedInstructor: true, instructorRequestStatus: 'approved' } }
+    )
+    if (promotedResult.modifiedCount > 0) {
+      console.log(`🛡️ Updated ${promotedResult.modifiedCount} manually promoted instructors to approved status.`)
+    }
+
     const slug = 'introduction-to-cybersecurity'
     const exists = await Course.findOne({ slug })
     if (exists) {
