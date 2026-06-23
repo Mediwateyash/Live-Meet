@@ -82,7 +82,8 @@ const corsOptions = {
 }
 
 const io         = new Server(httpServer, {
-  cors: corsOptions
+  cors: corsOptions,
+  path: '/api/socket.io'
 })
 
 registerLiveRoomSocket(io)

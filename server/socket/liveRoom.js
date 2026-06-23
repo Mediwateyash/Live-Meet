@@ -66,6 +66,15 @@ export function registerLiveRoomSocket(io) {
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
       const user    = await User.findById(decoded.userId).select('-password -refreshToken -resetPasswordToken')
       if (!user) return next(new Error('User not found'))
+
+      if (user.suspended) {
+        return next(new Error('Account has been suspended'))
+      }
+
+      if (decoded.role && user.role !== decoded.role) {
+        return next(new Error('Session expired — please log in again'))
+      }
+
       socket.user = user
       next()
     } catch (_) {

@@ -394,6 +394,7 @@ export default function LiveRoom() {
     const socket = io(SERVER_URL, { 
       withCredentials: true, 
       transports: ['websocket', 'polling'],
+      path: '/api/socket.io',
       auth: { token: localStorage.getItem('token') || '' }
     })
     socketRef.current = socket
