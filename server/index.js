@@ -221,7 +221,7 @@ if (process.env.NODE_ENV === 'production') {
   const __dirname = path.dirname(__filename)
   const distPath = path.join(__dirname, '../client/dist')
   
-  app.use(express.static(distPath))
+  app.use(express.static(distPath, { index: false }))
   
   app.get(/(.*)/, async (req, res, next) => {
     const indexPath = path.resolve(distPath, 'index.html')
