@@ -247,7 +247,7 @@ if (process.env.NODE_ENV === 'production') {
       // Default values
       let title = 'Zenius AI — Learn Without Limits'
       let description = 'Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes.'
-      let image = `${baseUrl}/favicon.svg`
+      let image = `${baseUrl}/og-image.png`
       let statusCode = 200
       let schemas = []
 
@@ -271,7 +271,7 @@ if (process.env.NODE_ENV === 'production') {
           title = `${course.title} | Zenius AI`
           description = course.subtitle || (course.description ? course.description.slice(0, 155).replace(/\s+/g, ' ').trim() + '...' : '')
           if (course.thumbnail) {
-            image = course.thumbnail
+            image = course.thumbnail.startsWith('http') ? course.thumbnail : `${baseUrl}${course.thumbnail.startsWith('/') ? '' : '/'}${course.thumbnail}`
           }
           
           // 1. Course Schema
