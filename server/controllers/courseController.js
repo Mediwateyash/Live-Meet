@@ -14,6 +14,11 @@ export async function browse(req, res, next) {
 
     const filter = { status: 'published' }
     if (q) {
+      // Prevent NoSQL injection: ?q[$gt]='' gets parsed by Express as {q:{$gt:''}}
+      // A non-string q means a MongoDB operator was injected — reject it immediately
+      if (typeof q !== 'string') {
+        throw new ApiError(400, 'Invalid search query format')
+      }
       const escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const matchingInstructors = await User.find(
         { fullName: { $regex: escapedQ, $options: 'i' } },
@@ -251,25 +256,34 @@ export async function enroll(req, res, next) {
     const course = await Course.findById(req.params.id)
     if (!course || course.status !== 'published') throw new ApiError(404, 'Course not found or not published')
 
-    const user = await User.findById(req.user._id)
-    if (isEnrolledIn(user, course._id)) throw new ApiError(400, 'Already enrolled')
+    // ── Atomic enroll: one round-trip, no race condition ─────────────────────
+    // Condition: enrolledCourses array has < 50 items AND course not already in it
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: req.user._id,
+        enrolledCourses: { $ne: course._id },        // not already enrolled
+        'enrolledCourses.49': { $exists: false },     // array length < 50 (0-indexed 49th slot must not exist)
+      },
+      { $addToSet: { enrolledCourses: course._id } },
+      { new: true }
+    )
 
-    // Prevent enrollment abuse by capping at 50 courses per student
-    const enrolledCount = await Enrollment.countDocuments({ student: req.user._id })
-    if (enrolledCount >= 50) {
+    if (!updatedUser) {
+      // Either already enrolled or enrollment cap reached — distinguish with a secondary check
+      const user = await User.findById(req.user._id).select('enrolledCourses')
+      if (user.enrolledCourses.some(id => id.toString() === course._id.toString())) {
+        throw new ApiError(400, 'Already enrolled')
+      }
       throw new ApiError(400, 'Enrollment limit reached (maximum 50 courses per student)')
     }
 
-    user.enrolledCourses.push(course._id)
-    await user.save({ validateBeforeSave: false })
+    // Update course's enrolled students list
+    await Course.findByIdAndUpdate(course._id, { $addToSet: { enrolledStudents: req.user._id } })
 
-    course.enrolledStudents.push(user._id)
-    await course.save()
-
-    await Progress.create({ student: user._id, course: course._id })
+    await Progress.create({ student: req.user._id, course: course._id })
 
     // Record enrollment with price snapshot for revenue analytics
-    await Enrollment.create({ student: user._id, course: course._id, price: course.price || 0 })
+    await Enrollment.create({ student: req.user._id, course: course._id, price: course.price || 0 })
 
     res.json(new ApiResponse(200, null, 'Enrolled successfully'))
   } catch (err) { next(err) }
@@ -339,6 +353,13 @@ export async function getYoutubeMeta(req, res, next) {
       throw new ApiError(400, 'Invalid protocol');
     }
 
+    // Block URLs that embed credentials — these are a primary SSRF bypass vector
+    // e.g. http://youtube.com@attacker.com resolves to attacker.com, not youtube.com
+    if (parsedUrl.username || parsedUrl.password) {
+      throw new ApiError(400, 'Credentials in URL are not allowed');
+    }
+
+    // Only accept exact-match YouTube hostnames (hostname is already decoded by URL parser)
     const allowedHostnames = new Set(['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com']);
     if (!allowedHostnames.has(parsedUrl.hostname)) {
       throw new ApiError(400, 'Only YouTube URLs are allowed');

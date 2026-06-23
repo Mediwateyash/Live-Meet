@@ -47,6 +47,7 @@ connectDB().then(() => {
 
 const app        = express()
 app.set('trust proxy', 1)
+app.disable('x-powered-by') // Remove X-Powered-By: Express fingerprint
 
 const httpServer = createServer(app)
 
