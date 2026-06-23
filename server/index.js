@@ -29,6 +29,7 @@ import quickQuizRoutes    from './routes/quickQuizRoutes.js'
 import uploadRoutes       from './routes/uploadRoutes.js'
 import supportRoutes      from './routes/support.js'
 import Course             from './models/Course.js'
+import { seedCybersecurityCourseIfMissing } from './utils/courseMigration.js'
 
 
 // Middlewares
@@ -40,7 +41,9 @@ import { csrfMiddleware } from './middleware/csrf.js'
 // Socket handlers
 import { registerLiveRoomSocket } from './socket/liveRoom.js'
 
-connectDB()
+connectDB().then(() => {
+  seedCybersecurityCourseIfMissing()
+})
 
 const app        = express()
 app.set('trust proxy', 1)

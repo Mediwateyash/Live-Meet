@@ -90,6 +90,7 @@ export default function AdminLiveLectures() {
   const [search,    setSearch]    = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [instructorFilter, setInstructorFilter] = useState('')
+  const [dateFilter, setDateFilter] = useState('')
   const [deleteId,  setDeleteId]  = useState(null)
   const [deleting,  setDeleting]  = useState(false)
 
@@ -236,9 +237,19 @@ export default function AdminLiveLectures() {
         || l.courseId?.title?.toLowerCase().includes(q)
       const matchStatus = !statusFilter || l.status === statusFilter
       const matchInstructor = !instructorFilter || (l.instructor?._id || l.instructor) === instructorFilter
-      return matchSearch && matchStatus && matchInstructor
+      
+      let matchDate = true
+      if (dateFilter && l.scheduledAt) {
+        const d = new Date(l.scheduledAt)
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        const formattedLecDate = `${year}-${month}-${day}`
+        matchDate = formattedLecDate === dateFilter
+      }
+      return matchSearch && matchStatus && matchInstructor && matchDate
     })
-  }, [lectures, search, statusFilter, instructorFilter])
+  }, [lectures, search, statusFilter, instructorFilter, dateFilter])
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -272,7 +283,7 @@ export default function AdminLiveLectures() {
         </div>
 
         {/* Search + filter with responsive wrapping */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 mb-6">
           <div className="relative flex-1 max-w-sm min-w-[240px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" color="var(--text-muted)" />
             <input
@@ -305,6 +316,17 @@ export default function AdminLiveLectures() {
             placeholder="All statuses"
             className="w-full sm:w-44"
           />
+          <div className="relative w-full sm:w-44">
+            <Calendar size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" color="#7C3AED" />
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={e => setDateFilter(e.target.value)}
+              className="input-field w-full"
+              style={{ height: '42px', paddingLeft: '2.5rem' }}
+              title="Filter by Scheduled Date"
+            />
+          </div>
         </div>
 
         {loading ? (
@@ -315,9 +337,9 @@ export default function AdminLiveLectures() {
             <p className="text-base font-medium">
               {lectures.length === 0 ? 'No live lectures yet' : 'No lectures match your search'}
             </p>
-            {(search || statusFilter || instructorFilter) && (
+            {(search || statusFilter || instructorFilter || dateFilter) && (
               <button
-                onClick={() => { setSearch(''); setStatusFilter(''); setInstructorFilter('') }}
+                onClick={() => { setSearch(''); setStatusFilter(''); setInstructorFilter(''); setDateFilter('') }}
                 className="mt-3 text-sm font-semibold"
                 style={{ color: '#7C3AED' }}
               >
@@ -372,7 +394,7 @@ export default function AdminLiveLectures() {
                                   </div>
                                 )}
                                 <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                                  {lec.instructor?.fullName || '—'}
+                                  {lec.instructor?.fullName || 'Deleted Instructor'}
                                 </span>
                               </div>
                             </td>
@@ -560,7 +582,7 @@ export default function AdminLiveLectures() {
                           </div>
                         )}
                         <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                          {lec.instructor?.fullName || '—'}
+                          {lec.instructor?.fullName || 'Deleted Instructor'}
                         </span>
                         <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
                         {lec.courseId ? (

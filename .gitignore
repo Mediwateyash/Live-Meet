@@ -68,8 +68,6 @@ server/uploads/*
 
 # ─── Dev / Test / Scratch scripts ────────────────────────────────────────────
 server/test_*.js
-server/scripts/
-server/seeds/
 
 # ─── Temp / Misc ──────────────────────────────────────────────────────────────
 *.tmp
