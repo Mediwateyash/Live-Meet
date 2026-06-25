@@ -4,6 +4,7 @@ import useAuthStore from './store/authStore.js'
 import useUIStore from './store/uiStore.js'
 import { authAPI } from './api/auth.js'
 import LoginModal from './components/ui/LoginModal.jsx'
+import LegalGate from './components/shared/LegalGate.jsx'
 
 // Helper component for loading state
 function PageLoader() {
@@ -81,6 +82,7 @@ const AdminInstructorManage = lazy(() => import('./pages/admin/InstructorManage.
 const AdminLiveLectures = lazy(() => import('./pages/admin/LiveLectures.jsx'))
 const AdminTestimonials = lazy(() => import('./pages/admin/Testimonials.jsx'))
 const AdminSupport = lazy(() => import('./pages/admin/Support.jsx'))
+const AdminLegalSettings = lazy(() => import('./pages/admin/LegalSettings.jsx'))
 
 
 function AuthRedirect({ tab }) {
@@ -162,26 +164,26 @@ export default function App() {
         <Route path="/course/:slug" element={<CourseDetail />} />
 
         {/* Legal — canonical paths */}
-        <Route path="/legal/privacy"       element={<PrivacyPolicy />} />
-        <Route path="/legal/terms"         element={<Terms />} />
-        <Route path="/legal/cookies"       element={<CookiePolicy />} />
-        <Route path="/legal/refunds"       element={<RefundPolicy />} />
-        <Route path="/legal/disclaimer"    element={<Disclaimer />} />
-        <Route path="/legal/acceptable-use" element={<AcceptableUse />} />
-        <Route path="/legal/community"     element={<CommunityGuidelines />} />
-        <Route path="/legal/grievance"     element={<Grievance />} />
-        <Route path="/legal/copyright"     element={<CopyrightPage />} />
+        <Route path="/legal/privacy"       element={<LegalGate pageKey="privacy-policy"><PrivacyPolicy /></LegalGate>} />
+        <Route path="/legal/terms"         element={<LegalGate pageKey="terms-and-conditions"><Terms /></LegalGate>} />
+        <Route path="/legal/cookies"       element={<LegalGate pageKey="cookie-policy"><CookiePolicy /></LegalGate>} />
+        <Route path="/legal/refunds"       element={<LegalGate pageKey="refund-policy"><RefundPolicy /></LegalGate>} />
+        <Route path="/legal/disclaimer"    element={<LegalGate pageKey="disclaimer"><Disclaimer /></LegalGate>} />
+        <Route path="/legal/acceptable-use" element={<LegalGate pageKey="acceptable-use"><AcceptableUse /></LegalGate>} />
+        <Route path="/legal/community"     element={<LegalGate pageKey="community-guidelines"><CommunityGuidelines /></LegalGate>} />
+        <Route path="/legal/grievance"     element={<LegalGate pageKey="grievance"><Grievance /></LegalGate>} />
+        <Route path="/legal/copyright"     element={<LegalGate pageKey="copyright"><CopyrightPage /></LegalGate>} />
 
         {/* Legal — clean/friendly URL aliases */}
-        <Route path="/privacy-policy"       element={<PrivacyPolicy />} />
-        <Route path="/terms-and-conditions" element={<Terms />} />
-        <Route path="/cookie-policy"        element={<CookiePolicy />} />
-        <Route path="/refund-policy"        element={<RefundPolicy />} />
-        <Route path="/disclaimer"           element={<Disclaimer />} />
-        <Route path="/acceptable-use"       element={<AcceptableUse />} />
-        <Route path="/community-guidelines" element={<CommunityGuidelines />} />
-        <Route path="/grievance"            element={<Grievance />} />
-        <Route path="/copyright"            element={<CopyrightPage />} />
+        <Route path="/privacy-policy"       element={<LegalGate pageKey="privacy-policy"><PrivacyPolicy /></LegalGate>} />
+        <Route path="/terms-and-conditions" element={<LegalGate pageKey="terms-and-conditions"><Terms /></LegalGate>} />
+        <Route path="/cookie-policy"        element={<LegalGate pageKey="cookie-policy"><CookiePolicy /></LegalGate>} />
+        <Route path="/refund-policy"        element={<LegalGate pageKey="refund-policy"><RefundPolicy /></LegalGate>} />
+        <Route path="/disclaimer"           element={<LegalGate pageKey="disclaimer"><Disclaimer /></LegalGate>} />
+        <Route path="/acceptable-use"       element={<LegalGate pageKey="acceptable-use"><AcceptableUse /></LegalGate>} />
+        <Route path="/community-guidelines" element={<LegalGate pageKey="community-guidelines"><CommunityGuidelines /></LegalGate>} />
+        <Route path="/grievance"            element={<LegalGate pageKey="grievance"><Grievance /></LegalGate>} />
+        <Route path="/copyright"            element={<LegalGate pageKey="copyright"><CopyrightPage /></LegalGate>} />
 
         {/* Auth */}
         <Route path="/login"              element={<AuthRedirect tab="login" />} />
@@ -235,6 +237,7 @@ export default function App() {
         <Route path="/admin/live-lectures"            element={<RequireAuth><RequireRole role="admin"><AdminLiveLectures /></RequireRole></RequireAuth>} />
         <Route path="/admin/testimonials"             element={<RequireAuth><RequireRole role="admin"><AdminTestimonials /></RequireRole></RequireAuth>} />
         <Route path="/admin/support"                  element={<RequireAuth><RequireRole role="admin"><AdminSupport /></RequireRole></RequireAuth>} />
+        <Route path="/admin/legal"                    element={<RequireAuth><RequireRole role="admin"><AdminLegalSettings /></RequireRole></RequireAuth>} />
 
         {/* Fallback (404 Page) */}
         <Route path="*" element={<NotFound />} />

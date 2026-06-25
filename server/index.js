@@ -28,8 +28,10 @@ import analyticsRoutes    from './routes/analyticsRoutes.js'
 import quickQuizRoutes    from './routes/quickQuizRoutes.js'
 import uploadRoutes       from './routes/uploadRoutes.js'
 import supportRoutes      from './routes/support.js'
+import legalRoutes        from './routes/legalRoutes.js'
 import Course             from './models/Course.js'
 import { seedCybersecurityCourseIfMissing } from './utils/courseMigration.js'
+import { seedLegalPages } from './controllers/legalController.js'
 
 
 // Middlewares
@@ -43,6 +45,7 @@ import { registerLiveRoomSocket } from './socket/liveRoom.js'
 
 connectDB().then(() => {
   seedCybersecurityCourseIfMissing()
+  seedLegalPages()
 })
 
 const app        = express()
@@ -154,6 +157,7 @@ app.use('/api/analytics',     analyticsRoutes)
 app.use('/api/quick-quiz',    quickQuizRoutes)
 app.use('/api/upload',        uploadRoutes)
 app.use('/api/support',       supportRoutes)
+app.use('/api/legal',         legalRoutes)
 
 
 // Health check

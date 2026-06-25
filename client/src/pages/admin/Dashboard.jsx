@@ -35,6 +35,7 @@ export default function AdminDashboard() {
     { label: 'Instructor Requests', desc: 'Review pending instructor applications',     icon: ClipboardList,  path: '/admin/instructor-requests', color: '#F59E0B', bg: '#FFFBEB' },
     { label: 'Manage Reviews',      desc: 'Update platform testimonials and reviews',   icon: Star,           path: '/admin/testimonials',        color: '#EC4899', bg: '#FDF2F8' },
     { label: 'Student Feedback',    desc: 'Read and respond to student reports/feedback', icon: MessageSquare, path: '/admin/support',            color: '#F43F5E', bg: '#FFF1F2' },
+    { label: 'Legal Page Flags',    desc: 'Enable/disable terms and policies feature flags', icon: Shield,        path: '/admin/legal',               color: '#0D9488', bg: '#F0FDFA' },
   ]
 
 
