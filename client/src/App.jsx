@@ -26,6 +26,17 @@ const Browse = lazy(() => import('./pages/public/Browse.jsx'))
 const CourseDetail = lazy(() => import('./pages/public/CourseDetail.jsx'))
 const NotFound = lazy(() => import('./pages/public/NotFound.jsx'))
 
+// Legal pages
+const PrivacyPolicy        = lazy(() => import('./pages/legal/PrivacyPolicy.jsx'))
+const Terms                = lazy(() => import('./pages/legal/Terms.jsx'))
+const CookiePolicy         = lazy(() => import('./pages/legal/CookiePolicy.jsx'))
+const RefundPolicy         = lazy(() => import('./pages/legal/RefundPolicy.jsx'))
+const Disclaimer           = lazy(() => import('./pages/legal/Disclaimer.jsx'))
+const AcceptableUse        = lazy(() => import('./pages/legal/AcceptableUse.jsx'))
+const CommunityGuidelines  = lazy(() => import('./pages/legal/CommunityGuidelines.jsx'))
+const Grievance            = lazy(() => import('./pages/legal/Grievance.jsx'))
+const CopyrightPage        = lazy(() => import('./pages/legal/Copyright.jsx'))
+
 // Auth pages
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword.jsx'))
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword.jsx'))
@@ -149,6 +160,28 @@ export default function App() {
         <Route path="/"             element={<Home />} />
         <Route path="/browse"       element={<Browse />} />
         <Route path="/course/:slug" element={<CourseDetail />} />
+
+        {/* Legal — canonical paths */}
+        <Route path="/legal/privacy"       element={<PrivacyPolicy />} />
+        <Route path="/legal/terms"         element={<Terms />} />
+        <Route path="/legal/cookies"       element={<CookiePolicy />} />
+        <Route path="/legal/refunds"       element={<RefundPolicy />} />
+        <Route path="/legal/disclaimer"    element={<Disclaimer />} />
+        <Route path="/legal/acceptable-use" element={<AcceptableUse />} />
+        <Route path="/legal/community"     element={<CommunityGuidelines />} />
+        <Route path="/legal/grievance"     element={<Grievance />} />
+        <Route path="/legal/copyright"     element={<CopyrightPage />} />
+
+        {/* Legal — clean/friendly URL aliases */}
+        <Route path="/privacy-policy"       element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<Terms />} />
+        <Route path="/cookie-policy"        element={<CookiePolicy />} />
+        <Route path="/refund-policy"        element={<RefundPolicy />} />
+        <Route path="/disclaimer"           element={<Disclaimer />} />
+        <Route path="/acceptable-use"       element={<AcceptableUse />} />
+        <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+        <Route path="/grievance"            element={<Grievance />} />
+        <Route path="/copyright"            element={<CopyrightPage />} />
 
         {/* Auth */}
         <Route path="/login"              element={<AuthRedirect tab="login" />} />
