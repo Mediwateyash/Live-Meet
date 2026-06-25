@@ -96,12 +96,10 @@ function LoginForm({ onSuccess, onClose, switchToRegister }) {
 function RegisterForm({ onSuccess, onClose, switchToLogin }) {
   const { setUser } = useAuthStore()
   const [showPwd, setShowPwd] = useState(false)
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: { role: 'student' }
   })
-  
-  const currentRole = watch('role')
 
   const onSubmit = async ({ fullName, email, password, role }) => {
     try {
@@ -118,16 +116,7 @@ function RegisterForm({ onSuccess, onClose, switchToLogin }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="flex gap-2">
-        <button type="button" onClick={() => setValue('role', 'student')} 
-           className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${currentRole === 'student' ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--bg-muted)]'}`}>
-           Student
-        </button>
-        <button type="button" onClick={() => setValue('role', 'instructor')} 
-           className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${currentRole === 'instructor' ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--bg-muted)]'}`}>
-           Teacher
-        </button>
-      </div>
+      <input type="hidden" {...register('role')} value="student" />
       <Input
         label="Full Name"
         placeholder="Your name"
