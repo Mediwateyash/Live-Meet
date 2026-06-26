@@ -47,7 +47,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="navbar h-16 px-4 md:px-6 flex items-center justify-between gap-4 md:gap-6 backdrop-blur-md sticky top-0 z-50 border-b pt-safe" style={{ borderColor: 'rgba(124, 58, 237, 0.1)' }}>
+      <nav aria-label="Main Navigation" className="navbar h-16 px-4 md:px-6 flex items-center justify-between gap-4 md:gap-6 backdrop-blur-md sticky top-0 z-50 border-b pt-safe" style={{ borderColor: 'rgba(124, 58, 237, 0.1)' }}>
         {/* Left: Logo + Browse */}
         <div className="flex items-center gap-4 md:gap-6 shrink-0">
           <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -100,6 +100,7 @@ export default function Navbar() {
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             style={{ color: 'var(--text-secondary)' }}
           >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
@@ -121,6 +122,7 @@ export default function Navbar() {
                 to="/my-learning?tab=wishlist"
                 className="hidden md:inline-flex relative p-2 rounded-xl transition-all touch-target items-center justify-center"
                 title="Wishlist"
+                aria-label="Wishlist"
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 style={{ color: location.pathname === '/my-learning' && location.search.includes('wishlist') ? '#7C3AED' : 'var(--text-secondary)' }}
@@ -134,6 +136,9 @@ export default function Navbar() {
                 <button
                   onClick={() => setProfileOpen(p => !p)}
                   className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all border border-transparent touch-target"
+                  aria-label="User Profile Menu"
+                  aria-haspopup="true"
+                  aria-expanded={profileOpen}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   style={{ borderColor: profileOpen ? 'rgba(124, 58, 237, 0.15)' : 'transparent' }}
@@ -214,6 +219,8 @@ export default function Navbar() {
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             title="Toggle Menu"
+            aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -223,7 +230,8 @@ export default function Navbar() {
       {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
+          <motion.nav
+            aria-label="Mobile Navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -332,7 +340,7 @@ export default function Navbar() {
                 )}
               </div>
             </div>
-          </motion.div>
+          </motion.nav>
         )}
       </AnimatePresence>
 

@@ -308,6 +308,13 @@ if (process.env.NODE_ENV === 'production') {
               "name": "Zenius AI",
               "sameAs": baseUrl
             },
+            "author": course.instructor && course.instructor.fullName ? {
+              "@type": "Person",
+              "name": course.instructor.fullName
+            } : {
+              "@type": "Organization",
+              "name": "Zenius AI"
+            },
             "image": image,
             "offers": {
               "@type": "Offer",

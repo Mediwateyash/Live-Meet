@@ -16,7 +16,7 @@ const fallbackCourses = [
     avgRating: 4.7,
     reviewCount: 2100,
     price: 499,
-    thumbnail: "/course_python_1781720852317.png",
+    thumbnail: "/course_python_1781720852317.webp",
     badge: "Bestseller"
   },
   {
@@ -28,7 +28,7 @@ const fallbackCourses = [
     avgRating: 4.6,
     reviewCount: 1800,
     price: 599,
-    thumbnail: "/course_react_1781720871744.png"
+    thumbnail: "/course_react_1781720871744.webp"
   },
   {
     _id: "3",
@@ -39,7 +39,7 @@ const fallbackCourses = [
     avgRating: 4.8,
     reviewCount: 3200,
     price: 449,
-    thumbnail: "/course_js_1781720887062.png"
+    thumbnail: "/course_js_1781720887062.webp"
   },
   {
     _id: "4",
@@ -50,7 +50,7 @@ const fallbackCourses = [
     avgRating: 4.6,
     reviewCount: 1600,
     price: 699,
-    thumbnail: "/course_node_1781720900805.png"
+    thumbnail: "/course_node_1781720900805.webp"
   }
 ];
 
@@ -69,8 +69,8 @@ export default function FeaturedCourses() {
       .catch(err => console.error("Failed to load featured courses:", err));
   }, []);
 
-  // Use real backend courses only
-  const displayCourses = courses;
+  // Use real backend courses, fall back to default structured courses if empty
+  const displayCourses = courses.length > 0 ? courses : fallbackCourses;
 
   if (displayCourses.length === 0) return null;
 
