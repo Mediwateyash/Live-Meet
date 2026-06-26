@@ -150,11 +150,11 @@ export default function LegalSettings() {
                 <Shield size={20} color="white" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold leading-tight" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-                Legal Pages Feature Flags
+                Feature Flag Settings
               </h1>
             </div>
             <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-              Enable or disable visibility of legal documents. Disabled pages will show a beautiful fallback screen.
+              Enable or disable visibility of legal documents and website features. Disabled pages will show a beautiful fallback screen.
             </p>
           </div>
           <div
@@ -196,7 +196,10 @@ export default function LegalSettings() {
                       <div className="flex items-center gap-3">
                         <div
                           className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ background: isEnabled ? '#F5F3FF' : '#FEF2F2', color: isEnabled ? '#7C3AED' : '#EF4444' }}
+                          style={{
+                            background: isEnabled ? 'var(--z-purple-100, rgba(124, 58, 237, 0.15))' : 'var(--danger-bg, rgba(239, 68, 68, 0.15))',
+                            color: isEnabled ? 'var(--z-purple-500, #7C3AED)' : 'var(--danger, #EF4444)'
+                          }}
                         >
                           <FileText size={18} />
                         </div>
@@ -220,8 +223,8 @@ export default function LegalSettings() {
                       <span
                         className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0"
                         style={{
-                          background: isEnabled ? '#DEF7EC' : '#FDE8E8',
-                          color: isEnabled ? '#03543F' : '#9B1C1C'
+                          background: isEnabled ? 'var(--success-bg, rgba(16, 185, 129, 0.15))' : 'var(--danger-bg, rgba(239, 68, 68, 0.15))',
+                          color: isEnabled ? 'var(--success, #10B981)' : 'var(--danger, #EF4444)'
                         }}
                       >
                         {isEnabled ? 'Live' : 'Offline'}
@@ -257,7 +260,7 @@ export default function LegalSettings() {
                           width: '46px',
                           height: '24px',
                           borderRadius: '9999px',
-                          background: isEnabled ? '#10B981' : '#D1D5DB',
+                          background: isEnabled ? 'var(--success, #10B981)' : 'var(--border-default, #D1D5DB)',
                           border: 'none',
                           cursor: isToggling ? 'not-allowed' : 'pointer',
                           transition: 'background-color 0.2s',
@@ -319,14 +322,17 @@ export default function LegalSettings() {
             <div style={{ fontFamily: 'Outfit, sans-serif' }}>
               <div
                 className="flex items-start gap-3 p-4 rounded-xl mb-6"
-                style={{ background: '#FFFBEB', border: '1px solid #FDE8E8' }}
+                style={{
+                  background: 'var(--warning-bg, rgba(245, 158, 11, 0.15))',
+                  border: '1px solid var(--warning, #F59E0B)'
+                }}
               >
-                <AlertTriangle size={18} className="shrink-0 mt-0.5" style={{ color: '#D97706' }} />
+                <AlertTriangle size={18} className="shrink-0 mt-0.5" style={{ color: 'var(--warning, #F59E0B)' }} />
                 <div>
-                  <h4 className="font-bold text-xs" style={{ color: '#92400E' }}>
+                  <h4 className="font-bold text-xs" style={{ color: 'var(--warning, #D97706)' }}>
                     Phase 2 Content Editor (Schema Ready)
                   </h4>
-                  <p className="text-[11px] mt-0.5 leading-relaxed" style={{ color: '#B45309' }}>
+                  <p className="text-[11px] mt-0.5 leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                     Per user requirements, legal content is currently read-only. However, the database schema (<code>LegalPage.customContent</code>) is fully structured to support dynamic section HTML overrides without database migrations.
                   </p>
                 </div>
@@ -336,7 +342,10 @@ export default function LegalSettings() {
                 <span className="text-[11px] font-bold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>
                   Page Key in MongoDB
                 </span>
-                <p className="text-sm font-semibold mt-0.5 text-gray-700 bg-gray-100 py-1.5 px-3 rounded-lg w-fit">
+                <p
+                  className="text-sm font-semibold mt-0.5 py-1.5 px-3 rounded-lg w-fit"
+                  style={{ background: 'var(--bg-muted, #F3F4F6)', color: 'var(--text-primary)' }}
+                >
                   {editModalPage.key}
                 </p>
               </div>
@@ -350,12 +359,21 @@ export default function LegalSettings() {
                   style={{ borderColor: 'var(--border-default)', background: 'var(--bg-surface)' }}
                 >
                   {editModalPage.sections.map((section, idx) => (
-                    <div key={idx} className="py-2.5 px-3 flex items-center justify-between text-xs text-gray-700">
-                      <span className="font-semibold text-gray-600">
+                    <div
+                      key={idx}
+                      className="py-2.5 px-3 flex items-center justify-between text-xs border-b last:border-b-0"
+                      style={{ borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}
+                    >
+                      <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>
                         {idx + 1}. {section}
                       </span>
                       <span
-                        className="text-[9px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded border border-purple-100 select-none flex items-center gap-1"
+                        className="text-[9px] font-bold px-2 py-0.5 rounded select-none flex items-center gap-1"
+                        style={{
+                          background: 'var(--z-purple-100, rgba(124, 58, 237, 0.15))',
+                          color: 'var(--z-purple-50, #8B5CF6)',
+                          border: '1px solid var(--border-purple, rgba(124, 58, 237, 0.2))'
+                        }}
                       >
                         <HelpCircle size={10} />
                         <code>{section.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}</code>

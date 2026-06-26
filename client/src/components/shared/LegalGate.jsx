@@ -49,12 +49,12 @@ export default function LegalGate({ pageKey, children }) {
           style={{
             maxWidth: '500px',
             width: '100%',
-            background: 'var(--bg-card, #FFFFFF)',
+            background: 'var(--bg-surface, #FFFFFF)',
             borderRadius: '24px',
             padding: '40px 32px',
             boxShadow: '0 10px 25px -5px rgba(124, 58, 237, 0.1), 0 8px 10px -6px rgba(124, 58, 237, 0.05)',
             textAlign: 'center',
-            border: '1px solid rgba(124, 58, 237, 0.1)',
+            border: '1px solid var(--border-default, rgba(124, 58, 237, 0.1))',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -65,11 +65,11 @@ export default function LegalGate({ pageKey, children }) {
               width: '64px',
               height: '64px',
               borderRadius: '20px',
-              background: 'rgba(239, 68, 68, 0.1)',
+              background: 'var(--danger-bg, rgba(239, 68, 68, 0.15))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#EF4444',
+              color: 'var(--danger, #EF4444)',
               marginBottom: '24px',
             }}
           >
