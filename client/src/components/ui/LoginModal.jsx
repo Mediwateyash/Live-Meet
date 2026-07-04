@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -29,9 +29,9 @@ const registerSchema = z.object({
   path: ['confirmPassword'],
 })
 
-/* ── Login form ── */
 function LoginForm({ onSuccess, onClose, switchToRegister }) {
   const { setUser } = useAuthStore()
+  const navigate = useNavigate()
   const [showPwd, setShowPwd] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
     resolver: zodResolver(loginSchema),
@@ -44,7 +44,15 @@ function LoginForm({ onSuccess, onClose, switchToRegister }) {
       toast.success(`Welcome back, ${data.data.fullName.split(' ')[0]}!`)
       reset()
       onClose()
-      onSuccess?.()
+      
+      const user = data.data
+      if (user?.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true })
+      } else if (user?.role === 'instructor') {
+        navigate('/instructor/dashboard', { replace: true })
+      } else {
+        onSuccess?.()
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid credentials')
     }
