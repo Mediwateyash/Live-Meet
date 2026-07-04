@@ -237,7 +237,7 @@ export default function App() {
         <Route path="/admin/live-lectures"            element={<RequireAuth><RequireRole role="admin"><AdminLiveLectures /></RequireRole></RequireAuth>} />
         <Route path="/admin/testimonials"             element={<RequireAuth><RequireRole role="admin"><AdminTestimonials /></RequireRole></RequireAuth>} />
         <Route path="/admin/support"                  element={<RequireAuth><RequireRole role="admin"><AdminSupport /></RequireRole></RequireAuth>} />
-        <Route path="/admin/legal"                    element={<RequireAuth><RequireRole role="admin"><AdminLegalSettings /></RequireRole></RequireAuth>} />
+        <Route path="/admin/feature-flags"            element={<RequireAuth><RequireRole role="admin"><AdminLegalSettings /></RequireRole></RequireAuth>} />
 
         {/* Fallback (404 Page) */}
         <Route path="*" element={<NotFound />} />

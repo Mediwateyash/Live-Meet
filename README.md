@@ -1,8 +1,20 @@
 # Zenius AI (Live-Meet) 🎥🎓
 
-Zenius AI (Live-Meet) is a state-of-the-art, real-time interactive e-learning, live classroom, and meeting platform. Featuring custom dashboards for **Students**, **Instructors**, and **Admins**, the platform enables rich real-time communication, course building, AI-powered study material extraction, and automated interactive quiz grading.
+<div align="center">
 
-🔗 **Live Deployment URL**: [https://live-meet.onrender.com/](https://live-meet.onrender.com/)
+  ![Node.js](https://img.shields.io/badge/NODE.JS-18%2B-green?style=for-the-badge&logo=node.js&logoColor=white)
+  ![React](https://img.shields.io/badge/REACT-18-blue?style=for-the-badge&logo=react&logoColor=white)
+  ![MongoDB](https://img.shields.io/badge/MONGODB-6%2B-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+  ![Whisper](https://img.shields.io/badge/WHISPER-LARGE--V3-orange?style=for-the-badge&logoColor=white)
+  ![VAD](https://img.shields.io/badge/VAD-SILERO--ONNX-purple?style=for-the-badge&logoColor=white)
+
+  <p align="center">
+    Zenius AI (Live-Meet) is a state-of-the-art, real-time interactive e-learning, live classroom, and meeting platform. Featuring custom dashboards for Students, Instructors, and Admins, the platform enables rich real-time communication, course building, AI-powered study material extraction, and automated interactive quiz grading.
+  </p>
+
+  🔗 **Live Deployment URL**: [https://live-meet.onrender.com/](https://live-meet.onrender.com/)
+
+</div>
 
 ---
 
@@ -125,3 +137,9 @@ The compiled files will be output to the `client/dist` directory. To start the p
 ```bash
 npm start
 ```
+
+---
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=10B981&height=120&section=footer&reversal=false" alt="Footer Wave" width="100%"/>
+</p>

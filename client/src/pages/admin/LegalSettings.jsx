@@ -53,57 +53,6 @@ const LEGAL_PAGES_META = [
       'Overview', 'Refund Eligibility', 'Non-Refundable Items', 'Cancellation Process',
       'Instructor Compensation Impact', 'Dispute Resolution', 'Contact Info'
     ]
-  },
-  {
-    key: 'disclaimer',
-    label: 'Disclaimer',
-    path: '/disclaimer',
-    desc: 'Platform liability exclusions, including limits on AI-generated quiz correctness.',
-    sections: [
-      'Overview', 'General Info Disclaimer', 'No Professional Advice', 'AI-Generated MCQ Disclaimer',
-      'External Links Disclaimer', 'Errors & Omissions', 'Limitation of Liability', 'Contact'
-    ]
-  },
-  {
-    key: 'acceptable-use',
-    label: 'Acceptable Use Policy',
-    path: '/acceptable-use',
-    desc: 'Rules outlining system abuse limits, code tampering bans, and live room etiquette.',
-    sections: [
-      'Overview', 'System Limits & Abuse', 'Prohibited Content', 'AI & Classroom Etiquette',
-      'API Access Rules', 'Security Violations', 'Enforcement & Penalties', 'Contact'
-    ]
-  },
-  {
-    key: 'community-guidelines',
-    label: 'Community Guidelines',
-    path: '/community-guidelines',
-    desc: 'Rules governing forums, study spaces, chat, and live session behavior.',
-    sections: [
-      'Overview', 'Inclusivity & Respect', 'Instructor Code of Conduct', 'Student Code of Conduct',
-      'Chat & Live Room Rules', 'Moderation Policy', 'Reporting Violations', 'Contact'
-    ]
-  },
-  {
-    key: 'grievance',
-    label: 'Contact & Grievance',
-    path: '/grievance',
-    desc: 'Dedicated contact support channels and formal Indian Grievance Officer details.',
-    sections: [
-      'Overview', 'Student Support Channels', 'Instructor Support Channels',
-      'Indian Grievance Redressal', 'Grievance Officer Details', 'Response Timelines', 'Registered Address'
-    ]
-  },
-  {
-    key: 'copyright',
-    label: 'Copyright & IP',
-    path: '/copyright',
-    desc: 'Protects platform IP, outlines instructor license grants, and DMCA takedown procedures.',
-    sections: [
-      'Overview', 'Platform IP', 'Instructor Content License', 'Student Use License',
-      'AI-Generated MCQ IP', 'DMCA Takedown Process', 'Copyright Agent Details',
-      'Counter-Notice Procedure', 'Repeat Infringer Policy'
-    ]
   }
 ]
 
