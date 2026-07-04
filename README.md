@@ -5,8 +5,9 @@
   ![Node.js](https://img.shields.io/badge/NODE.JS-18%2B-green?style=for-the-badge&logo=node.js&logoColor=white)
   ![React](https://img.shields.io/badge/REACT-18-blue?style=for-the-badge&logo=react&logoColor=white)
   ![MongoDB](https://img.shields.io/badge/MONGODB-6%2B-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
-  ![Whisper](https://img.shields.io/badge/WHISPER-LARGE--V3-orange?style=for-the-badge&logoColor=white)
-  ![VAD](https://img.shields.io/badge/VAD-SILERO--ONNX-purple?style=for-the-badge&logoColor=white)
+  ![Socket.io](https://img.shields.io/badge/SOCKET.IO-4%2B-010101?style=for-the-badge&logo=socket.io&logoColor=white)
+  ![Gemini AI](https://img.shields.io/badge/GEMINI%20AI-FLASH-8B5CF6?style=for-the-badge&logo=google-gemini&logoColor=white)
+  ![BullMQ](https://img.shields.io/badge/BULLMQ-REDIS-FF6600?style=for-the-badge&logo=redis&logoColor=white)
 
   <p align="center">
     Zenius AI (Live-Meet) is a state-of-the-art, real-time interactive e-learning, live classroom, and meeting platform. Featuring custom dashboards for Students, Instructors, and Admins, the platform enables rich real-time communication, course building, AI-powered study material extraction, and automated interactive quiz grading.
@@ -58,7 +59,7 @@
 | Layer | Technologies |
 |---|---|
 | **Frontend (Client)** | React (v18), Vite, Tailwind CSS, Lucide Icons, Framer Motion, Socket.io-client, Recharts, HTML2Canvas, jsPDF |
-| **Backend (Server)** | Node.js, Express, MongoDB (Mongoose), Socket.io, Helmet, CORS, Cookie Parser, bcryptjs, Multer, Nodemailer |
+| **Backend (Server)** | Node.js, Express, MongoDB (Mongoose), Socket.io, Helmet, CORS, Cookie Parser, bcryptjs, Multer, Nodemailer, BullMQ, Redis |
 | **AI Processing** | Google Generative AI SDK (`@google/generative-ai`) |
 
 ---
@@ -78,6 +79,10 @@ CLIENT_URL=http://localhost:5173
 
 # ── Database ──
 MONGO_URI=mongodb://localhost:27017/zenius-ai
+
+# ── Redis / Queue ──
+REDIS_HOST=localhost
+REDIS_PORT=6379
 
 # ── JWT Secrets ──
 JWT_ACCESS_SECRET=your_32_character_access_secret_phrase
