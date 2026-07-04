@@ -215,11 +215,26 @@ export async function seedCybersecurityCourseIfMissing() {
       }
     ]
 
-    // 3. Insert each course if it does not already exist
+    // 3. Insert each course if it does not already exist, or update its thumbnail if it does
     for (const c of coursesToMigrate) {
+      let thumbnail = "";
+      if (c.title === "UI/UX Design Essentials") {
+        thumbnail = "/course_uiux.jpg";
+      } else if (c.title === "Digital Marketing Strategy Mastery") {
+        thumbnail = "/course_digital_marketing.jpg";
+      } else if (c.title === "Machine Learning Foundations") {
+        thumbnail = "/course_machine_learning.jpg";
+      } else if (c.title === "Data Science and Analytics Fundamentals") {
+        thumbnail = "/course_data_science.jpg";
+      } else if (c.title === "Modern Web Development Bootcamp") {
+        thumbnail = "/course_node_1781720900805.webp";
+      }
+
       const exists = await Course.findOne({ slug: c.slug })
       if (exists) {
-        console.log(`🛡️ Course "${c.title}" already exists.`)
+        exists.thumbnail = thumbnail;
+        await exists.save();
+        console.log(`🛡️ Course "${c.title}" already exists. Thumbnail updated to: ${thumbnail}`)
         continue
       }
 
@@ -229,7 +244,7 @@ export async function seedCybersecurityCourseIfMissing() {
         subtitle: c.subtitle,
         description: c.description,
         instructor: c.instructorId,
-        thumbnail: "", // no images as requested
+        thumbnail: thumbnail,
         price: c.price,
         isFree: false,
         category: c.category,

@@ -225,15 +225,27 @@ async function seed() {
     // 8 courses: index 0, 2, 4, 6 -> inst2 (Aniket), index 1, 3, 5, 7 -> inst1 (Yash)
     const instructors = [inst2, inst1, inst2, inst1, inst2, inst1, inst2, inst1]
     const courses = await Promise.all(
-      COURSES_DATA.map((data, i) =>
-        Course.create({
+      COURSES_DATA.map((data, i) => {
+        let thumbnail = "";
+        if (data.title === "UI/UX Design Essentials") {
+          thumbnail = "/course_uiux.jpg";
+        } else if (data.title === "Digital Marketing Strategy Mastery") {
+          thumbnail = "/course_digital_marketing.jpg";
+        } else if (data.title === "Machine Learning Foundations") {
+          thumbnail = "/course_machine_learning.jpg";
+        } else if (data.title === "Data Science and Analytics Fundamentals") {
+          thumbnail = "/course_data_science.jpg";
+        } else if (data.title === "Modern Web Development Bootcamp") {
+          thumbnail = "/course_node_1781720900805.webp";
+        }
+        return Course.create({
           ...data,
           instructor: instructors[i]._id,
           status: 'published',
-          thumbnail: "", // dont add images as requested
+          thumbnail: thumbnail,
           isAdminApproved: true
         })
-      )
+      })
     )
     console.log('✅ Courses created')
 
