@@ -134,12 +134,9 @@ export async function refresh(req, res, next) {
     }
 
     const accessToken  = generateAccessToken(user._id, user.role)
-    const refreshToken = generateRefreshToken(user._id)
 
-    user.refreshToken = refreshToken
-    await user.save({ validateBeforeSave: false })
-
-    setTokenCookies(res, accessToken, refreshToken)
+    // Reuse the existing validated refresh token to avoid concurrent race conditions during dashboard loads
+    setTokenCookies(res, accessToken, token)
     res.json(new ApiResponse(200, null, 'Tokens refreshed'))
   } catch (err) { next(err) }
 }
