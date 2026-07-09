@@ -1,0 +1,18 @@
+{
+  "name": "Zenius AI",
+  "short_name": "Zenius AI",
+  "description": "Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D0D1A",
+  "theme_color": "#7C3AED",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

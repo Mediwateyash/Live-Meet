@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/axios.js';
 import { CheckCircle, XCircle, ArrowLeft, Award, Download, User } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import useAuthStore from '../../store/authStore.js';
+import PageLayout from '../../components/layout/PageLayout.jsx';
 
 const QuizResult = () => {
     const { id, resultId } = useParams();
@@ -93,7 +94,8 @@ const QuizResult = () => {
                 y = 50;
             }
 
-            const isCorrect = ans.selected === ans.mcqId.correctAnswer;
+            const showCorrectness = ans.mcqId.correctAnswer !== undefined;
+            const isCorrect = showCorrectness && ans.selected === ans.mcqId.correctAnswer;
             
             // Question
             doc.setFont('helvetica', 'bold');
@@ -102,11 +104,13 @@ const QuizResult = () => {
             y += qLines.length * lineHeight;
 
             // Status
-            doc.setFont('helvetica', 'italic');
-            doc.setTextColor(isCorrect ? 0 : 200, isCorrect ? 150 : 0, 0); // Green if correct, Red if wrong
-            doc.text(isCorrect ? 'Correct' : 'Incorrect', margin, y);
-            doc.setTextColor(0, 0, 0);
-            y += 15;
+            if (showCorrectness) {
+                doc.setFont('helvetica', 'italic');
+                doc.setTextColor(isCorrect ? 0 : 200, isCorrect ? 150 : 0, 0); // Green if correct, Red if wrong
+                doc.text(isCorrect ? 'Correct' : 'Incorrect', margin, y);
+                doc.setTextColor(0, 0, 0);
+                y += 15;
+            }
 
             // Options
             doc.setFont('helvetica', 'normal');
@@ -114,7 +118,7 @@ const QuizResult = () => {
                 let prefix = `  ${String.fromCharCode(65 + i)}. `;
                 let suffix = "";
                 if (opt === ans.selected) suffix += " (Your Answer)";
-                if (opt === ans.mcqId.correctAnswer) suffix += " [Correct Answer]";
+                if (showCorrectness && opt === ans.mcqId.correctAnswer) suffix += " [Correct Answer]";
                 
                 const optLines = doc.splitTextToSize(prefix + opt + suffix, maxWidth - 20);
                 doc.text(optLines, margin + 10, y);
@@ -122,13 +126,15 @@ const QuizResult = () => {
             });
 
             // Explanation
-            y += 5;
-            doc.setFont('helvetica', 'bold');
-            doc.text('Explanation:', margin + 10, y);
-            doc.setFont('helvetica', 'normal');
-            const expLines = doc.splitTextToSize(ans.mcqId.explanation, maxWidth - 30);
-            doc.text(expLines, margin + 80, y);
-            y += Math.max(expLines.length * 14, 20);
+            if (showCorrectness && ans.mcqId.explanation) {
+                y += 5;
+                doc.setFont('helvetica', 'bold');
+                doc.text('Explanation:', margin + 10, y);
+                doc.setFont('helvetica', 'normal');
+                const expLines = doc.splitTextToSize(ans.mcqId.explanation, maxWidth - 30);
+                doc.text(expLines, margin + 80, y);
+                y += Math.max(expLines.length * 14, 20);
+            }
 
             y += 20; // Space between questions
         });
@@ -136,12 +142,23 @@ const QuizResult = () => {
         doc.save(`QuizResult_${result.studentId?.name || 'Student'}_${result.quizId.title}.pdf`);
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading results...</div>;
-    if (!result) return <div className="p-8 text-center text-red-500 font-bold">Failed to load result</div>;
+    if (loading) return (
+        <PageLayout noFooter={true}>
+            <div className="w-full py-24 flex justify-center items-center">
+                <div className="w-12 h-12 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        </PageLayout>
+    );
+    if (!result) return (
+        <PageLayout noFooter={true}>
+            <div className="p-8 text-center" style={{ color: 'var(--text-primary)' }}>Failed to load result</div>
+        </PageLayout>
+    );
 
     const backPath = user?.role === 'teacher' || user?.role === 'admin' ? '/teacher/results' : '/student';
 
     return (
+        <PageLayout noFooter={true}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
@@ -149,10 +166,10 @@ const QuizResult = () => {
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Quiz Assessment Results</h1>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quiz Assessment Results</h1>
                         {result.studentId && (
-                            <p className="text-gray-500 flex items-center gap-1 mt-1">
-                                <User className="w-4 h-4" /> Student: <span className="font-semibold text-gray-700">
+                            <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                                <User className="w-4 h-4" /> Student: <span className="font-semibold text-gray-700 dark:text-gray-300">
                                     {typeof result.studentId === 'object' ? (result.studentId.name || result.studentId.email) : result.studentId}
                                 </span>
                             </p>
@@ -167,44 +184,58 @@ const QuizResult = () => {
                 </button>
             </div>
 
-            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center mb-8">
-                <div className={`w-28 h-28 rounded-full flex items-center justify-center border-4 mb-4 ${result.score >= 70 ? 'bg-green-50 border-green-500 text-green-600' : result.score >= 40 ? 'bg-yellow-50 border-yellow-500 text-yellow-600' : 'bg-red-50 border-red-500 text-red-600'}`}>
+            <div className="bg-white dark:bg-[var(--bg-surface)] p-8 rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] flex flex-col items-center justify-center text-center mb-8">
+                <div className={`w-28 h-28 rounded-full flex items-center justify-center border-4 mb-4 ${result.score >= 70 ? 'bg-green-50 dark:bg-green-950/20 border-green-500 text-green-600 dark:text-emerald-400' : result.score >= 40 ? 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-500 text-yellow-600 dark:text-amber-400' : 'bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-rose-400'}`}>
                     <span className="text-4xl font-bold">{result.score}%</span>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">{result.quizId.title}</h2>
-                <p className="text-gray-500 mt-2 font-medium flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{result.quizId.title}</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-2 font-medium flex items-center gap-2">
                     <Award className="w-5 h-5"/>
                     Completed on {new Date(result.createdAt).toLocaleString()}
                 </p>
             </div>
 
-            <h3 className="text-xl font-bold text-gray-900 mb-6 px-2">Detailed Review</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 px-2">Detailed Review</h3>
             
             <div className="space-y-6">
                 {result.answers.map((ans, idx) => {
-                    const isCorrect = ans.mcqId && ans.selected === ans.mcqId.correctAnswer;
                     if (!ans.mcqId) return null; // skipped or deleted
 
+                    const showCorrectness = ans.mcqId.correctAnswer !== undefined;
+                    const isCorrect = showCorrectness && ans.selected === ans.mcqId.correctAnswer;
+                    
+                    const cardBorderClass = showCorrectness 
+                        ? (isCorrect ? 'border-l-4 border-green-500' : 'border-l-4 border-red-500')
+                        : 'border-l-4 border-indigo-400';
+
                     return (
-                        <div key={idx} className={`bg-white p-6 rounded-xl shadow-sm border-l-4 ${isCorrect ? 'border-green-500' : 'border-red-500'}`}>
+                        <div key={idx} className={`bg-white dark:bg-[var(--bg-surface)] p-6 rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] ${cardBorderClass}`}>
                             <div className="flex justify-between flex-start gap-4 mb-4">
-                                <h4 className="font-semibold text-lg text-gray-900">
-                                    <span className="text-gray-400 mr-2">Q{idx+1}.</span> 
+                                <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
+                                    <span className="text-gray-400 dark:text-gray-500 mr-2">Q{idx+1}.</span> 
                                     {ans.mcqId.question}
                                 </h4>
-                                <div>
-                                    {isCorrect ? <CheckCircle className="w-6 h-6 text-green-500" /> : <XCircle className="w-6 h-6 text-red-500" />}
-                                </div>
+                                {showCorrectness && (
+                                    <div>
+                                        {isCorrect ? <CheckCircle className="w-6 h-6 text-green-500" /> : <XCircle className="w-6 h-6 text-red-500" />}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                 {ans.mcqId.options.map((opt, i) => {
-                                    let bgClass = "bg-gray-50 border-gray-200 text-gray-600";
+                                    let bgClass = "bg-gray-50 border-gray-200 text-gray-600 dark:bg-gray-900/40 dark:border-gray-800 dark:text-gray-300";
                                     
-                                    if (opt === ans.mcqId.correctAnswer) {
-                                        bgClass = "bg-green-100 border-green-300 text-green-800 font-medium";
-                                    } else if (opt === ans.selected && !isCorrect) {
-                                        bgClass = "bg-red-100 border-red-300 text-red-800 line-through";
+                                    if (showCorrectness) {
+                                        if (opt === ans.mcqId.correctAnswer) {
+                                            bgClass = "bg-green-100 border-green-300 text-green-800 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-400 font-medium";
+                                        } else if (opt === ans.selected && !isCorrect) {
+                                            bgClass = "bg-red-100 border-red-300 text-red-800 dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400 line-through font-medium";
+                                        }
+                                    } else {
+                                        if (opt === ans.selected) {
+                                            bgClass = "bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/20 dark:border-indigo-900/30 dark:text-indigo-400 font-medium";
+                                        }
                                     }
 
                                     return (
@@ -216,15 +247,18 @@ const QuizResult = () => {
                                 })}
                             </div>
 
-                            <div className={`mt-4 p-4 rounded-lg border ${isCorrect ? 'bg-gray-50 border-gray-200' : 'bg-indigo-50 border-indigo-100'}`}>
-                                <span className={`font-semibold block mb-1 ${isCorrect ? 'text-gray-700' : 'text-primary'}`}>Explanation:</span>
-                                <p className={`${isCorrect ? 'text-gray-600' : 'text-gray-700'} text-sm leading-relaxed`}>{ans.mcqId.explanation}</p>
-                            </div>
+                            {showCorrectness && ans.mcqId.explanation && (
+                                <div className={`mt-4 p-4 rounded-lg border ${isCorrect ? 'bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-800' : 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/30'}`}>
+                                    <span className={`font-semibold block mb-1 ${isCorrect ? 'text-gray-700 dark:text-gray-300' : 'text-primary dark:text-indigo-400'}`}>Explanation:</span>
+                                    <p className={`${isCorrect ? 'text-gray-600 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'} text-sm leading-relaxed`}>{ans.mcqId.explanation}</p>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
             </div>
         </div>
+        </PageLayout>
     );
 };
 

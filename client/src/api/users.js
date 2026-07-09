@@ -9,5 +9,6 @@ export const usersAPI = {
   getRequestStatus:    ()        => api.get('/users/instructor-request/status'),
   toggleWishlist:      (courseId)=> api.put(`/users/wishlist/${courseId}`),
   updatePassword:      (passwords)=> api.put('/users/profile/password', passwords),
+  deleteAccount:       ()        => api.delete('/users/profile'),
 }
 

@@ -72,7 +72,7 @@ export default function MyLearning() {
 
   const renderCourses = (list, overrideLoading = false) => {
     if (loading || overrideLoading) return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
       </div>
     )
@@ -85,7 +85,7 @@ export default function MyLearning() {
       />
     )
     return (
-      <motion.div variants={containerVariants} initial="initial" animate="animate" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <motion.div variants={containerVariants} initial="initial" animate="animate" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {list.map(course => (
           <CourseCard
             key={course._id}
@@ -100,26 +100,26 @@ export default function MyLearning() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             My Learning
           </h1>
           <button
             onClick={() => navigate('/browse')}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-[#F0EEFF]"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:bg-[#F0EEFF] touch-target"
             style={{ color: '#7C3AED', border: '1px solid var(--border-purple)' }}
           >
             <BookOpen size={15} /> Browse Courses
           </button>
         </div>
 
-        <div className="flex gap-1 p-1 rounded-xl mb-8 w-fit" style={{ background: 'var(--z-purple-100)' }}>
+        <div className="flex flex-wrap gap-1 p-1 rounded-xl mb-8 w-fit" style={{ background: 'var(--z-purple-100)' }}>
           {TABS.map((t, i) => (
             <button
               key={t}
               onClick={() => handleTabChange(i)}
-              className="px-5 py-2 rounded-lg text-sm font-medium transition-all"
+              className="px-4 sm:px-5 py-2 rounded-lg text-sm font-medium transition-all touch-target"
               style={{
                 background: tab === i ? '#7C3AED' : 'transparent',
                 color:      tab === i ? 'white' : 'var(--text-secondary)',

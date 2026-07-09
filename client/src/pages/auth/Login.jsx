@@ -25,14 +25,21 @@ export default function Login() {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(schema),
   })
-
   const onSubmit = async (values) => {
     try {
       const { data } = await authAPI.login(values)
       setUser(data.data)
       toast.success(`Welcome back, ${data.data.fullName.split(' ')[0]}!`)
-      const from = location.state?.from?.pathname || '/dashboard'
-      navigate(from, { replace: true })
+      
+      const user = data.data
+      if (user?.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true })
+      } else if (user?.role === 'instructor') {
+        navigate('/instructor/dashboard', { replace: true })
+      } else {
+        const from = location.state?.from?.pathname || '/dashboard'
+        navigate(from, { replace: true })
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid credentials')
     }

@@ -25,9 +25,9 @@ export default function AdminInstructors() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
               Manage Instructors
@@ -36,18 +36,17 @@ export default function AdminInstructors() {
               Select an instructor to manage their courses
             </p>
           </div>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" color="var(--text-secondary)" />
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search instructors..."
-              className="pl-9 pr-4 py-2 text-sm rounded-xl border outline-none"
+              className="pl-9 pr-4 py-2 text-sm rounded-xl border outline-none w-full sm:w-[220px]"
               style={{
                 background: 'var(--bg-surface)',
                 borderColor: 'var(--border-default)',
                 color: 'var(--text-primary)',
-                width: 220,
               }}
               onFocus={e => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)' }}
               onBlur={e => { e.target.style.borderColor = 'var(--border-default)'; e.target.style.boxShadow = 'none' }}
@@ -56,14 +55,14 @@ export default function AdminInstructors() {
         </div>
 
         {/* Stats bar */}
-        <div className="flex gap-4 mb-8">
-          <div className="px-4 py-3 rounded-xl text-sm font-medium" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8">
+          <div className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-center sm:text-left" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
             <span className="font-bold" style={{ color: '#7C3AED' }}>{instructors.length}</span> total instructors
           </div>
-          <div className="px-4 py-3 rounded-xl text-sm font-medium" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
+          <div className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-center sm:text-left" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
             <span className="font-bold" style={{ color: '#7C3AED' }}>{instructors.reduce((a, i) => a + (i.courseCount || 0), 0)}</span> total courses
           </div>
-          <div className="px-4 py-3 rounded-xl text-sm font-medium" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
+          <div className="flex-1 px-4 py-3 rounded-xl text-sm font-medium text-center sm:text-left" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
             <span className="font-bold" style={{ color: '#7C3AED' }}>{instructors.reduce((a, i) => a + (i.studentCount || 0), 0)}</span> total students
           </div>
         </div>

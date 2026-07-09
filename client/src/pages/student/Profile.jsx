@@ -2,10 +2,12 @@ import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { User, Camera, Save, Briefcase, Link as LinkIcon, Lock } from 'lucide-react'
+import { User, Camera, Save, Briefcase, Link as LinkIcon, Lock, AlertTriangle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
 import Input from '../../components/ui/Input.jsx'
+import Modal from '../../components/ui/Modal.jsx'
 import useAuthStore from '../../store/authStore.js'
 import { usersAPI } from '../../api/users.js'
 import toast from 'react-hot-toast'
@@ -28,9 +30,27 @@ const passwordSchema = z.object({
 })
 
 export default function Profile() {
-  const { user, updateUser } = useAuthStore()
+  const { user, updateUser, logout } = useAuthStore()
+  const navigate = useNavigate()
   const [saving, setSaving] = useState(false)
   const [passwordSaving, setPasswordSaving] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true)
+    try {
+      await usersAPI.deleteAccount()
+      toast.success('Your account has been deleted permanently.')
+      logout()
+      navigate('/')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not delete account')
+    } finally {
+      setDeleting(false)
+      setShowDeleteModal(false)
+    }
+  }
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -83,14 +103,14 @@ export default function Profile() {
 
   return (
     <PageLayout>
-      <div className="max-w-6xl mx-auto px-6 py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h1 className="text-3xl font-bold mb-8" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
           My Profile
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
           {/* Left Column: Profile form */}
-          <div className="bg-white rounded-2xl shadow-card p-6" style={{ border: '1px solid var(--border-purple)' }}>
+          <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6" style={{ border: '1px solid var(--border-purple)' }}>
             {/* Avatar */}
             <div className="flex items-center gap-5 mb-8">
               <div className="relative">
@@ -172,7 +192,7 @@ export default function Profile() {
           {/* Right Column: Account Details & Update Password */}
           <div className="space-y-6">
             {/* Account Details */}
-            <div className="bg-white rounded-2xl shadow-card p-6" style={{ border: '1px solid var(--border-default)' }}>
+            <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6" style={{ border: '1px solid var(--border-default)' }}>
               <h2 className="font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Account Details</h2>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
@@ -191,7 +211,7 @@ export default function Profile() {
             </div>
 
             {/* Update Password */}
-            <div className="bg-white rounded-2xl shadow-card p-6" style={{ border: '1px solid var(--border-purple)' }}>
+            <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6" style={{ border: '1px solid var(--border-purple)' }}>
               <h2 className="font-semibold mb-4 flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
                 <Lock size={18} /> Update Password
               </h2>
@@ -215,9 +235,54 @@ export default function Profile() {
                 </div>
               </form>
             </div>
+
+            {/* Danger Zone */}
+            {(user?.role === 'student' || user?.role === 'instructor') && (
+              <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6" style={{ border: '1px solid #FECACA' }}>
+                <h2 className="font-semibold mb-2 flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif', color: '#DC2626' }}>
+                  Danger Zone
+                </h2>
+                <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+                  Permanently delete your account and all associated learning data from the database. This action is irreversible.
+                </p>
+                <Button 
+                  onClick={() => setShowDeleteModal(true)} 
+                  variant="danger" 
+                  className="w-full"
+                >
+                  Delete Account Permanently
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete Account Permanently" size="sm">
+        <div className="flex items-center gap-3 mb-5 p-4 rounded-xl" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-red-100">
+            <AlertTriangle size={20} color="#DC2626" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-red-800">Are you sure?</p>
+            <p className="text-xs text-red-700 mt-0.5">
+              This will permanently delete your account <strong>{user?.fullName}</strong> and erase all of your progress.
+            </p>
+          </div>
+        </div>
+        <p className="text-xs mb-5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+          All database records linked to your email will be permanently deleted. This action cannot be undone.
+        </p>
+        <div className="flex gap-3 justify-end">
+          <Button variant="outline" size="sm" onClick={() => setShowDeleteModal(false)} disabled={deleting}>
+            Cancel
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleDeleteAccount} loading={deleting}>
+            Delete Permanently
+          </Button>
+        </div>
+      </Modal>
     </PageLayout>
   )
 }

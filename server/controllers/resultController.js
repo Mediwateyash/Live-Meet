@@ -62,8 +62,6 @@ export const submitQuiz = async (req, res) => {
             }
         }
 
-        console.log("[submitQuiz] Created result:", result);
-        console.log("[submitQuiz] Sending resultId:", result ? result._id : 'undefined');
 
         res.status(201).json({
             message: 'Quiz submitted successfully',
@@ -98,19 +96,36 @@ export const getResultById = async (req, res) => {
             });
 
         if (!result) {
-            console.log(`[getResultById] Result ${req.params.id} not found.`);
             return res.status(404).json({ message: 'Result not found' });
         }
 
         const studentIdStr = result.studentId ? result.studentId._id.toString() : null;
         const reqUserIdStr = req.user._id.toString();
 
-        if (studentIdStr !== reqUserIdStr && req.user.role !== 'teacher' && req.user.role !== 'admin' && req.user.role !== 'instructor') {
-            console.log(`[getResultById] Not authorized. Result studentId: ${studentIdStr}, Requester: ${reqUserIdStr}, Role: ${req.user.role}`);
-            return res.status(403).json({ message: 'Not authorized' });
+        if (studentIdStr !== reqUserIdStr && req.user.role !== 'admin') {
+            if (req.user.role === 'instructor') {
+                const quiz = await Quiz.findById(result.quizId?._id || result.quizId);
+                if (!quiz || quiz.createdBy.toString() !== reqUserIdStr) {
+                    return res.status(403).json({ message: 'Not authorized' });
+                }
+            } else {
+                return res.status(403).json({ message: 'Not authorized' });
+            }
         }
 
-        res.json(result);
+        const resultObj = result.toObject();
+        if (req.user.role === 'student') {
+            if (resultObj.answers) {
+                resultObj.answers.forEach(a => {
+                    if (a.mcqId) {
+                        a.mcqId.correctAnswer = undefined;
+                        a.mcqId.explanation = undefined;
+                    }
+                });
+            }
+        }
+
+        res.json(resultObj);
     } catch (error) {
         console.error(`[getResultById] Error:`, error);
         res.status(500).json({ message: error.message });

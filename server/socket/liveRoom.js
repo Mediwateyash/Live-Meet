@@ -34,20 +34,47 @@ function isHostSocket(s) {
   return s.user?.role === 'instructor' || s.user?.role === 'admin'
 }
 
+const allowedOrigins = [
+  'https://live-meet.onrender.com',
+  process.env.CLIENT_URL
+].filter(Boolean)
+
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.push('http://localhost:5173')
+}
+
 export function registerLiveRoomSocket(io) {
   // ── Cookie, Auth Handshake, or Header auth ────────────────────────────────
   io.use(async (socket, next) => {
     try {
+      const origin = socket.handshake.headers.origin
+      if (origin) {
+        if (!allowedOrigins.includes(origin)) {
+          console.warn(`[SECURITY] Blocked WebSocket connection from unauthorized origin: ${origin}`);
+          return next(new Error('Origin not allowed'));
+        }
+      }
+
       const cookies = parseCookies(socket.handshake.headers.cookie || '')
+      // Auth token from: (1) socket.io handshake auth object [sent over TLS], (2) httpOnly cookie
+      // NOTE: query-param tokens are intentionally NOT supported to prevent token leakage in server logs
       const token =
         socket.handshake.auth?.token ||
-        socket.handshake.headers?.authorization?.split(' ')[1] ||
         cookies.accessToken
 
       if (!token) return next(new Error('Socket authentication required'))
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
       const user    = await User.findById(decoded.userId).select('-password -refreshToken -resetPasswordToken')
       if (!user) return next(new Error('User not found'))
+
+      if (user.suspended) {
+        return next(new Error('Account has been suspended'))
+      }
+
+      if (decoded.role && user.role !== decoded.role) {
+        return next(new Error('Session expired — please log in again'))
+      }
+
       socket.user = user
       next()
     } catch (_) {
@@ -91,7 +118,13 @@ export function registerLiveRoomSocket(io) {
     // ── Join ──────────────────────────────────────────────────────────────────
     socket.on('join-class', async (lectureId) => {
       try {
-        const lecture = await LiveLecture.findById(lectureId).populate('courseId', 'enrolledStudents')
+        if (!lectureId || !/^[0-9a-fA-F]{24}$/.test(lectureId)) {
+          return socket.emit('access-denied', { message: 'Invalid lecture ID format.' })
+        }
+        const lecture = await LiveLecture.findById(lectureId).populate({
+          path: 'courseId',
+          select: 'enrolledStudents'
+        })
         if (!lecture) return socket.emit('error-message', 'Lecture not found')
 
         if (lecture.status === 'ended') {

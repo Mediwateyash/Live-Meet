@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReactPlayer from 'react-player'
 import {
@@ -24,8 +24,9 @@ const COURSE_TOOLS = [
   { path: 'notes',    icon: FileText,      label: 'Notes',         desc: 'Study materials',    iconBg: 'rgba(109,40,217,0.12)',  iconColor: '#7C3AED' },
   { path: 'tests',    icon: ClipboardList, label: 'Tests',         desc: 'Quizzes & exams',    iconBg: 'rgba(37,99,235,0.12)',   iconColor: '#2563EB' },
   { path: 'mcq',      icon: Brain,         label: 'MCQ Generator', desc: 'AI practice',        iconBg: 'rgba(5,150,105,0.12)',   iconColor: '#059669' },
-  { path: 'progress', icon: TrendingUp,    label: 'Progress',      desc: 'Track learning',     iconBg: 'rgba(217,119,6,0.12)',   iconColor: '#D97706' },
   { path: 'live',     icon: Video,         label: 'Live Lectures', desc: 'Scheduled sessions', iconBg: 'rgba(220,38,38,0.12)',   iconColor: '#DC2626' },
+  { path: 'progress', icon: TrendingUp,    label: 'Progress',      desc: 'Track learning',     iconBg: 'rgba(217,119,6,0.12)',   iconColor: '#D97706' },
+  { path: 'certificate', icon: Award,   label: 'Certificate',   desc: 'View your certificate', iconBg: 'rgba(234,179,8,0.12)', iconColor: '#F59E0B' },
 ]
 
 function CourseToolsSidebar({ slug, navigate, progress, onClose }) {
@@ -37,7 +38,7 @@ function CourseToolsSidebar({ slug, navigate, progress, onClose }) {
           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#7C3AED' }}>
             <Brain size={15} color="white" />
           </div>
-          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Course Tools</span>
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Learning Center</span>
         </div>
         {onClose && (
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-[#F0EEFF] transition-colors">
@@ -64,7 +65,7 @@ function CourseToolsSidebar({ slug, navigate, progress, onClose }) {
         {COURSE_TOOLS.map(({ path, icon: Icon, label, iconBg, iconColor }) => (
           <button
             key={path}
-            onClick={() => { navigate(`/course/${slug}/${path}`); onClose?.() }}
+            onClick={() => { if (path === 'certificate') { navigate(`/certificate/${slug}`); } else { navigate(`/course/${slug}/${path}`); } onClose?.(); } }
             className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition-all group"
             style={{ color: 'var(--text-secondary)', fontWeight: 500 }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
@@ -162,12 +163,25 @@ export default function CourseDetail() {
 
   const handleWishlist = async () => {
     if (!isAuthenticated) { openAuthModal('login', 'Log in to save courses to your wishlist'); return }
-    const wasWishlisted = isWishlisted
+    
+    const previousWishlist = user?.wishlist || []
+    const courseIdStr = course._id.toString()
+    const isCurrentlyWishlisted = previousWishlist.some(id => id.toString() === courseIdStr)
+    const newWishlist = isCurrentlyWishlisted
+      ? previousWishlist.filter(id => id.toString() !== courseIdStr)
+      : [...previousWishlist, course._id]
+
+    // Optimistically update the store
+    updateUser({ wishlist: newWishlist })
+    const toastId = toast.success(isCurrentlyWishlisted ? 'Removed from wishlist' : 'Added to wishlist')
+
     try {
       const { data } = await usersAPI.toggleWishlist(course._id)
       updateUser({ wishlist: data.data })
-      toast.success(wasWishlisted ? 'Removed from wishlist' : 'Added to wishlist')
     } catch {
+      // Rollback on error
+      updateUser({ wishlist: previousWishlist })
+      toast.dismiss(toastId)
       toast.error('Could not update wishlist')
     }
   }
@@ -194,9 +208,19 @@ export default function CourseDetail() {
       <div className="py-10 px-8" style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #2E1065 100%)' }}>
         <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-8 items-start" style={{ maxWidth: '1700px', margin: '0 auto' }}>
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-4 text-sm" style={{ color: '#A78BFA' }}>
-              <span>Browse</span><ChevronRight size={14} /><span>{course.category}</span>
-            </div>
+            <nav aria-label="Breadcrumb" className="mb-4">
+              <ol className="flex items-center gap-2 text-sm" style={{ color: '#A78BFA', listStyle: 'none', margin: 0, padding: 0 }}>
+                <li>
+                  <Link to="/browse" style={{ color: 'inherit', textDecoration: 'none' }} className="hover:underline">
+                    Browse
+                  </Link>
+                </li>
+                <li className="flex items-center gap-2">
+                  <ChevronRight size={14} />
+                  <span>{course.category}</span>
+                </li>
+              </ol>
+            </nav>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3" style={{ fontFamily: 'Outfit, sans-serif', lineHeight: 1.2 }}>
               {course.title}
             </h1>
@@ -236,7 +260,7 @@ export default function CourseDetail() {
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <Menu size={16} />
-            Course Tools
+            Learning Center
           </button>
           {(progress?.percentComplete || 0) > 0 && (
             <span className="text-xs font-semibold" style={{ color: '#7C3AED' }}>
@@ -293,6 +317,20 @@ export default function CourseDetail() {
                           <CheckCircle2 size={16} color="#10B981" className="shrink-0 mt-0.5" />
                           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{item}</span>
                         </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Description */}
+                {course.description && (
+                  <section className="space-y-4">
+                    <h2 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                      About this course
+                    </h2>
+                    <div className="text-sm leading-relaxed space-y-4" style={{ color: 'var(--text-secondary)' }}>
+                      {course.description.split('\n').map((para, i) => (
+                        <p key={i}>{para}</p>
                       ))}
                     </div>
                   </section>
@@ -393,6 +431,53 @@ export default function CourseDetail() {
                   </section>
                 )}
 
+                {/* About the Instructor */}
+                {course.instructor && (
+                  <section className="space-y-4 border-t pt-8" style={{ borderColor: 'var(--border-default)' }}>
+                    <h2 className="text-xl font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                      About the Instructor
+                    </h2>
+                    <div
+                      className="p-6 rounded-2xl flex flex-col sm:flex-row gap-5 items-start"
+                      style={{ border: '1px solid var(--border-default)', background: 'var(--bg-surface)' }}
+                    >
+                      {course.instructor.avatar ? (
+                        <img
+                          src={course.instructor.avatar}
+                          alt={course.instructor.fullName}
+                          className="w-16 h-16 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-sm"
+                          style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}
+                        >
+                          {course.instructor.fullName?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <h3 className="text-base font-bold" style={{ color: 'var(--text-primary)' }}>
+                            {course.instructor.fullName}
+                          </h3>
+                          {course.instructor.expertise?.map((exp, idx) => (
+                            <span
+                              key={idx}
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                              style={{ background: 'var(--z-purple-100, #F0EEFF)', color: '#7C3AED' }}
+                            >
+                              {exp}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                          {course.instructor.bio || "Certified educator on Zenius AI specializing in building real-world practical course curricula."}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+                )}
+
                 {/* Reviews */}
                 <section className="space-y-6">
                   <h2 className="text-xl font-bold border-t pt-8" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)', borderColor: 'var(--border-default)' }}>
@@ -475,12 +560,19 @@ export default function CourseDetail() {
                       <div className="h-full rounded-full" style={{ width: `${progress?.percentComplete || 0}%`, background: 'linear-gradient(90deg, #7C3AED, #A78BFA)' }} />
                     </div>
                     <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                      {progress?.completedLessons?.length || 0} / {totalLessons} lessons done
+                      {Math.min(progress?.completedLessons?.length || 0, totalLessons)} / {totalLessons} lessons done
                     </p>
                   </div>
-                  <Button className="w-full" onClick={() => navigate(`/course/${slug}/learn`)}>
-                    Continue Learning →
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button className="w-full" onClick={() => navigate(`/course/${slug}/learn`)}>
+                      Continue Learning →
+                    </Button>
+                    {Math.round(progress?.percentComplete || 0) === 100 && (
+                      <Button className="w-full" variant="outline" onClick={() => navigate(`/certificate/${course.slug}`)}>
+                        View Certificate
+                      </Button>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>

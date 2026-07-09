@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion } from 'framer-motion'
@@ -30,6 +31,7 @@ const BENEFITS = [
 
 export default function BecomeInstructor() {
   const { user, updateUser } = useAuthStore()
+  const navigate = useNavigate()
   const [status,   setStatus]   = useState(null)
   const [tags,     setTags]     = useState([])
   const [loading,  setLoading]  = useState(true)
@@ -81,7 +83,32 @@ export default function BecomeInstructor() {
 
           {/* Right — form or status */}
           <div>
-            {loading ? <div className="skeleton h-96 rounded-2xl" /> : status === 'pending' ? (
+            {loading ? (
+              <div className="skeleton h-96 rounded-2xl" />
+            ) : (user?.role === 'instructor' && user?.isApprovedInstructor) || user?.role === 'admin' ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-white dark:bg-[var(--bg-surface)] rounded-2xl p-8 shadow-card text-center"
+                style={{ border: '1px solid var(--border-default, var(--border-purple))' }}
+              >
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: '#EDE9FE' }}>
+                  <CheckCircle2 size={30} color="#7C3AED" />
+                </div>
+                <h2 className="text-xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                  You're an Instructor!
+                </h2>
+                <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
+                  You are already registered and approved as an instructor on Zenius AI.
+                </p>
+                <Button
+                  onClick={() => navigate(user?.role === 'admin' ? '/admin/dashboard' : '/instructor/dashboard')}
+                  className="w-full"
+                >
+                  Go to Dashboard
+                </Button>
+              </motion.div>
+            ) : status === 'pending' ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-2xl p-8 shadow-card text-center" style={{ border: '1px solid var(--border-purple)' }}>
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: '#EDE9FE' }}>
                   <CheckCircle2 size={30} color="#7C3AED" />

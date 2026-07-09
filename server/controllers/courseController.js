@@ -5,6 +5,9 @@ import Progress   from '../models/Progress.js'
 import Enrollment from '../models/Enrollment.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
+import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
+import jwt from 'jsonwebtoken'
+import { validateUrlForSsrf } from '../utils/ssrfFilter.js'
 
 export async function browse(req, res, next) {
   try {
@@ -12,14 +15,20 @@ export async function browse(req, res, next) {
 
     const filter = { status: 'published' }
     if (q) {
+      // Prevent NoSQL injection: ?q[$gt]='' gets parsed by Express as {q:{$gt:''}}
+      // A non-string q means a MongoDB operator was injected — reject it immediately
+      if (typeof q !== 'string') {
+        throw new ApiError(400, 'Invalid search query format')
+      }
+      const escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const matchingInstructors = await User.find(
-        { fullName: { $regex: q, $options: 'i' } },
+        { fullName: { $regex: escapedQ, $options: 'i' } },
         '_id'
       )
       const instructorIds = matchingInstructors.map(u => u._id)
       filter.$or = [
-        { title:       { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
+        { title:       { $regex: escapedQ, $options: 'i' } },
+        { description: { $regex: escapedQ, $options: 'i' } },
         ...(instructorIds.length ? [{ instructor: { $in: instructorIds } }] : []),
       ]
     }
@@ -36,9 +45,12 @@ export async function browse(req, res, next) {
       'price-desc':{ price: -1 },
     }
 
+    // Only select public catalog fields — never expose curriculum/video URLs
+    const publicFields = 'title slug subtitle thumbnail category level price isFree avgRating reviewCount totalDuration totalLessons enrolledStudents tags language createdAt'
+
     const skip = (Number(page) - 1) * Number(limit)
     const [courses, total] = await Promise.all([
-      Course.find(filter).sort(sortMap[sort] || sortMap.popular).skip(skip).limit(Number(limit)).populate('instructor', 'fullName avatar'),
+      Course.find(filter).select(publicFields).sort(sortMap[sort] || sortMap.popular).skip(skip).limit(Number(limit)).populate('instructor', 'fullName avatar'),
       Course.countDocuments(filter),
     ])
 
@@ -56,9 +68,12 @@ export async function browse(req, res, next) {
 
 export async function getFeatured(req, res, next) {
   try {
+    const publicFields = 'title slug subtitle thumbnail category level price isFree avgRating reviewCount totalDuration totalLessons enrolledStudents tags language createdAt'
+
     const courses = await Course.find({ status: 'published' })
+      .select(publicFields)
       .sort({ avgRating: -1, 'enrolledStudents': -1 })
-      .limit(6)
+      .limit(8)
       .populate('instructor', 'fullName avatar')
       
     const coursesJSON = courses.map(c => {
@@ -87,10 +102,54 @@ export async function getBySlug(req, res, next) {
       .populate('student', 'fullName avatar')
       .sort({ createdAt: -1 })
 
+    // Check if the user is logged in and authorized (enrolled, instructor, or admin)
+    let isEnrolled = false
+    const token = req.cookies?.accessToken
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+        const user = await User.findById(decoded.userId)
+        if (user) {
+          isEnrolled = user.enrolledCourses.some(id => id.toString() === course._id.toString()) ||
+                       user.role === 'admin' ||
+                       (course.instructor?._id || course.instructor).toString() === user._id.toString()
+        }
+      } catch (err) {
+        // invalid token, treat as visitor
+      }
+    }
+
     const courseObj = course.toObject()
     courseObj.reviews = reviews
     if (courseObj.enrolledStudents) {
       courseObj.enrolledStudents = Array(courseObj.enrolledStudents.length).fill(null)
+    }
+
+    // Strip video URLs and resources from public course detail for non-enrolled users
+    if (!isEnrolled) {
+      if (courseObj.curriculum) {
+        courseObj.curriculum = courseObj.curriculum.map(section => ({
+          ...section,
+          lessons: (section.lessons || []).map(lesson => {
+            if (lesson.isFree) {
+              return {
+                _id: lesson._id,
+                title: lesson.title,
+                duration: lesson.duration,
+                isFree: true,
+                videoUrl: lesson.videoUrl, // Keep for preview
+              }
+            } else {
+              return {
+                _id: lesson._id,
+                title: lesson.title,
+                duration: lesson.duration,
+                isFree: false,
+              }
+            }
+          })
+        }))
+      }
     }
 
     res.json(new ApiResponse(200, courseObj))
@@ -102,13 +161,15 @@ export async function createCourse(req, res, next) {
     const { title, subtitle, description, category, level, language, tags, whatYouLearn, requirements, curriculum, thumbnail, price, isFree, status } = req.body
     if (!title || !category) throw new ApiError(400, 'Title and category required')
 
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
+
     const courseData = {
       title, subtitle, description, category, language,
       tags:         Array.isArray(tags)         ? tags         : [],
       whatYouLearn: Array.isArray(whatYouLearn) ? whatYouLearn : [],
       requirements: Array.isArray(requirements) ? requirements : [],
       curriculum:   Array.isArray(curriculum)   ? curriculum   : [],
-      thumbnail,
+      thumbnail:    uploadedThumbnail,
       price:        isFree ? 0 : (Number(price) || 0),
       isFree:       !!isFree,
       status:       status || 'draft',
@@ -131,8 +192,10 @@ export async function updateCourse(req, res, next) {
     if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
       throw new ApiError(403, 'Not authorized')
     }
-    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, finalExam, ...rest } = req.body
+    const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, finalExam, thumbnail, ...rest } = req.body
     const finalCurriculum = Array.isArray(curriculum) ? curriculum : course.curriculum
+
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
 
     // Recalculate totals (pre('save') doesn't run on findByIdAndUpdate)
     let totalDuration = 0, totalLessons = 0
@@ -153,6 +216,9 @@ export async function updateCourse(req, res, next) {
       isFree:       isFree || price === 0,
       totalDuration,
       totalLessons,
+    }
+    if (uploadedThumbnail !== undefined) {
+      updateData.thumbnail = uploadedThumbnail
     }
     if (finalExam !== undefined) {
       updateData.finalExam = finalExam || null
@@ -191,19 +257,34 @@ export async function enroll(req, res, next) {
     const course = await Course.findById(req.params.id)
     if (!course || course.status !== 'published') throw new ApiError(404, 'Course not found or not published')
 
-    const user = await User.findById(req.user._id)
-    if (isEnrolledIn(user, course._id)) throw new ApiError(400, 'Already enrolled')
+    // ── Atomic enroll: one round-trip, no race condition ─────────────────────
+    // Condition: enrolledCourses array has < 50 items AND course not already in it
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: req.user._id,
+        enrolledCourses: { $ne: course._id },        // not already enrolled
+        'enrolledCourses.49': { $exists: false },     // array length < 50 (0-indexed 49th slot must not exist)
+      },
+      { $addToSet: { enrolledCourses: course._id } },
+      { new: true }
+    )
 
-    user.enrolledCourses.push(course._id)
-    await user.save({ validateBeforeSave: false })
+    if (!updatedUser) {
+      // Either already enrolled or enrollment cap reached — distinguish with a secondary check
+      const user = await User.findById(req.user._id).select('enrolledCourses')
+      if (user.enrolledCourses.some(id => id.toString() === course._id.toString())) {
+        throw new ApiError(400, 'Already enrolled')
+      }
+      throw new ApiError(400, 'Enrollment limit reached (maximum 50 courses per student)')
+    }
 
-    course.enrolledStudents.push(user._id)
-    await course.save()
+    // Update course's enrolled students list
+    await Course.findByIdAndUpdate(course._id, { $addToSet: { enrolledStudents: req.user._id } })
 
-    await Progress.create({ student: user._id, course: course._id })
+    await Progress.create({ student: req.user._id, course: course._id })
 
     // Record enrollment with price snapshot for revenue analytics
-    await Enrollment.create({ student: user._id, course: course._id, price: course.price || 0 })
+    await Enrollment.create({ student: req.user._id, course: course._id, price: course.price || 0 })
 
     res.json(new ApiResponse(200, null, 'Enrolled successfully'))
   } catch (err) { next(err) }
@@ -257,22 +338,64 @@ function parseISO8601Duration(durationString) {
   const seconds = parseInt(matches[3] || 0)
   return hours * 3600 + minutes * 60 + seconds
 }
-
 export async function getYoutubeMeta(req, res, next) {
   try {
     const { url } = req.query
     if (!url) throw new ApiError(400, 'YouTube URL required')
 
-    if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
-      throw new ApiError(400, 'Invalid YouTube URL')
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch (e) {
+      throw new ApiError(400, 'Invalid URL format');
     }
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-      }
-    })
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new ApiError(400, 'Invalid protocol');
+    }
+
+    // Block URLs that embed credentials — these are a primary SSRF bypass vector
+    // e.g. http://youtube.com@attacker.com resolves to attacker.com, not youtube.com
+    if (parsedUrl.username || parsedUrl.password) {
+      throw new ApiError(400, 'Credentials in URL are not allowed');
+    }
+
+    // Only accept exact-match YouTube hostnames (hostname is already decoded by URL parser)
+    const allowedHostnames = new Set(['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com']);
+    if (!allowedHostnames.has(parsedUrl.hostname)) {
+      throw new ApiError(400, 'Only YouTube URLs are allowed');
+    }
+
+    try {
+      await validateUrlForSsrf(url);
+    } catch (ssrfErr) {
+      throw new ApiError(400, ssrfErr.message);
+    }
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
+    let response;
+    try {
+      response = await fetch(parsedUrl.href, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+        }
+      })
+    } catch (fetchErr) {
+      clearTimeout(timeout)
+      throw new ApiError(400, 'Failed to connect to YouTube or request timed out')
+    } finally {
+      clearTimeout(timeout)
+    }
+
     if (!response.ok) throw new ApiError(400, 'Failed to fetch YouTube page')
+    
+    const contentLength = response.headers.get('content-length')
+    if (contentLength && parseInt(contentLength, 10) > 1024 * 1024) {
+      throw new ApiError(400, 'YouTube response content too large')
+    }
+
     const html = await response.text()
 
     // Title

@@ -197,20 +197,20 @@ export default function InstructorLiveLectures() {
 
   return (
     <PageLayout>
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Live Lectures</h1>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Schedule in-app sessions or link to Zoom / Google Meet.</p>
           </div>
-          <Button onClick={openNew}><Plus size={15} /> Schedule Lecture</Button>
+          <Button onClick={openNew} className="w-full sm:w-auto justify-center"><Plus size={15} /> Schedule Lecture</Button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 border-b" style={{ borderColor: 'var(--border-default)' }}>
+        <div className="flex gap-1 mb-6 border-b overflow-x-auto -webkit-overflow-scrolling-touch scrollbar-none pb-1" style={{ borderColor: 'var(--border-default)' }}>
           {[{ key: 'upcoming', label: 'Upcoming' }, { key: 'past', label: 'Past' }].map(({ key, label }) => (
             <button key={key} onClick={() => setTab(key)}
-              className="px-5 py-3 text-sm font-semibold transition-all"
+              className="px-5 py-3 text-sm font-semibold transition-all whitespace-nowrap"
               style={{ color: tab === key ? '#7C3AED' : 'var(--text-secondary)',
                 borderBottom: tab === key ? '2px solid #7C3AED' : '2px solid transparent', marginBottom: -1 }}>
               {label}
@@ -247,41 +247,49 @@ export default function InstructorLiveLectures() {
                     className="rounded-2xl p-5 flex flex-col gap-4"
                     style={{ background: 'var(--bg-surface)', border: lec.status === 'live' ? '1.5px solid rgba(16,185,129,0.4)' : '1px solid var(--border-default)' }}>
 
-                    <div className="flex gap-4 items-center">
-                      {/* Type icon */}
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ background: lec.status === 'live' ? 'rgba(16,185,129,0.14)' : lec.type === 'inapp' ? 'rgba(109,40,217,0.14)' : 'rgba(220,38,38,0.14)' }}>
-                        {lec.status === 'live' ? <Radio size={22} color="#10B981" />
-                          : lec.type === 'inapp' ? <Monitor size={22} color="#7C3AED" />
-                          : <Link2 size={22} color="#DC2626" />}
-                      </div>
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1 min-w-0">
+                        <div className="flex items-center gap-3">
+                          {/* Type icon */}
+                          <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                            style={{ background: lec.status === 'live' ? 'rgba(16,185,129,0.14)' : lec.type === 'inapp' ? 'rgba(109,40,217,0.14)' : 'rgba(220,38,38,0.14)' }}>
+                            {lec.status === 'live' ? <Radio size={22} color="#10B981" />
+                              : lec.type === 'inapp' ? <Monitor size={22} color="#7C3AED" />
+                              : <Link2 size={22} color="#DC2626" />}
+                          </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                          <h3 className="text-base font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{lec.title}</h3>
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                            style={{ background: lec.type === 'inapp' ? 'rgba(109,40,217,0.14)' : 'rgba(220,38,38,0.14)', color: lec.type === 'inapp' ? '#7C3AED' : '#DC2626' }}>
-                            {lec.type === 'inapp' ? 'In-App' : 'By Link'}
-                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-base font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{lec.title}</h3>
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                                style={{ background: lec.type === 'inapp' ? 'rgba(109,40,217,0.14)' : 'rgba(220,38,38,0.14)', color: lec.type === 'inapp' ? '#7C3AED' : '#DC2626' }}>
+                                {lec.type === 'inapp' ? 'In-App' : 'By Link'}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        {lec.description && <p className="text-sm mb-1.5 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{lec.description}</p>}
-                        <div className="flex flex-wrap items-center gap-4 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                          <span className="flex items-center gap-1.5"><Calendar size={13} /> {fmtDate(lec.scheduledAt)} at {fmtTime(lec.scheduledAt)}</span>
-                          <span className="flex items-center gap-1.5"><Clock size={13} /> {lec.duration} min</span>
-                          {lec.courseId && (
-                            <span className="px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(109,40,217,0.14)', color: '#7C3AED' }}>{lec.courseId.title}</span>
-                          )}
+
+                        <div className="flex-1 min-w-0 sm:ml-2">
+                          {lec.description && <p className="text-sm mb-1.5 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{lec.description}</p>}
+                          <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                            <span className="flex items-center gap-1.5"><Calendar size={13} /> {fmtDate(lec.scheduledAt)} at {fmtTime(lec.scheduledAt)}</span>
+                            <span className="flex items-center gap-1.5"><Clock size={13} /> {lec.duration} min</span>
+                            {lec.courseId && (
+                              <span className="px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(109,40,217,0.14)', color: '#7C3AED' }}>{lec.courseId.title}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end border-t lg:border-t-0 pt-3 lg:pt-0" style={{ borderColor: 'var(--border-default)' }}>
                         <Badge variant={STATUS_BADGE[lec.status] || 'gray'}>{STATUS_LABEL[lec.status] || lec.status}</Badge>
                         
                         {lec.status === 'ended' && (
                           <button
                             onClick={() => setExpandedLecId(isExpanded ? null : lec._id)}
-                            className="p-2 rounded-lg transition-all"
+                            className="p-2 rounded-lg transition-all touch-target flex items-center justify-center"
                             title="View Attendance"
                             style={{ background: isExpanded ? 'rgba(109,40,217,0.12)' : 'transparent' }}
                             onMouseEnter={e => !isExpanded && (e.currentTarget.style.background = 'rgba(109,40,217,0.12)')}
@@ -295,7 +303,7 @@ export default function InstructorLiveLectures() {
                         {lec.type === 'inapp' ? (
                           (lec.status === 'live' || lec.status === 'scheduled') && (
                             <button onClick={() => navigate(`/live/${lec._id}`)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all touch-target"
                               style={{ background: lec.status === 'live' ? 'rgba(16,185,129,0.14)' : 'rgba(109,40,217,0.14)', color: lec.status === 'live' ? '#10B981' : '#7C3AED',
                                 border: `1px solid ${lec.status === 'live' ? 'rgba(16,185,129,0.3)' : 'rgba(109,40,217,0.3)'}` }}>
                               <Monitor size={12} /> {lec.status === 'live' ? 'Open Room' : 'Preview'}
@@ -303,7 +311,7 @@ export default function InstructorLiveLectures() {
                           )
                         ) : (
                           <a href={lec.meetingUrl} target="_blank" rel="noopener noreferrer"
-                            className="p-2 rounded-lg transition-all" title="Open meeting link"
+                            className="p-2 rounded-lg transition-all touch-target flex items-center justify-center" title="Open meeting link"
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(16,185,129,0.12)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                             <ExternalLink size={15} color="#10B981" />
@@ -313,27 +321,27 @@ export default function InstructorLiveLectures() {
                         {/* Go live / End */}
                         {lec.status === 'scheduled' && (
                           <button onClick={() => handleStatusChange(lec, 'live')}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all touch-target"
                             style={{ background: 'rgba(16,185,129,0.14)', color: '#10B981', border: '1px solid rgba(16,185,129,0.3)' }}>
                             <Radio size={12} /> Go Live
                           </button>
                         )}
                         {lec.status === 'live' && (
                           <button onClick={() => handleStatusChange(lec, 'ended')}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all touch-target"
                             style={{ background: 'rgba(220,38,38,0.14)', color: '#DC2626', border: '1px solid rgba(220,38,38,0.3)' }}>
                             <CheckCircle2 size={12} /> End
                           </button>
                         )}
 
                         {lec.status !== 'ended' && (
-                          <button onClick={() => openEdit(lec)} className="p-2 rounded-lg transition-all" title="Edit"
+                          <button onClick={() => openEdit(lec)} className="p-2 rounded-lg transition-all touch-target flex items-center justify-center" title="Edit"
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(109,40,217,0.12)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                             <Edit2 size={15} color="#7C3AED" />
                           </button>
                         )}
-                        <button onClick={() => setDeleteId(lec._id)} className="p-2 rounded-lg transition-all" title="Delete"
+                        <button onClick={() => setDeleteId(lec._id)} className="p-2 rounded-lg transition-all touch-target flex items-center justify-center" title="Delete"
                           onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.12)'}
                           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                           <Trash2 size={15} color="#EF4444" />
@@ -363,41 +371,43 @@ export default function InstructorLiveLectures() {
                           </p>
                         ) : (
                           <div className="max-h-64 overflow-y-auto border rounded-xl" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
-                            <table className="w-full text-xs">
-                              <thead>
-                                <tr className="attendance-header-row">
-                                  <th className="text-left px-4 py-2.5 attendance-header-th">Student</th>
-                                  <th className="text-left px-4 py-2.5 attendance-header-th">Email</th>
-                                  <th className="text-left px-4 py-2.5 attendance-header-th">First Joined</th>
-                                  <th className="text-left px-4 py-2.5 attendance-header-th">Last Left</th>
-                                  <th className="text-left px-4 py-2.5 attendance-header-th">Total Duration</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {lec.attendance.map((att, idx) => {
-                                  const details = getAttendanceDetails(att, lec)
-                                  return (
-                                    <tr key={idx} className="border-b last:border-b-0" style={{ borderColor: 'var(--border-default)' }}>
-                                      <td className="px-4 py-2.5 font-bold" style={{ color: 'var(--text-primary)' }}>
-                                        {att.user?.fullName || 'Deleted User'}
-                                      </td>
-                                      <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
-                                        {att.user?.email || '—'}
-                                      </td>
-                                      <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
-                                        {details.firstJoined ? formatAttendanceTime(details.firstJoined) : '—'}
-                                      </td>
-                                      <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
-                                        {details.lastLeft ? formatAttendanceTime(details.lastLeft) : '—'}
-                                      </td>
-                                      <td className="px-4 py-2.5 font-semibold" style={{ color: 'var(--text-secondary)' }}>
-                                        {details.durationText}
-                                      </td>
-                                    </tr>
-                                  )
-                                })}
-                              </tbody>
-                            </table>
+                            <div className="table-responsive">
+                              <table className="w-full min-w-[560px] text-xs">
+                                <thead>
+                                  <tr className="attendance-header-row">
+                                    <th className="text-left px-4 py-2.5 attendance-header-th">Student</th>
+                                    <th className="text-left px-4 py-2.5 attendance-header-th">Email</th>
+                                    <th className="text-left px-4 py-2.5 attendance-header-th">First Joined</th>
+                                    <th className="text-left px-4 py-2.5 attendance-header-th">Last Left</th>
+                                    <th className="text-left px-4 py-2.5 attendance-header-th">Total Duration</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {lec.attendance.map((att, idx) => {
+                                    const details = getAttendanceDetails(att, lec)
+                                    return (
+                                      <tr key={idx} className="border-b last:border-b-0" style={{ borderColor: 'var(--border-default)' }}>
+                                        <td className="px-4 py-2.5 font-bold" style={{ color: 'var(--text-primary)' }}>
+                                          {att.user?.fullName || 'Deleted User'}
+                                        </td>
+                                        <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                          {att.user?.email || '—'}
+                                        </td>
+                                        <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                          {details.firstJoined ? formatAttendanceTime(details.firstJoined) : '—'}
+                                        </td>
+                                        <td className="px-4 py-2.5" style={{ color: 'var(--text-secondary)' }}>
+                                          {details.lastLeft ? formatAttendanceTime(details.lastLeft) : '—'}
+                                        </td>
+                                        <td className="px-4 py-2.5 font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                                          {details.durationText}
+                                        </td>
+                                      </tr>
+                                    )
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -415,14 +425,14 @@ export default function InstructorLiveLectures() {
             {/* Type toggle */}
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Session Type</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
                   { value: 'link',  icon: Link2,   label: 'External Link', sub: 'Zoom, Google Meet, Teams…', color: '#DC2626', bg: 'rgba(220,38,38,0.1)', border: 'rgba(220,38,38,0.3)' },
                   { value: 'inapp', icon: Monitor,  label: 'In-App Session', sub: 'Built-in live room',       color: '#7C3AED', bg: 'rgba(109,40,217,0.1)', border: 'rgba(109,40,217,0.3)' },
                 ].map(({ value, icon: Icon, label, sub, color, bg, border }) => (
                   <button type="button" key={value}
                     onClick={() => setForm(p => ({ ...p, type: value }))}
-                    className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all"
+                    className="flex items-center gap-3 p-3.5 rounded-xl text-left transition-all w-full"
                     style={{ border: `2px solid ${form.type === value ? color : 'var(--border-default)'}`,
                       background: form.type === value ? bg : 'var(--bg-muted)' }}>
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
@@ -448,7 +458,7 @@ export default function InstructorLiveLectures() {
               <Select value={form.courseId} onChange={v => setForm(p => ({ ...p, courseId: v }))} options={courseOptions} placeholder="No specific course" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-secondary)' }}>Date & Time *</label>
                 <input type="datetime-local" value={form.scheduledAt} onChange={e => setForm(p => ({ ...p, scheduledAt: e.target.value }))} className="input-field" required />

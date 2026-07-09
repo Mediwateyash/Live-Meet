@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Search, BookOpen, ChevronDown, LogOut, User, LayoutDashboard, GraduationCap, Heart, Bell, Sun, Moon, Video } from 'lucide-react'
+import { Search, BookOpen, ChevronDown, LogOut, User, LayoutDashboard, GraduationCap, Heart, Bell, Sun, Moon, Video, Mail, Menu, X } from 'lucide-react'
+
 import { motion, AnimatePresence } from 'framer-motion'
 import useAuthStore from '../../store/authStore.js'
 import useUIStore from '../../store/uiStore.js'
@@ -19,6 +20,7 @@ export default function Navbar() {
   const [search, setSearch] = useState('')
   const [profileOpen, setProfileOpen] = useState(false)
   const [logoutModal, setLogoutModal] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -45,20 +47,20 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="navbar h-16 px-6 flex items-center justify-between gap-6 backdrop-blur-md sticky top-0 z-50 border-b" style={{ borderColor: 'rgba(124, 58, 237, 0.1)' }}>
+      <nav aria-label="Main Navigation" className="navbar h-16 px-4 md:px-6 flex items-center justify-between gap-4 md:gap-6 backdrop-blur-md sticky top-0 z-50 border-b pt-safe" style={{ borderColor: 'rgba(124, 58, 237, 0.1)' }}>
         {/* Left: Logo + Browse */}
-        <div className="flex items-center gap-6 shrink-0">
+        <div className="flex items-center gap-4 md:gap-6 shrink-0">
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#7C3AED' }}>
               <GraduationCap size={20} color="white" />
             </div>
-            <span className="font-extrabold text-xl tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+            <span className="font-extrabold text-xl tracking-tight animate-fade-in" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
               Zenius AI
             </span>
           </Link>
           <Link
             to="/browse"
-            className="px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-[#7C3AED]"
+            className="hidden md:inline-block px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-[#7C3AED]"
             style={{ color: location.pathname === '/browse' ? '#7C3AED' : 'var(--text-secondary)' }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -90,23 +92,24 @@ export default function Navbar() {
         </form>
 
         {/* Right: Auth area */}
-        <div className="flex items-center gap-4 shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           {/* Dark mode toggle */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-xl transition-all"
+            className="p-2 rounded-xl transition-all touch-target flex items-center justify-center"
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            aria-label={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             style={{ color: 'var(--text-secondary)' }}
           >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           {isAuthenticated ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <Link
                 to="/my-learning"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-[#7C3AED]"
+                className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:text-[#7C3AED]"
                 style={{ color: location.pathname === '/my-learning' ? '#7C3AED' : 'var(--text-secondary)' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -117,8 +120,9 @@ export default function Navbar() {
 
               <Link
                 to="/my-learning?tab=wishlist"
-                className="relative p-2 rounded-xl transition-all"
+                className="hidden md:inline-flex relative p-2 rounded-xl transition-all touch-target items-center justify-center"
                 title="Wishlist"
+                aria-label="Wishlist"
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 style={{ color: location.pathname === '/my-learning' && location.search.includes('wishlist') ? '#7C3AED' : 'var(--text-secondary)' }}
@@ -128,10 +132,13 @@ export default function Navbar() {
 
               <NotificationBell />
 
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <button
                   onClick={() => setProfileOpen(p => !p)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all border border-transparent"
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl transition-all border border-transparent touch-target"
+                  aria-label="User Profile Menu"
+                  aria-haspopup="true"
+                  aria-expanded={profileOpen}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   style={{ borderColor: profileOpen ? 'rgba(124, 58, 237, 0.15)' : 'transparent' }}
@@ -170,6 +177,13 @@ export default function Navbar() {
                       <DropItem to="/notifications" icon={Bell} label="Notifications" onClick={() => setProfileOpen(false)} />
                       <DropItem to={getDashboardLink()} icon={LayoutDashboard} label="Dashboard" onClick={() => setProfileOpen(false)} />
                       <DropItem to="/profile" icon={User} label="Profile" onClick={() => setProfileOpen(false)} />
+                      <DropItem
+                        to={user?.role === 'admin' ? '/admin/support' : '/contact'}
+                        icon={Mail}
+                        label={user?.role === 'admin' ? 'Student Feedback' : 'Contact Us'}
+                        onClick={() => setProfileOpen(false)}
+                      />
+
                       {user?.role === 'student' && (
                         <DropItem to="/become-instructor" icon={GraduationCap} label="Teach on Zenius" onClick={() => setProfileOpen(false)} />
                       )}
@@ -191,13 +205,144 @@ export default function Navbar() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2.5">
+            <div className="hidden md:flex items-center gap-2.5">
               <Button variant="outline" size="sm" onClick={() => openAuthModal('login')}>Log in</Button>
               <Button variant="primary" size="sm" onClick={() => openAuthModal('register')}>Sign up</Button>
             </div>
           )}
+
+          {/* Hamburger toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            className="md:hidden p-2 rounded-xl transition-all touch-target flex items-center justify-center"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            title="Toggle Menu"
+            aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.nav
+            aria-label="Mobile Navigation"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="md:hidden border-b overflow-hidden"
+            style={{
+              background: 'var(--bg-surface)',
+              borderColor: 'var(--border-purple)',
+            }}
+          >
+            <div className="px-4 py-4 flex flex-col gap-4">
+              {/* Mobile Search */}
+              <form onSubmit={(e) => { handleSearch(e); setMobileMenuOpen(false) }} className="w-full">
+                <div className="relative w-full">
+                  <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2" color="var(--text-secondary)" />
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search courses..."
+                    className="w-full pl-11 pr-4 py-2.5 rounded-xl text-base outline-none border font-medium placeholder:text-[#94A3B8]"
+                    style={{
+                      background: 'var(--bg-muted)',
+                      borderColor: 'var(--border-default)',
+                      color: 'var(--text-primary)',
+                    }}
+                  />
+                </div>
+              </form>
+
+              {/* Mobile Navigation Links */}
+              <div className="flex flex-col gap-1">
+                <MobileNavItem to="/browse" label="Browse Courses" onClick={() => setMobileMenuOpen(false)} icon={BookOpen} />
+                {isAuthenticated ? (
+                  <>
+                    <MobileNavItem to="/my-learning" label="My Learning" onClick={() => setMobileMenuOpen(false)} icon={BookOpen} />
+                    <MobileNavItem to="/my-learning?tab=wishlist" label="Wishlist" onClick={() => setMobileMenuOpen(false)} icon={Heart} />
+                    <MobileNavItem to="/live-lectures" label="Live Lectures" onClick={() => setMobileMenuOpen(false)} icon={Video} />
+                    <MobileNavItem to="/notifications" label="Notifications" onClick={() => setMobileMenuOpen(false)} icon={Bell} />
+                    <MobileNavItem to={getDashboardLink()} label="Dashboard" onClick={() => setMobileMenuOpen(false)} icon={LayoutDashboard} />
+                    <MobileNavItem to="/profile" label="Profile Settings" onClick={() => setMobileMenuOpen(false)} icon={User} />
+                    <MobileNavItem
+                      to={user?.role === 'admin' ? '/admin/support' : '/contact'}
+                      label={user?.role === 'admin' ? 'Student Feedback' : 'Contact Us'}
+                      onClick={() => setMobileMenuOpen(false)}
+                      icon={Mail}
+                    />
+                    {user?.role === 'student' && (
+                      <MobileNavItem to="/become-instructor" label="Teach on Zenius" onClick={() => setMobileMenuOpen(false)} icon={GraduationCap} />
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <MobileNavItem
+                      to="/contact"
+                      label="Contact Us"
+                      onClick={() => setMobileMenuOpen(false)}
+                      icon={Mail}
+                    />
+                  </>
+                )}
+              </div>
+
+              {/* User Status / Action Buttons */}
+              <div className="border-t pt-4" style={{ borderColor: 'var(--border-default)' }}>
+                {isAuthenticated ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3 px-2">
+                      {user?.avatar ? (
+                        <img src={user.avatar} alt={user.fullName} className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-base font-bold" style={{ background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)' }}>
+                          {user?.fullName?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{user?.fullName}</p>
+                        <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{user?.email}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setMobileMenuOpen(false); setLogoutModal(true) }}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-colors mt-2"
+                      style={{ color: '#FFFFFF', background: '#EF4444' }}
+                    >
+                      <LogOut size={16} />
+                      Log out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-center py-3 text-sm font-semibold rounded-xl"
+                      onClick={() => { setMobileMenuOpen(false); openAuthModal('login') }}
+                    >
+                      Log in
+                    </Button>
+                    <Button
+                      variant="primary"
+                      className="w-full justify-center py-3 text-sm font-semibold rounded-xl"
+                      onClick={() => { setMobileMenuOpen(false); openAuthModal('register') }}
+                    >
+                      Sign up
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
 
       {/* Logout confirmation modal */}
       <Modal isOpen={logoutModal} onClose={() => setLogoutModal(false)} title="Log out" size="sm">
@@ -224,6 +369,25 @@ function DropItem({ to, icon: Icon, label, onClick }) {
       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
     >
       <Icon size={15} />
+      {label}
+    </Link>
+  )
+}
+
+function MobileNavItem({ to, label, onClick, icon: Icon }) {
+  const location = useLocation()
+  const isActive = location.pathname === to || (to.includes('?') && location.pathname + location.search === to)
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="flex items-center gap-3 px-3 py-3 rounded-xl text-base font-semibold transition-all touch-target"
+      style={{
+        color: isActive ? '#7C3AED' : 'var(--text-secondary)',
+        background: isActive ? 'var(--bg-hover)' : 'transparent',
+      }}
+    >
+      <Icon size={18} />
       {label}
     </Link>
   )

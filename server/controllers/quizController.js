@@ -1,5 +1,6 @@
 import Quiz from '../models/Quiz.js';
 import MCQ from '../models/MCQ.js';
+import Course from '../models/Course.js';
 
 export const createQuiz = async (req, res) => {
     try {
@@ -7,6 +8,14 @@ export const createQuiz = async (req, res) => {
 
         if (!title || !mcqIds || mcqIds.length === 0 || !timer || !courseId) {
             return res.status(400).json({ message: 'Please provide title, mcqs, timer, and courseId' });
+        }
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+        if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized to add quiz to this course' });
         }
 
         const visibility = req.user.role === 'student' ? 'private' : 'public';
@@ -28,40 +37,51 @@ export const createQuiz = async (req, res) => {
 
 export const getQuizzes = async (req, res) => {
     try {
-        // Teacher sees their own, Students see public + their own private ones
         let filter = {};
         if (req.query.courseId) {
             filter.courseId = req.query.courseId;
         }
-        if (req.user.role === 'instructor' || req.user.role === 'teacher') {
+        if (req.user.role === 'instructor' || req.user.role === 'admin') {
             filter.createdBy = req.user._id;
         } else if (req.user.role === 'student') {
-            if (!req.query.courseId) {
-                // If fetching globally, only show quizzes for enrolled courses
-                // Or private quizzes created by the student (which might not have a courseId)
-                filter.$or = [
-                    { 
-                        courseId: { $in: req.user.enrolledCourses || [] },
-                        visibility: 'public' 
-                    },
-                    { 
-                        courseId: { $in: req.user.enrolledCourses || [] },
-                        visibility: { $exists: false } 
-                    },
-                    { visibility: 'private', createdBy: req.user._id }
-                ];
-            } else {
-                // If fetching for a specific course, just check visibility
-                filter.$or = [
-                    { visibility: 'public' },
-                    { visibility: { $exists: false } }, // Fallback for older quizzes
-                    { visibility: 'private', createdBy: req.user._id }
-                ];
+            const enrolledCourses = req.user.enrolledCourses || [];
+            if (req.query.courseId) {
+                if (!enrolledCourses.some(id => id.toString() === req.query.courseId.toString())) {
+                    return res.status(403).json({ message: 'Not enrolled in this course' });
+                }
             }
+            filter.$or = [
+                { 
+                    courseId: { $in: enrolledCourses },
+                    visibility: 'public' 
+                },
+                { visibility: 'private', createdBy: req.user._id }
+            ];
         }
-        const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
-        console.log(`[getQuizzes] User Role: ${req.user.role}, Filter: ${JSON.stringify(filter)}, Found: ${quizzes.length}`);
-        res.json(quizzes);
+        
+        let quizzesQuery = Quiz.find(filter).sort({ createdAt: -1 });
+        if (req.user.role === 'student') {
+            quizzesQuery = quizzesQuery.populate('mcqIds', '-correctAnswer -explanation');
+        } else {
+            quizzesQuery = quizzesQuery.populate('mcqIds');
+        }
+        
+        const quizzes = await quizzesQuery;
+        
+        const quizzesJSON = quizzes.map(q => {
+            const quizObj = q.toObject();
+            if (req.user.role === 'student' && quizObj.mcqIds) {
+                quizObj.mcqIds.forEach(mcq => {
+                    if (mcq) {
+                        delete mcq.correctAnswer;
+                        delete mcq.explanation;
+                    }
+                });
+            }
+            return quizObj;
+        });
+
+        res.json(quizzesJSON);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -72,7 +92,16 @@ export const getQuizById = async (req, res) => {
         const quiz = await Quiz.findById(req.params.id).populate('mcqIds', '-correctAnswer -explanation'); 
         // Hide correct answer and explanation from the quiz view for safety!
         if (quiz) {
-            res.json(quiz);
+            const quizObj = quiz.toObject();
+            if (req.user.role === 'student' && quizObj.mcqIds) {
+                quizObj.mcqIds.forEach(mcq => {
+                    if (mcq) {
+                        delete mcq.correctAnswer;
+                        delete mcq.explanation;
+                    }
+                });
+            }
+            res.json(quizObj);
         } else {
             res.status(404).json({ message: 'Quiz not found' });
         }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -29,9 +29,9 @@ const registerSchema = z.object({
   path: ['confirmPassword'],
 })
 
-/* ── Login form ── */
 function LoginForm({ onSuccess, onClose, switchToRegister }) {
   const { setUser } = useAuthStore()
+  const navigate = useNavigate()
   const [showPwd, setShowPwd] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
     resolver: zodResolver(loginSchema),
@@ -44,7 +44,15 @@ function LoginForm({ onSuccess, onClose, switchToRegister }) {
       toast.success(`Welcome back, ${data.data.fullName.split(' ')[0]}!`)
       reset()
       onClose()
-      onSuccess?.()
+      
+      const user = data.data
+      if (user?.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true })
+      } else if (user?.role === 'instructor') {
+        navigate('/instructor/dashboard', { replace: true })
+      } else {
+        onSuccess?.()
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid credentials')
     }
@@ -96,12 +104,10 @@ function LoginForm({ onSuccess, onClose, switchToRegister }) {
 function RegisterForm({ onSuccess, onClose, switchToLogin }) {
   const { setUser } = useAuthStore()
   const [showPwd, setShowPwd] = useState(false)
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: { role: 'student' }
   })
-  
-  const currentRole = watch('role')
 
   const onSubmit = async ({ fullName, email, password, role }) => {
     try {
@@ -118,16 +124,7 @@ function RegisterForm({ onSuccess, onClose, switchToLogin }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="flex gap-2">
-        <button type="button" onClick={() => setValue('role', 'student')} 
-           className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${currentRole === 'student' ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--bg-muted)]'}`}>
-           Student
-        </button>
-        <button type="button" onClick={() => setValue('role', 'instructor')} 
-           className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${currentRole === 'instructor' ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-default)] hover:bg-[var(--bg-muted)]'}`}>
-           Teacher
-        </button>
-      </div>
+      <input type="hidden" {...register('role')} value="student" />
       <Input
         label="Full Name"
         placeholder="Your name"
@@ -242,17 +239,20 @@ export default function LoginModal({ isOpen, onClose, onSuccess, hint, defaultTa
               position:'relative',
               width:'100%',
               maxWidth: tab === 'register' ? 440 : 420,
+              maxHeight: '90vh',
+              overflowY: 'auto',
               background:'var(--bg-surface)',
               border:'1px solid var(--border-purple)',
               borderRadius:24,
-              padding:'32px 32px 28px',
+              padding:'clamp(16px, 5vw, 32px)',
               boxShadow:'0 24px 64px rgba(109,40,217,0.2), 0 4px 24px rgba(0,0,0,0.12)',
-              transition:'max-width 0.25s ease',
+              transition:'max-width 0.25s ease, padding 0.25s ease',
             }}
           >
             {/* Close */}
             <button onClick={handleClose}
-              style={{ position:'absolute', top:16, right:16, background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', display:'flex', borderRadius:8, padding:4 }}
+              className="touch-target flex items-center justify-center"
+              style={{ position:'absolute', top:12, right:12, background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', display:'inline-flex', borderRadius:8, padding:6 }}
               onMouseEnter={e => e.currentTarget.style.background='var(--bg-hover)'}
               onMouseLeave={e => e.currentTarget.style.background='none'}>
               <X size={17}/>

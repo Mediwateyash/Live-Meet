@@ -7,10 +7,12 @@ import {
 } from '../controllers/adminController.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { requireRole }   from '../middleware/role.js'
+import { adminAuditLogger } from '../middleware/adminAuditLogger.js'
 
 const router = Router()
 
-router.use(authMiddleware, requireRole('admin'))
+router.use(authMiddleware, requireRole('admin'), adminAuditLogger)
+
 
 router.get ('/dashboard',                           getDashboard)
 router.get ('/instructor-requests',                 getRequests)

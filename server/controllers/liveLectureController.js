@@ -58,8 +58,17 @@ export async function createLecture(req, res, next) {
     if (new Date(scheduledAt) <= new Date()) throw new ApiError(400, 'Scheduled date must be in the future')
 
     const lectureType = type === 'inapp' ? 'inapp' : 'link'
-    if (lectureType === 'link' && !meetingUrl?.trim()) {
-      throw new ApiError(400, 'meetingUrl is required for external-link lectures')
+    let finalMeetingUrl = ''
+    if (lectureType === 'link') {
+      if (!meetingUrl?.trim()) {
+        throw new ApiError(400, 'meetingUrl is required for external-link lectures')
+      }
+      try {
+        new URL(meetingUrl.trim())
+      } catch (e) {
+        throw new ApiError(400, 'Invalid meeting URL format')
+      }
+      finalMeetingUrl = meetingUrl.trim()
     }
 
     let instructorId = req.user._id
@@ -81,7 +90,7 @@ export async function createLecture(req, res, next) {
       scheduledAt,
       duration: Number(duration) || 60,
       type: lectureType,
-      meetingUrl: lectureType === 'link' ? meetingUrl.trim() : '',
+      meetingUrl: finalMeetingUrl,
     })
 
     const populated = await LiveLecture.findById(lecture._id)
@@ -128,7 +137,16 @@ export async function updateLecture(req, res, next) {
       lecture.scheduledAt = scheduledAt
     }
     if (duration) lecture.duration = Number(duration)
-    if (meetingUrl !== undefined) lecture.meetingUrl = meetingUrl.trim()
+    if (meetingUrl !== undefined) {
+      if (meetingUrl.trim() !== '') {
+        try {
+          new URL(meetingUrl.trim())
+        } catch (e) {
+          throw new ApiError(400, 'Invalid meeting URL format')
+        }
+      }
+      lecture.meetingUrl = meetingUrl.trim()
+    }
 
     if (type && ['link', 'inapp'].includes(type)) {
       lecture.type = type
@@ -262,6 +280,16 @@ export async function recordAttendance(req, res, next) {
     }
 
     const studentId = req.user._id.toString()
+
+    // Verify enrollment to prevent attendance spoofing
+    if (lecture.courseId) {
+      const course = await Course.findById(lecture.courseId)
+      if (!course) throw new ApiError(404, 'Linked course not found')
+      const enrolled = course.enrolledStudents?.some(
+        id => id.toString() === studentId
+      )
+      if (!enrolled) throw new ApiError(403, 'You must be enrolled in this course to record attendance')
+    }
     let attRecord = lecture.attendance?.find(att => att.user?.toString() === studentId)
     if (!attRecord) {
       lecture.attendance = lecture.attendance || []

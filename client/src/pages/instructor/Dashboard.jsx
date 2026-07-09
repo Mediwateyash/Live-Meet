@@ -30,42 +30,42 @@ export default function InstructorDashboard() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Instructor Dashboard
           </h1>
-          <Button onClick={() => navigate('/instructor/courses/new')}>
+          <Button onClick={() => navigate('/instructor/courses/new')} className="touch-target">
             <Plus size={16} /> New Course
           </Button>
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
           {loading ? [...Array(4)].map((_, i) => <SkeletonStat key={i} />) : cards.map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="stat-card">
+            <div key={label} className="stat-card p-4 sm:p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="stat-icon" style={{ background: `${color}18`, color }}>
                   <Icon size={20} />
                 </div>
                 <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{label}</span>
               </div>
-              <div className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>{value}</div>
+              <div className="text-xl sm:text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>{value}</div>
             </div>
           ))}
         </div>
 
         {/* Revenue chart */}
-        <div className="rounded-2xl p-6 mb-8" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-purple)' }}>
+        <div className="rounded-2xl p-4 sm:p-6 mb-8" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-purple)' }}>
           <h2 className="text-lg font-semibold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Revenue — Last 30 days
           </h2>
           {stats?.revenueChart?.some(d => d.revenue > 0) ? (
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="99%" height={200}>
               <LineChart data={stats.revenueChart}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-default)" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} interval={4} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={v => `₹${v}`} />
+                <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} interval={4} />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} tickFormatter={v => `₹${v}`} />
                 <Tooltip
                   formatter={(v) => [`₹${v}`, 'Revenue']}
                   contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-purple)', borderRadius: 10, color: 'var(--text-primary)', fontSize: 12 }}
@@ -81,14 +81,14 @@ export default function InstructorDashboard() {
         </div>
 
         {/* Quick links */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
             { label: 'Create New Course', icon: Plus, to: '/instructor/courses/new', variant: 'primary' },
             { label: 'Manage Courses',    icon: BookOpen, to: '/instructor/courses', variant: 'outline' },
             { label: 'Student Results',   icon: TrendingUp, to: '/instructor/quizzes/results', variant: 'outline' },
             { label: 'View Analytics',    icon: BarChart2, to: '/instructor/courses', variant: 'outline' },
           ].map(({ label, icon: Icon, to, variant }) => (
-            <Button key={label} variant={variant} className="w-full justify-center gap-2" onClick={() => navigate(to)}>
+            <Button key={label} variant={variant} className="w-full justify-center gap-2 touch-target" onClick={() => navigate(to)}>
               <Icon size={16} /> {label}
             </Button>
           ))}

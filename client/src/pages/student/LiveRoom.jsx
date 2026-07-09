@@ -394,6 +394,7 @@ export default function LiveRoom() {
     const socket = io(SERVER_URL, { 
       withCredentials: true, 
       transports: ['websocket', 'polling'],
+      path: '/api/socket.io',
       auth: { token: localStorage.getItem('token') || '' }
     })
     socketRef.current = socket
@@ -895,7 +896,14 @@ export default function LiveRoom() {
       )}
 
       {/* ── HEADER ── */}
-      <div className="ds-classroom-header" style={{ padding:'0 20px', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, height:60 }}>
+      <div className="ds-classroom-header" style={{
+        padding: 'env(safe-area-inset-top, 0px) 20px 0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexShrink: 0,
+        height: 'calc(60px + env(safe-area-inset-top, 0px))'
+      }}>
         <div style={{ display:'flex', alignItems:'center', gap:12, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#7C3AED' }}>
@@ -1077,7 +1085,17 @@ export default function LiveRoom() {
           </div>
 
           {/* ── DOCK BAR ── */}
-          <div className="ds-glass-dock" style={{ padding:isMobile?'12px 8px':'12px 24px', display:'flex', alignItems:'center', justifyContent:'center', gap:isMobile?6:10, flexShrink:0, flexWrap:'wrap' }}>
+          <div className="ds-glass-dock" style={{
+            padding: isMobile 
+              ? '12px 8px calc(12px + env(safe-area-inset-bottom, 0px))' 
+              : '12px 24px calc(12px + env(safe-area-inset-bottom, 0px))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: isMobile ? 6 : 10,
+            flexShrink: 0,
+            flexWrap: 'wrap'
+          }}>
             <DockBtn onClick={toggleMic}    active={isMicOn}        micActive={isMicOn} icon={isMicOn?<Mic size={22}/>:<MicOff size={22}/>}      label="Mic" />
             <DockBtn onClick={toggleCamera} active={isCameraOn}                         icon={isCameraOn?<Video size={22}/>:<VideoOff size={22}/>} label="Camera" />
             <DockBtn onClick={toggleScreen} active={isScreenSharing}                    icon={isScreenSharing?<Monitor size={22}/>:<MonitorOff size={22}/>} label="Screen" />
@@ -1613,7 +1631,9 @@ function PanelHeader({ title, onClose, extra }) {
       <span style={{ fontSize:14, fontWeight:700, color:'#fff' }}>{title}</span>
       <div style={{ display:'flex', alignItems:'center', gap:6 }}>
         {extra}
-        <button onClick={onClose} style={{ background:'none', border:'none', color:'#71717A', cursor:'pointer', display:'flex' }}><X size={15}/></button>
+        <button onClick={onClose} className="touch-target flex items-center justify-center rounded-lg hover:bg-zinc-800 transition-colors" style={{ background:'none', border:'none', color:'#71717A', cursor:'pointer' }}>
+          <X size={16}/>
+        </button>
       </div>
     </div>
   )

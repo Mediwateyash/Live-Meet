@@ -8,7 +8,11 @@ import Input from '../../components/ui/Input.jsx'
 import toast from 'react-hot-toast'
 
 export default function ResetPassword() {
+  // Token is sent as a URL fragment (#token=...) so it never leaves the browser to servers or logs
+  // Falls back to query string for legacy reset links that may still be in user inboxes
   const token = new URLSearchParams(window.location.hash.slice(1)).get('token')
+    || new URLSearchParams(window.location.search).get('token')
+
   const navigate  = useNavigate()
   const [loading, setLoading] = useState(false)
   const [form,    setForm]    = useState({ password: '', confirmPassword: '' })

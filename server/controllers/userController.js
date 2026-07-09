@@ -1,16 +1,25 @@
 import User from '../models/User.js'
+import Course from '../models/Course.js'
+import mongoose from 'mongoose'
 import InstructorRequest from '../models/InstructorRequest.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { validatePassword } from '../utils/passwordValidator.js'
+import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
+import { clearTokenCookies } from '../utils/generateToken.js'
 
 export async function getProfile(req, res, next) {
   try {
+    // Check authorization BEFORE querying DB to prevent user enumeration
     if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin') {
       throw new ApiError(403, 'Access denied')
     }
-    const user = await User.findById(req.params.id).select('-password -refreshToken -resetPasswordToken')
-    if (!user) throw new ApiError(404, 'User not found')
+    let selectFields = '-password -refreshToken -resetPasswordToken -resetPasswordExpires';
+    if (req.user._id.toString() !== req.params.id) {
+      selectFields += ' -enrolledCourses -wishlist';
+    }
+    const user = await User.findById(req.params.id).select(selectFields)
+    if (!user) throw new ApiError(403, 'Access denied')
     res.json(new ApiResponse(200, user))
   } catch (err) { next(err) }
 }
@@ -25,7 +34,10 @@ export async function updateProfile(req, res, next) {
       : typeof raw === 'string' && raw.trim()
         ? raw.split(',').map(s => s.trim()).filter(Boolean)
         : undefined
-    const update = { fullName, bio, avatar, linkedin, portfolio, phone, department }
+
+    const uploadedAvatar = await uploadBase64Image(avatar, 'zenius/avatars')
+
+    const update = { fullName, bio, avatar: uploadedAvatar, linkedin, portfolio, phone, department }
     if (expertise !== undefined) update.expertise = expertise
     const user = await User.findByIdAndUpdate(
       req.user._id,
@@ -58,7 +70,10 @@ export async function becomeInstructor(req, res, next) {
 
 export async function getRequestStatus(req, res, next) {
   try {
-    const request = await InstructorRequest.findOne({ user: req.user._id }).sort({ createdAt: -1 })
+    const request = await InstructorRequest
+      .findOne({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .select('status createdAt reviewedAt')  // Redact admin remarks, reviewer ID, personal fields
     res.json(new ApiResponse(200, request))
   } catch (err) { next(err) }
 }
@@ -81,18 +96,36 @@ export async function getWishlist(req, res, next) {
 
 export async function toggleWishlist(req, res, next) {
   try {
-    const user     = await User.findById(req.user._id)
     const courseId = req.params.courseId
-    const idx      = user.wishlist.findIndex(id => id.toString() === courseId.toString())
-    if (idx > -1) {
-      user.wishlist.splice(idx, 1)
-    } else {
-      user.wishlist.push(courseId)
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      throw new ApiError(400, 'Invalid course ID')
     }
-    await user.save({ validateBeforeSave: false })
-    res.json(new ApiResponse(200, user.wishlist, 'Wishlist updated'))
+
+    const courseExists = await Course.exists({ _id: courseId })
+    if (!courseExists) {
+      throw new ApiError(404, 'Course not found')
+    }
+
+    const user = await User.findById(req.user._id).select('wishlist')
+    if (!user) {
+      throw new ApiError(404, 'User not found')
+    }
+
+    const isWishlisted = user.wishlist.some(id => id.toString() === courseId.toString())
+    const updateQuery = isWishlisted 
+      ? { $pull: { wishlist: courseId } } 
+      : { $addToSet: { wishlist: courseId } }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      updateQuery,
+      { new: true, select: 'wishlist' }
+    )
+
+    res.json(new ApiResponse(200, updatedUser.wishlist, 'Wishlist updated'))
   } catch (err) { next(err) }
 }
+
 
 export async function updatePassword(req, res, next) {
   try {
@@ -114,6 +147,24 @@ export async function updatePassword(req, res, next) {
     await user.save()
 
     res.json(new ApiResponse(200, null, 'Password updated successfully'))
+  } catch (err) { next(err) }
+}
+
+export async function deleteProfile(req, res, next) {
+  try {
+    const userId = req.user._id
+    const user = await User.findById(userId)
+    if (!user) {
+      throw new ApiError(404, 'User not found')
+    }
+    if (user.role === 'admin') {
+      throw new ApiError(400, 'Admin accounts cannot be deleted directly')
+    }
+
+    await User.findByIdAndDelete(userId)
+    clearTokenCookies(res)
+
+    res.json(new ApiResponse(200, null, 'Account deleted permanently'))
   } catch (err) { next(err) }
 }
 

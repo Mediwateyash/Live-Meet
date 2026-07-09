@@ -84,18 +84,18 @@ export default function AdminTestimonials() {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Platform Reviews
           </h1>
-          <Button onClick={openAdd} className="flex items-center gap-2">
+          <Button onClick={openAdd} className="flex items-center gap-2 w-full sm:w-auto justify-center">
             <Plus size={18} /> Add Review
           </Button>
         </div>
 
         {/* Search */}
-        <div className="mb-6 relative max-w-sm">
+        <div className="mb-6 relative w-full max-w-sm">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
@@ -113,48 +113,100 @@ export default function AdminTestimonials() {
             <p className="text-gray-500 font-medium">No reviews found.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-card border" style={{ borderColor: 'var(--border-default)' }}>
-            <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 border-b" style={{ borderColor: 'var(--border-purple)' }}>
-                <tr>
-                  <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Author</th>
-                  <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Role</th>
-                  <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Content</th>
-                  <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Rating</th>
-                  <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y" style={{ borderColor: 'var(--border-default)' }}>
-                {filtered.map(t => (
-                  <tr key={t._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 font-medium" style={{ color: 'var(--text-primary)' }}>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
-                          {t.avatar || t.author.charAt(0)}
-                        </div>
-                        {t.author}
+          <>
+            {/* Desktop Table View */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-card border hidden md:block" style={{ borderColor: 'var(--border-default)' }}>
+              <div className="table-responsive">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead className="bg-gray-50 border-b" style={{ borderColor: 'var(--border-purple)' }}>
+                    <tr>
+                      <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Author</th>
+                      <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Role</th>
+                      <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Content</th>
+                      <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Rating</th>
+                      <th className="px-6 py-4 font-semibold text-purple-800 uppercase tracking-wider text-xs">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y" style={{ borderColor: 'var(--border-default)' }}>
+                    {filtered.map(t => (
+                      <tr key={t._id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 font-medium" style={{ color: 'var(--text-primary)' }}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
+                              {t.avatar || t.author.charAt(0)}
+                            </div>
+                            {t.author}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>{t.role}</td>
+                        <td className="px-6 py-4">
+                          <p className="line-clamp-2 w-64 text-gray-600" title={t.content}>{t.content}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex text-yellow-400">
+                            {[...Array(t.rating || 5)].map((_, i) => <Star key={i} size={14} className="fill-current" />)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => openEdit(t)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg touch-target flex items-center justify-center"><Edit2 size={16} /></button>
+                            <button onClick={() => setDeleteModal(t)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg touch-target flex items-center justify-center"><Trash2 size={16} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Stacked Card View */}
+            <div className="space-y-4 md:hidden">
+              {filtered.map(t => (
+                <div 
+                  key={t._id}
+                  className="rounded-2xl p-4 border flex flex-col gap-3 bg-white shadow-sm"
+                  style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold shrink-0">
+                        {t.avatar || t.author.charAt(0)}
                       </div>
-                    </td>
-                    <td className="px-6 py-4" style={{ color: 'var(--text-secondary)' }}>{t.role}</td>
-                    <td className="px-6 py-4">
-                      <p className="line-clamp-2 w-64 text-gray-600" title={t.content}>{t.content}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex text-yellow-400">
-                        {[...Array(t.rating || 5)].map((_, i) => <Star key={i} size={14} className="fill-current" />)}
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{t.author}</p>
+                        <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{t.role}</p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => openEdit(t)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Edit2 size={16} /></button>
-                        <button onClick={() => setDeleteModal(t)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <div className="flex text-yellow-400 shrink-0">
+                      {[...Array(t.rating || 5)].map((_, i) => <Star key={i} size={12} className="fill-current" />)}
+                    </div>
+                  </div>
+
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                    {t.content}
+                  </p>
+
+                  <div className="flex gap-2 border-t pt-3" style={{ borderColor: 'var(--border-default)' }}>
+                    <button
+                      onClick={() => openEdit(t)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-[#F0EEFF] transition-all touch-target"
+                      style={{ color: '#7C3AED', borderColor: 'var(--border-purple)', background: 'var(--bg-surface)' }}
+                    >
+                      <Edit2 size={14} /> Edit
+                    </button>
+                    <button
+                      onClick={() => setDeleteModal(t)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold hover:bg-red-50 transition-all touch-target"
+                      style={{ color: '#EF4444', borderColor: 'rgba(239,68,68,0.2)', background: 'var(--bg-surface)' }}
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Add/Edit Modal */}

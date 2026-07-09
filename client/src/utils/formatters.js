@@ -15,6 +15,17 @@ export function formatDate(date) {
   return new Intl.DateTimeFormat('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(date))
 }
 
+export function formatDateTime(date) {
+  return new Intl.DateTimeFormat('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).format(new Date(date))
+}
+
 export function formatRelativeTime(date) {
   const diff = Date.now() - new Date(date).getTime()
   const mins = Math.floor(diff / 60000)

@@ -5,9 +5,9 @@ import { requireRole as authorize } from '../middleware/role.js';
 
 const router = express.Router();
 
-router.post('/create', protect, authorize('instructor', 'admin', 'student'), createQuiz);
+router.post('/create', protect, authorize('instructor', 'admin'), createQuiz);
 router.get('/', protect, getQuizzes);
 router.get('/:id', protect, getQuizById);
-router.delete('/:id', protect, authorize('instructor', 'admin', 'student'), deleteQuiz);
+router.delete('/:id', protect, authorize('instructor', 'admin'), deleteQuiz);
 
 export default router;

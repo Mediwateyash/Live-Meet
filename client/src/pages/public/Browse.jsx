@@ -61,7 +61,10 @@ export default function Browse() {
   return (
     <PageLayout>
       {/* ── outer container: 1700px, 32px side padding ── */}
-      <div className="w-full mx-auto px-8 py-8" style={{ maxWidth: '1700px' }}>
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ maxWidth: '1700px' }}>
+        <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>
+          Browse Online Learning Courses | Zenius AI
+        </h1>
 
         {/* Mobile filter bar */}
         <div className="flex items-center justify-between mb-5 lg:hidden">
@@ -144,7 +147,7 @@ export default function Browse() {
 
             {/* Cards */}
             {loading ? (
-              <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+              <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
                 {[...Array(10)].map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : courses.length === 0 ? (
@@ -160,7 +163,7 @@ export default function Browse() {
                 initial="initial"
                 animate="animate"
                 className="grid gap-5"
-                style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}
+                style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}
               >
                 {courses.map(course => <CourseCard key={course._id} course={course} />)}
               </motion.div>
