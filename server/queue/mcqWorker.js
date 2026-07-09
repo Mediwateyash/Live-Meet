@@ -3,8 +3,9 @@ import path from 'path';
 import dotenv from 'dotenv';
 import Material from '../models/Material.js';
 import MCQ from '../models/MCQ.js';
+import WHQuestion from '../models/WHQuestion.js';
 import { extractTextFromFile } from '../services/parserService.js';
-import { generateMCQs } from '../services/aiService.js';
+import { generateMCQs, generateWHQuestions } from '../services/aiService.js';
 
 dotenv.config();
 
@@ -20,7 +21,8 @@ const getMimeType = (ext) => {
     }
 };
 
-export const processMaterialJob = async (materialId, filePath, startPage, endPage, mcqCount, chapterName) => {
+export const processMaterialJob = async (materialId, filePath, startPage, endPage, chapterName, options = {}) => {
+    const { generateMCQ = true, mcqCount = 10, generateWH = false, whCount = 5 } = options;
     console.log(`[Worker] Started processing for Material ${materialId} - ${filePath}`);
 
     try {
@@ -43,7 +45,15 @@ export const processMaterialJob = async (materialId, filePath, startPage, endPag
                 throw new Error("File size exceeds 100MB limit for prompt processing.");
             }
 
-            results = await generateMCQs({ fileBuffer, mimeType, numQuestions: mcqCount, startPage, endPage, chapterName });
+            if (generateMCQ) {
+                results = await generateMCQs({ fileBuffer, mimeType, numQuestions: mcqCount, startPage, endPage, chapterName });
+            }
+            if (generateWH) {
+                const whResults = await generateWHQuestions({ fileBuffer, mimeType, numQuestions: whCount, startPage, endPage, chapterName });
+                const whsWithId = whResults.map(wh => ({ ...wh, materialId }));
+                await WHQuestion.insertMany(whsWithId);
+                console.log(`[Worker] SUCCESS. Saved ${whResults.length} WH Questions.`);
+            }
         } 
         // 2. Text Path Fallback (TXT)
         else {
@@ -52,19 +62,29 @@ export const processMaterialJob = async (materialId, filePath, startPage, endPag
             if (!extractedText) throw new Error("Extracted text is empty.");
             
             await Material.findByIdAndUpdate(materialId, { extractedText });
-            results = await generateMCQs({ text: extractedText, numQuestions: mcqCount, startPage, endPage, chapterName });
+            if (generateMCQ) {
+                results = await generateMCQs({ text: extractedText, numQuestions: mcqCount, startPage, endPage, chapterName });
+            }
+            if (generateWH) {
+                const whResults = await generateWHQuestions({ text: extractedText, numQuestions: whCount, startPage, endPage, chapterName });
+                const whsWithId = whResults.map(wh => ({ ...wh, materialId }));
+                await WHQuestion.insertMany(whsWithId);
+                console.log(`[Worker] SUCCESS. Saved ${whResults.length} WH Questions.`);
+            }
         }
 
         // 3. Save MCQs to DB
-        const mcqsWithId = results.map(mcq => ({
-            ...mcq,
-            materialId
-        }));
+        if (generateMCQ && results.length > 0) {
+            const mcqsWithId = results.map(mcq => ({
+                ...mcq,
+                materialId
+            }));
 
-        await MCQ.insertMany(mcqsWithId);
-        await Material.findByIdAndUpdate(materialId, { status: 'completed' });
+            await MCQ.insertMany(mcqsWithId);
+            console.log(`[Worker] SUCCESS for ${materialId}. Saved ${results.length} high-quality MCQs.`);
+        }
         
-        console.log(`[Worker] SUCCESS for ${materialId}. Saved ${results.length} high-quality MCQs.`);
+        await Material.findByIdAndUpdate(materialId, { status: 'completed' });
 
     } catch (error) {
         console.error(`[Worker] JOB FAILED for ${materialId}:`, error.message);

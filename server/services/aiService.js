@@ -160,3 +160,128 @@ export const generateMCQs = async ({ text = null, fileBuffer = null, mimeType = 
         }
     }
 };
+
+const whSchema = Joi.array().items(
+    Joi.object({
+        question: Joi.string().required(),
+        answer: Joi.string().required(),
+        topic: Joi.string().required()
+    })
+);
+
+const validateAndCleanWH = (whs) => {
+    const { error, value } = whSchema.validate(whs, { stripUnknown: true });
+    if (error) {
+        throw new Error(`AI Output Validation Failed: ${error.message}`);
+    }
+    
+    // Deduplicate
+    const cleaned = [];
+    const seenQuestions = new Set();
+    
+    for (const item of value) {
+        if (seenQuestions.has(item.question.toLowerCase())) continue;
+        seenQuestions.add(item.question.toLowerCase());
+        cleaned.push(item);
+    }
+    
+    if (cleaned.length === 0) {
+        throw new Error("No valid WH Questions generated after cleaning.");
+    }
+    return cleaned;
+};
+
+export const generateWHQuestions = async ({ text = null, fileBuffer = null, mimeType = null, numQuestions = 5, startPage = null, endPage = null, chapterName = null }) => {
+    const isMultimodal = fileBuffer && mimeType;
+    
+    let prompt = `
+    You are an expert educator. Generate EXACTLY ${numQuestions} high-quality "WH" questions (What, Why, When, Where, Who, How) based STRICTLY on the content provided.`;
+
+    if (startPage && endPage) {
+        prompt += `\n\nCRITICAL PAGE RANGE RESTRICTION:
+    - Generate questions ONLY from Page ${startPage} to Page ${endPage}.
+    - Ignore any content outside this range.`;
+    }
+
+    if (chapterName) {
+        prompt += `\n\nCHAPTER/MODULE FOCUS:
+    - The user has identified this specific section as: "${chapterName}".
+    - Please ensure the generated questions are highly relevant to this specific topic.`;
+    }
+    
+    prompt += `
+    
+    CRITICAL RULES:
+    1. EXTRACT FROM CONCEPTS: Only generate questions based on the actual educational/subject content within the allowed pages.
+    2. WH QUESTIONS ONLY: Each question MUST start with What, Why, When, Where, Who, or How, or clearly ask for an explanation.
+    3. SHORT ANSWERS: The 'answer' field MUST be extremely concise, limited to 1 or 2 lines maximum. Do NOT write paragraphs.
+    4. TOPIC-WISE: Provide a 'topic' (e.g., "Photosynthesis") for each question.
+    5. OUTPUT: Return ONLY a valid JSON array. No markdown, no backticks, no explanatory text outside the JSON.
+    
+    Structure:
+    [
+        {
+            "question": "What is ...?",
+            "answer": "Brief 1-2 line answer.",
+            "topic": "Topic Name"
+        }
+    ]
+    `;
+
+    if (!isMultimodal) {
+        prompt += `\nTEXT CONTENT TO ANALYZE:\n${text.substring(0, 30000)}`;
+    } else {
+        prompt += `\nANALYSIS INSTRUCTION: Please analyze the attached ${mimeType} file carefully. Focus on the visible text and structural hierarchies.`;
+    }
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            
+            let contents = [];
+            if (isMultimodal) {
+                contents = [
+                    {
+                        role: 'user',
+                        parts: [
+                            { text: prompt },
+                            {
+                                inlineData: {
+                                    mimeType: mimeType,
+                                    data: fileBuffer.toString('base64')
+                                }
+                            }
+                        ]
+                    }
+                ];
+            } else {
+                contents = [{ role: 'user', parts: [{ text: prompt }] }];
+            }
+
+            const result = await model.generateContent({ contents });
+            const responseText = result.response.text();
+
+            let jsonStr = responseText.trim();
+            if (jsonStr.includes('\`\`\`')) {
+                jsonStr = jsonStr.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+            }
+
+            const parsedWH = JSON.parse(jsonStr);
+            let validWH = validateAndCleanWH(parsedWH);
+            
+            if (validWH.length > numQuestions) {
+                validWH = validWH.slice(0, numQuestions);
+            } else if (validWH.length < numQuestions) {
+                throw new Error(\`Generated only \${validWH.length} valid WH questions, expected \${numQuestions}. Retrying...\`);
+            }
+            
+            return validWH;
+
+        } catch (error) {
+            console.error(\`Attempt \${attempt} failed:\`, error.message);
+            if (attempt === MAX_RETRIES) {
+                throw new Error(\`AI Generation failed after \${MAX_RETRIES} attempts: \${error.message}\`);
+            }
+        }
+    }
+};

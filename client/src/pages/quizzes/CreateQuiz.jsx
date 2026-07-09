@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../api/axios.js';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Upload, Brain, CheckCircle, AlertCircle, Loader, RefreshCw, FileText, Clock, AlertTriangle, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Plus, Upload, Brain, CheckCircle, AlertCircle, Loader, RefreshCw, FileText, Clock, AlertTriangle, Trash2, X, Edit2, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const FakeProgress = () => {
@@ -144,6 +144,10 @@ const CreateQuiz = () => {
     const [courses, setCourses] = useState([]);
     const [selectedCourseId, setSelectedCourseId] = useState(urlCourseId || '');
 
+    // Inline Editing State
+    const [editingMcqId, setEditingMcqId] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+
     useEffect(() => {
         api.get('/instructor/courses').then(res => setCourses(res.data.data || [])).catch(console.error);
     }, []);
@@ -184,6 +188,34 @@ const CreateQuiz = () => {
             navigate('/instructor'); 
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to publish quiz');
+        }
+    };
+
+    const handleEditClick = (e, mcq) => {
+        e.preventDefault(); // prevent triggering the checkbox label
+        setEditingMcqId(mcq._id);
+        setEditFormData({ ...mcq });
+    };
+
+    const handleEditChange = (field, value) => {
+        setEditFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleOptionChange = (idx, value) => {
+        const newOptions = [...editFormData.options];
+        newOptions[idx] = value;
+        setEditFormData(prev => ({ ...prev, options: newOptions }));
+    };
+
+    const saveMcqEdit = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await api.put(`/mcq/${editingMcqId}`, editFormData);
+            setMcqs(mcqs.map(m => m._id === editingMcqId ? res.data : m));
+            setEditingMcqId(null);
+            toast.success("Question updated!");
+        } catch (error) {
+            toast.error("Failed to update question.");
         }
     };
 
@@ -434,28 +466,78 @@ const CreateQuiz = () => {
                                         <span className="text-sm text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded">{selectedMcqs.size} of {mcqs.length} selected</span>
                                     </div>
                                     <div className="space-y-3">
-                                        {mcqs.map((mcq, idx) => (
-                                            <label key={mcq._id} className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${selectedMcqs.has(mcq._id) ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
-                                                <input 
-                                                    type="checkbox"
-                                                    className="mt-1 flex-shrink-0 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
-                                                    checked={selectedMcqs.has(mcq._id)}
-                                                    onChange={() => toggleSelection(mcq._id)}
-                                                />
-                                                <div className="flex-1">
-                                                    <div className="flex gap-2 mb-2">
-                                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
-                                                            mcq.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
-                                                            mcq.difficulty === 'hard' ? 'bg-red-100 text-red-700' :
-                                                            'bg-yellow-100 text-yellow-700'
-                                                        }`}>
-                                                            {mcq.difficulty || 'medium'}
-                                                        </span>
+                                        {mcqs.map((mcq, idx) => {
+                                            if (editingMcqId === mcq._id) {
+                                                return (
+                                                    <div key={mcq._id} className="p-4 rounded-lg border border-indigo-300 bg-indigo-50 shadow-sm space-y-4">
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wider">Question {idx+1}</label>
+                                                            <textarea 
+                                                                className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                                                                rows="2"
+                                                                value={editFormData.question}
+                                                                onChange={(e) => handleEditChange('question', e.target.value)}
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                            {editFormData.options.map((opt, oIdx) => (
+                                                                <div key={oIdx} className="flex items-center gap-2">
+                                                                    <span className="text-xs font-bold text-gray-500">{String.fromCharCode(65 + oIdx)}.</span>
+                                                                    <input 
+                                                                        type="text" 
+                                                                        className="flex-1 p-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                                        value={opt}
+                                                                        onChange={(e) => handleOptionChange(oIdx, e.target.value)}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wider">Correct Answer (must match an option exactly)</label>
+                                                            <select 
+                                                                className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                                value={editFormData.correctAnswer}
+                                                                onChange={(e) => handleEditChange('correctAnswer', e.target.value)}
+                                                            >
+                                                                {editFormData.options.map((opt, oIdx) => (
+                                                                    <option key={oIdx} value={opt}>{opt}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                        <div className="flex justify-end gap-2 pt-2 border-t border-indigo-100">
+                                                            <button onClick={() => setEditingMcqId(null)} className="px-3 py-1.5 text-xs font-bold text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50">Cancel</button>
+                                                            <button onClick={saveMcqEdit} className="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded hover:bg-indigo-700 flex items-center gap-1"><Save className="w-3 h-3"/> Save</button>
+                                                        </div>
                                                     </div>
-                                                    <p className="font-medium text-gray-800 text-sm leading-relaxed"><span className="text-gray-400 mr-2 font-bold">Q{idx+1}.</span>{mcq.question}</p>
-                                                </div>
-                                            </label>
-                                        ))}
+                                                );
+                                            }
+
+                                            return (
+                                                <label key={mcq._id} className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${selectedMcqs.has(mcq._id) ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                                                    <input 
+                                                        type="checkbox"
+                                                        className="mt-1 flex-shrink-0 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
+                                                        checked={selectedMcqs.has(mcq._id)}
+                                                        onChange={() => toggleSelection(mcq._id)}
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                                                                mcq.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
+                                                                mcq.difficulty === 'hard' ? 'bg-red-100 text-red-700' :
+                                                                'bg-yellow-100 text-yellow-700'
+                                                            }`}>
+                                                                {mcq.difficulty || 'medium'}
+                                                            </span>
+                                                            <button onClick={(e) => handleEditClick(e, mcq)} className="text-gray-400 hover:text-indigo-600 transition-colors p-1" title="Edit Question">
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                        <p className="font-medium text-gray-800 text-sm leading-relaxed"><span className="text-gray-400 mr-2 font-bold">Q{idx+1}.</span>{mcq.question}</p>
+                                                    </div>
+                                                </label>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>

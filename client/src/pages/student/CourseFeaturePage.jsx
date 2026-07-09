@@ -6,6 +6,7 @@ import { coursesAPI } from '../../api/courses.js'
 import { liveLecturesAPI } from '../../api/liveLectures.js'
 import useAuthStore from '../../store/authStore.js'
 import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
+import CourseNotes from '../../components/quizzes/CourseNotes.jsx'
 
 const FEATURES = {
   notes:    { icon: FileText,      label: 'Notes',          desc: 'Study materials uploaded by your instructor will appear here.' },
@@ -243,6 +244,10 @@ export default function CourseFeaturePage({ feature }) {
           ) : feature === 'tests' || feature === 'mcq' ? (
             <div className="max-w-4xl mx-auto w-full">
                <CourseQuizzes courseId={course?._id} />
+            </div>
+          ) : feature === 'notes' ? (
+            <div className="max-w-4xl mx-auto w-full">
+               <CourseNotes />
             </div>
           ) : (
             <div className="w-full max-w-3xl flex flex-col items-center justify-center py-32 rounded-2xl mx-auto"

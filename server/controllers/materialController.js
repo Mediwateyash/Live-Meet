@@ -13,6 +13,15 @@ export const uploadMaterial = async (req, res) => {
         let endPage = req.body.endPage ? parseInt(req.body.endPage, 10) : null;
         let mcqCount = req.body.mcqCount ? parseInt(req.body.mcqCount, 10) : 10;
         let chapterName = req.body.chapterName || null;
+        
+        let generateMCQ = req.body.generateMCQ === 'true' || req.body.generateMCQ === true;
+        let generateWH = req.body.generateWH === 'true' || req.body.generateWH === true;
+        let whCount = req.body.whCount ? parseInt(req.body.whCount, 10) : 5;
+        
+        // If neither is selected (fallback to MCQ for backward compatibility)
+        if (!generateMCQ && !generateWH) {
+            generateMCQ = true;
+        }
 
         // Validation
         if (mcqCount < 1 || mcqCount > 15) {
@@ -36,7 +45,7 @@ export const uploadMaterial = async (req, res) => {
         });
 
         // Process in background without blocking the response (bypassing Redis/BullMQ)
-        processMaterialJob(material._id, req.file.path, startPage, endPage, mcqCount, chapterName).catch(console.error);
+        processMaterialJob(material._id, req.file.path, startPage, endPage, chapterName, { generateMCQ, mcqCount, generateWH, whCount }).catch(console.error);
 
         res.status(201).json({
             message: 'Material uploaded and queued for processing successfully',
@@ -49,7 +58,14 @@ export const uploadMaterial = async (req, res) => {
 
 export const getMaterials = async (req, res) => {
     try {
-        const materials = await Material.find({ uploadedBy: req.user._id }).sort({ createdAt: -1 });
+        let query = {};
+        if (req.user.role === 'student') {
+            // Students can see all successfully processed materials
+            query = { status: 'completed' };
+        } else if (req.user.role === 'instructor') {
+            query = { uploadedBy: req.user._id };
+        }
+        const materials = await Material.find(query).sort({ createdAt: -1 }).populate('uploadedBy', 'fullName');
         res.json(materials);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -83,9 +99,12 @@ export const deleteMaterial = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized' });
         }
         
-        // Delete all associated MCQs
+        // Delete all associated MCQs and WH Questions
         const MCQ = (await import('../models/MCQ.js')).default;
         await MCQ.deleteMany({ materialId: material._id });
+        
+        const WHQuestion = (await import('../models/WHQuestion.js')).default;
+        await WHQuestion.deleteMany({ materialId: material._id });
         
         // Delete the material
         await material.deleteOne();
