@@ -236,7 +236,7 @@ export const generateWHQuestions = async ({ text = null, fileBuffer = null, mime
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
             
             let contents = [];
             if (isMultimodal) {
