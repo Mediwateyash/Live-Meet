@@ -86,7 +86,10 @@ const CreateQuiz = () => {
     const [chapterName, setChapterName] = useState('');
     const [startPage, setStartPage] = useState('');
     const [endPage, setEndPage] = useState('');
+    const [generateMCQ, setGenerateMCQ] = useState(true);
     const [mcqCount, setMcqCount] = useState(10);
+    const [generateWH, setGenerateWH] = useState(false);
+    const [whCount, setWhCount] = useState(5);
     const [status, setStatus] = useState('idle'); // idle, uploading, error
     const [message, setMessage] = useState('');
 
@@ -104,10 +107,15 @@ const CreateQuiz = () => {
         if (startPage && startPage < 1) { setStatus('error'); setMessage('Start page must be 1 or greater.'); return; }
         if (startPage && endPage && parseInt(startPage) > parseInt(endPage)) { setStatus('error'); setMessage('End page must be greater than or equal to start page.'); return; }
         if (mcqCount < 1 || mcqCount > 15) { setStatus('error'); setMessage('MCQ count must be between 1 and 15.'); return; }
+        if (whCount < 1 || whCount > 15) { setStatus('error'); setMessage('WH count must be between 1 and 15.'); return; }
+        if (!generateMCQ && !generateWH) { setStatus('error'); setMessage('Please select at least one generation option.'); return; }
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('generateMCQ', generateMCQ);
         formData.append('mcqCount', mcqCount);
+        formData.append('generateWH', generateWH);
+        formData.append('whCount', whCount);
         if (chapterName) formData.append('chapterName', chapterName);
         if (startPage) formData.append('startPage', startPage);
         if (endPage) formData.append('endPage', endPage);
@@ -238,7 +246,7 @@ const CreateQuiz = () => {
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
                             <Upload className="w-5 h-5 text-indigo-600" />
-                            Upload & Generate MCQs
+                            Upload & Generate
                         </h3>
                         
                         <div className="mt-2 text-sm text-gray-500 mb-4">
@@ -268,22 +276,51 @@ const CreateQuiz = () => {
                                 />
                             </div>
                             
-                            <div className="flex flex-col mb-2 mt-2">
-                                <label className="flex justify-between text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                    <span>Number of Questions</span>
-                                    <span className="text-indigo-600 font-bold">{mcqCount}</span>
-                                </label>
-                                <input 
-                                    type="range" 
-                                    min="1" 
-                                    max="15" 
-                                    value={mcqCount} 
-                                    onChange={(e) => setMcqCount(parseInt(e.target.value))}
-                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                                />
-                                <div className="flex justify-between text-xs text-gray-400 mt-1">
-                                    <span>1</span>
-                                    <span>15</span>
+                            <div className="flex flex-col gap-4 mb-2 mt-2">
+                                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <input 
+                                        type="checkbox" 
+                                        id="gen-mcq-main"
+                                        checked={generateMCQ}
+                                        onChange={(e) => setGenerateMCQ(e.target.checked)}
+                                        className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
+                                    />
+                                    <label htmlFor="gen-mcq-main" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                                        Generate MCQs
+                                    </label>
+                                    {generateMCQ && (
+                                        <div className="flex items-center gap-2 w-1/2">
+                                            <input 
+                                                type="range" min="1" max="15" value={mcqCount} 
+                                                onChange={(e) => setMcqCount(parseInt(e.target.value))}
+                                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                            />
+                                            <span className="text-xs font-bold text-indigo-600 w-6 text-right">{mcqCount}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <input 
+                                        type="checkbox" 
+                                        id="gen-wh-main"
+                                        checked={generateWH}
+                                        onChange={(e) => setGenerateWH(e.target.checked)}
+                                        className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
+                                    />
+                                    <label htmlFor="gen-wh-main" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                                        Generate WH Questions
+                                    </label>
+                                    {generateWH && (
+                                        <div className="flex items-center gap-2 w-1/2">
+                                            <input 
+                                                type="range" min="1" max="15" value={whCount} 
+                                                onChange={(e) => setWhCount(parseInt(e.target.value))}
+                                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                            />
+                                            <span className="text-xs font-bold text-indigo-600 w-6 text-right">{whCount}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             
@@ -317,7 +354,7 @@ const CreateQuiz = () => {
                                 className="mt-2 w-full px-6 py-3 bg-[#8B5CF6] text-white rounded-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
                             >
                                 {status === 'uploading' && <Loader className="w-4 h-4 animate-spin" />}
-                                Generate MCQs
+                                Generate
                             </button>
                         </div>
                         
