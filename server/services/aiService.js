@@ -262,8 +262,8 @@ export const generateWHQuestions = async ({ text = null, fileBuffer = null, mime
             const responseText = result.response.text();
 
             let jsonStr = responseText.trim();
-            if (jsonStr.includes('\`\`\`')) {
-                jsonStr = jsonStr.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+            if (jsonStr.includes('```')) {
+                jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
             }
 
             const parsedWH = JSON.parse(jsonStr);
@@ -272,15 +272,15 @@ export const generateWHQuestions = async ({ text = null, fileBuffer = null, mime
             if (validWH.length > numQuestions) {
                 validWH = validWH.slice(0, numQuestions);
             } else if (validWH.length < numQuestions) {
-                throw new Error(\`Generated only \${validWH.length} valid WH questions, expected \${numQuestions}. Retrying...\`);
+                throw new Error(`Generated only ${validWH.length} valid WH questions, expected ${numQuestions}. Retrying...`);
             }
             
             return validWH;
 
         } catch (error) {
-            console.error(\`Attempt \${attempt} failed:\`, error.message);
+            console.error(`Attempt ${attempt} failed:`, error.message);
             if (attempt === MAX_RETRIES) {
-                throw new Error(\`AI Generation failed after \${MAX_RETRIES} attempts: \${error.message}\`);
+                throw new Error(`AI Generation failed after ${MAX_RETRIES} attempts: ${error.message}`);
             }
         }
     }
