@@ -91,7 +91,7 @@ export default function CoursePlayer() {
   // Video Tracking Refs
   const trackingRef = useRef({
     currentInterval: null,
-    pendingIntervals: [],
+    pendingBatches: [],
     isNewSession: true,
     videoDuration: 0,
     courseId: null,
@@ -102,30 +102,44 @@ export default function CoursePlayer() {
     const state = trackingRef.current;
     if (!state.courseId || !state.lessonId) return;
     
-    let intervalsToSync = [...state.pendingIntervals];
     if (state.currentInterval) {
-      intervalsToSync.push(state.currentInterval);
-      state.currentInterval = null;
-    }
-    
-    if (intervalsToSync.length === 0) return;
-    
-    // Optimistic clear
-    state.pendingIntervals = [];
-
-    try {
-      await progressAPI.syncVideoProgress({
-        courseId: state.courseId,
-        lessonId: state.lessonId,
-        videoDuration: state.videoDuration,
+      const syncId = crypto.randomUUID();
+      state.pendingBatches.push({
+        syncId,
+        intervals: [state.currentInterval],
         lastPlaybackPosition: playerRef.current?.getCurrentTime() || 0,
-        pendingIntervals: intervalsToSync,
+        videoDuration: state.videoDuration,
         isNewSession: state.isNewSession
       });
+      state.currentInterval = null;
       state.isNewSession = false;
+    }
+    
+    if (state.pendingBatches.length === 0) return;
+    
+    const currentBatch = state.pendingBatches[0];
+
+    try {
+      const res = await progressAPI.syncVideoProgress({
+        courseId: state.courseId,
+        lessonId: state.lessonId,
+        ...currentBatch
+      });
+      
+      // On success, remove from queue
+      state.pendingBatches.shift();
+
+      // Legacy Completion consistency - strictly depend on backend
+      if (res.data?.isCompleted && !isCompleted(state.lessonId) && !marking && currentLesson?._id === state.lessonId) {
+        markComplete();
+      }
+
+      // If more exist, flush again
+      if (state.pendingBatches.length > 0) {
+        setTimeout(flushEngagement, 100);
+      }
     } catch (err) {
-      // restore on failure
-      state.pendingIntervals = [...intervalsToSync, ...state.pendingIntervals];
+      console.warn('Video sync failed, retaining batch for retry', err);
     }
   };
 
@@ -148,9 +162,15 @@ export default function CoursePlayer() {
     if (!course) return;
     try {
       const res = await progressAPI.get(course._id)
-      setProgress(res.data.data)
-    } catch { }
+      setProgress(res.data)
+    } catch (err) {
+      console.error(err)
+    }
   }
+
+  useEffect(() => {
+    refetchProgress()
+  }, [course])
 
   useEffect(() => {
     const load = async () => {
@@ -379,26 +399,28 @@ export default function CoursePlayer() {
                     if (playedSeconds >= state.currentInterval.end && playedSeconds <= state.currentInterval.end + 2) {
                       state.currentInterval.end = playedSeconds;
                     } else {
-                      // Seek occurred
-                      state.pendingIntervals.push({ ...state.currentInterval });
+                      // Seek occurred - push immediately to batch queue
+                      const syncId = crypto.randomUUID();
+                      state.pendingBatches.push({
+                        syncId,
+                        intervals: [{ ...state.currentInterval }],
+                        lastPlaybackPosition: playerRef.current?.getCurrentTime() || 0,
+                        videoDuration: state.videoDuration,
+                        isNewSession: state.isNewSession
+                      });
+                      state.isNewSession = false;
                       state.currentInterval = { start: playedSeconds, end: playedSeconds };
                     }
                   }
 
                   if (played >= 0.9 && !videoEnded) {
                     setVideoEnded(true)
-                    if (!isCompleted(currentLesson?._id) && !marking) {
-                      markComplete()
-                    }
                   }
                 }}
                 onEnded={() => {
                   flushEngagement();
                   if (!videoEnded) {
                     setVideoEnded(true)
-                    if (!isCompleted(currentLesson?._id) && !marking) {
-                      markComplete()
-                    }
                   }
                 }}
               />

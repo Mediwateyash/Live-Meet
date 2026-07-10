@@ -1,6 +1,7 @@
 import Progress from '../models/Progress.js'
 import Course   from '../models/Course.js'
 import VideoEngagement from '../models/VideoEngagement.js'
+import VideoSyncBatch from '../models/VideoSyncBatch.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 
@@ -86,15 +87,31 @@ export async function savePosition(req, res, next) {
   } catch (err) { next(err) }
 export async function syncVideoProgress(req, res, next) {
   try {
-    const { courseId, lessonId, videoDuration, lastPlaybackPosition, pendingIntervals, isNewSession } = req.body;
+    const { courseId, lessonId, videoDuration, lastPlaybackPosition, intervals, isNewSession, syncId } = req.body;
     const studentId = req.user._id;
 
-    if (!courseId || !lessonId || !pendingIntervals || !Array.isArray(pendingIntervals)) {
+    if (!courseId || !lessonId || !intervals || !Array.isArray(intervals) || !syncId) {
       throw new ApiError(400, "Missing required fields");
     }
 
+    // 1. ATOMIC IDEMPOTENCY LOCK
+    try {
+      await VideoSyncBatch.create({ syncId });
+    } catch (err) {
+      // 11000 is Mongo Duplicate Key Error
+      if (err.code === 11000) {
+         const existing = await VideoEngagement.findOne({ studentId, courseId, lessonId });
+         return res.json(new ApiResponse(200, {
+           uniqueWatchedSeconds: existing?.uniqueWatchedSeconds || 0,
+           completionPercentage: existing?.completionPercentage || 0,
+           isCompleted: existing?.isCompleted || false
+         }, 'Idempotent success: sync batch already processed'));
+      }
+      throw err;
+    }
+
     // Filter valid intervals
-    const validIntervals = pendingIntervals.filter(i => 
+    const validIntervals = intervals.filter(i => 
       typeof i.start === 'number' &&
       typeof i.end === 'number' &&
       i.start >= 0 && 

@@ -285,3 +285,71 @@ export const generateWHQuestions = async ({ text = null, fileBuffer = null, mime
         }
     }
 };
+
+const courseInsightSchema = Joi.object({
+  summary: Joi.string().max(300).required(),
+  insights: Joi.array().items(
+    Joi.object({
+      type: Joi.string().valid('warning', 'positive', 'information').required(),
+      category: Joi.string().valid('attendance', 'progress', 'assessment', 'video', 'engagement').required(),
+      title: Joi.string().required(),
+      message: Joi.string().required(),
+      priority: Joi.string().valid('high', 'medium', 'low').required()
+    })
+  ).min(1).max(5).required(),
+  recommendations: Joi.array().items(
+    Joi.object({
+      title: Joi.string().required(),
+      reason: Joi.string().required(),
+      priority: Joi.string().valid('high', 'medium', 'low').required(),
+      category: Joi.string().valid('attendance', 'progress', 'assessment', 'video', 'engagement').required()
+    })
+  ).min(1).max(5).required()
+});
+
+export const generateCourseInsights = async (analyticsSummary) => {
+    let prompt = `
+You are an expert educational data analyst AI. 
+Analyze the provided aggregated course analytics data and return a JSON object with your findings.
+
+CRITICAL GROUNDING RULES:
+1. Use ONLY the supplied analytics data. Do NOT calculate new metrics.
+2. Do NOT invent causes, diagnose instructor quality, or invent student personal circumstances.
+3. Do NOT claim correlations that were not mathematically provided.
+4. Separate observations from recommendations.
+5. Prioritize the most actionable findings.
+6. Avoid repeating the same metric across multiple insight cards.
+7. Output strictly valid JSON matching the exact schema requirements. No markdown code blocks.
+
+ANALYTICS DATA:
+${JSON.stringify(analyticsSummary, null, 2)}
+    `;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+            const result = await model.generateContent({ contents });
+            const responseText = result.response.text();
+
+            let jsonStr = responseText.trim();
+            if (jsonStr.includes('\`\`\`')) {
+                jsonStr = jsonStr.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+            }
+
+            const parsedInsights = JSON.parse(jsonStr);
+            
+            const { error, value } = courseInsightSchema.validate(parsedInsights, { stripUnknown: true });
+            if (error) {
+                throw new Error(\`AI Output Validation Failed: \${error.message}\`);
+            }
+            return value;
+
+        } catch (error) {
+            console.error(\`AI Insight Attempt \${attempt} failed:\`, error.message);
+            if (attempt === MAX_RETRIES) {
+                throw new Error(\`AI Insight Generation failed after \${MAX_RETRIES} attempts: \${error.message}\`);
+            }
+        }
+    }
+};

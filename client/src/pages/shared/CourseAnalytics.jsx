@@ -25,6 +25,10 @@ export default function CourseAnalytics() {
   const [videoAnalytics, setVideoAnalytics] = useState(null)
   const [lectureVideoPerformance, setLectureVideoPerformance] = useState(null)
   
+  const [aiInsights, setAiInsights] = useState(null)
+  const [loadingAi, setLoadingAi] = useState(false)
+  const [aiError, setAiError] = useState(null)
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -50,11 +54,26 @@ export default function CourseAnalytics() {
       })
       .catch(err => {
         console.error(err)
-        setError('Failed to load course analytics data')
-        toast.error('Failed to load course analytics data')
+        setError(err.response?.data?.message || 'Failed to fetch analytics')
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoading(false)
+      })
   }, [courseId])
+
+  const fetchAiInsights = async (forceRefresh = false) => {
+    setLoadingAi(true);
+    setAiError(null);
+    try {
+      const res = await analyticsAPI.getCourseAIInsights(courseId, forceRefresh);
+      setAiInsights(res.data);
+    } catch (err) {
+      console.error(err);
+      setAiError(err.response?.data?.message || 'Failed to retrieve AI Insights');
+    } finally {
+      setLoadingAi(false);
+    }
+  };
 
   const goBack = () => {
     navigate(-1)
@@ -183,16 +202,113 @@ export default function CourseAnalytics() {
             { label: 'Assessment Avg', value: `${kpis.assessmentAverage.toFixed(1)}%`, icon: ShieldAlert, color: '#EC4899', bg: '#FDF2F8' },
             { label: 'Health Score', value: `${kpis.courseHealthScore.toFixed(1)} / 100`, icon: Star, color: '#14B8A6', bg: '#F0FDFA' },
           ].map((kpi, i) => (
-            <div key={i} className="p-4 rounded-2xl border flex flex-col justify-between hover:shadow-sm transition-shadow" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{kpi.label}</span>
-                <div className="p-2 rounded-xl" style={{ backgroundColor: kpi.bg }}>
-                  <kpi.icon size={16} color={kpi.color} />
-                </div>
+            <div key={i} className="p-5 rounded-2xl border flex items-center gap-4 transition-all hover:shadow-sm" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: kpi.bg, color: kpi.color }}>
+                <kpi.icon size={24} />
               </div>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{kpi.value}</p>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{kpi.label}</p>
+                <h3 className="text-2xl font-black" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>{kpi.value}</h3>
+              </div>
             </div>
           ))}
+        </div>
+
+        {/* AI Course Insights Panel */}
+        <div className="mb-8 p-6 rounded-2xl border shadow-sm relative overflow-hidden" style={{ background: 'linear-gradient(145deg, var(--bg-surface) 0%, rgba(124, 58, 237, 0.03) 100%)', borderColor: 'var(--border-default)' }}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 border-b pb-4" style={{ borderColor: 'var(--border-default)' }}>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+                        <Star size={20} className="fill-current" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Zenius AI Course Analysis</h2>
+                        <p className="text-sm opacity-80" style={{ color: 'var(--text-muted)' }}>Intelligent interpretation of course health and performance metrics</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    {aiInsights && (
+                        <p className="text-xs text-gray-500 mr-2">
+                            {aiInsights.cached ? 'Cached Analysis' : 'Fresh Analysis'} ({new Date(aiInsights.generatedAt).toLocaleTimeString()})
+                        </p>
+                    )}
+                    <button 
+                        onClick={() => fetchAiInsights(aiInsights ? true : false)}
+                        disabled={loadingAi}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
+                        style={{ background: '#7C3AED', color: '#fff', opacity: loadingAi ? 0.7 : 1 }}
+                    >
+                        {loadingAi ? <span className="animate-spin text-lg leading-none">↻</span> : <CheckCircle size={16} />}
+                        {aiInsights ? 'Refresh Analysis' : 'Generate AI Analysis'}
+                    </button>
+                </div>
+            </div>
+
+            {aiError && (
+                <div className="p-4 bg-red-50 text-red-600 rounded-xl mb-4 text-sm font-medium border border-red-100 flex items-center gap-2">
+                    <ShieldAlert size={18} /> {aiError}
+                </div>
+            )}
+
+            {!aiInsights && !loadingAi && !aiError && (
+                <div className="py-12 text-center text-gray-500">
+                    <Star size={40} className="mx-auto mb-3 opacity-20" />
+                    <p className="font-medium">Click 'Generate AI Analysis' to interpret your course metrics.</p>
+                </div>
+            )}
+
+            {loadingAi && !aiInsights && (
+                <div className="py-12 text-center text-purple-500 animate-pulse">
+                    <div className="w-8 h-8 rounded-full border-4 border-current border-t-transparent animate-spin mx-auto mb-3"></div>
+                    <p className="font-medium">Analyzing course data...</p>
+                </div>
+            )}
+
+            {aiInsights && (
+                <div className="space-y-6">
+                    <div className="p-5 rounded-xl border" style={{ backgroundColor: 'var(--bg-body)', borderColor: 'var(--border-default)' }}>
+                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Overall Summary</h4>
+                        <p className="text-gray-800 leading-relaxed font-medium">{aiInsights.summary}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Key Insights</h4>
+                            <div className="space-y-3">
+                                {aiInsights.insights?.map((insight, idx) => (
+                                    <div key={idx} className="p-4 rounded-xl border flex gap-3 items-start" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${insight.type === 'warning' ? 'bg-red-100 text-red-600' : insight.type === 'positive' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
+                                            {insight.type === 'warning' ? <ShieldAlert size={16} /> : insight.type === 'positive' ? <CheckCircle size={16} /> : <BarChart2 size={16} />}
+                                        </div>
+                                        <div>
+                                            <h5 className="font-bold text-gray-900 text-sm mb-1">{insight.title}</h5>
+                                            <p className="text-sm text-gray-600">{insight.message}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Recommended Actions</h4>
+                            <div className="space-y-3">
+                                {aiInsights.recommendations?.map((rec, idx) => (
+                                    <div key={idx} className="p-4 rounded-xl border flex gap-3 items-start relative overflow-hidden" style={{ backgroundColor: 'var(--bg-body)', borderColor: 'var(--border-default)' }}>
+                                        <div className={`absolute top-0 left-0 w-1 h-full ${rec.priority === 'high' ? 'bg-red-500' : rec.priority === 'medium' ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-gray-100 text-gray-600 ml-1">
+                                            <Star size={16} />
+                                        </div>
+                                        <div>
+                                            <h5 className="font-bold text-gray-900 text-sm mb-1">{rec.title}</h5>
+                                            <p className="text-sm text-gray-600">{rec.reason}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
 
         {/* Charts and Analysis Section */}

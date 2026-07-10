@@ -5,6 +5,9 @@ import Course from '../models/Course.js';
 import Progress from '../models/Progress.js';
 import LiveLecture from '../models/LiveLecture.js';
 import VideoEngagement from '../models/VideoEngagement.js';
+import CourseInsightCache from '../models/CourseInsightCache.js';
+import { generateCourseInsights } from '../services/aiService.js';
+import { generateDeterministicCourseInsights } from '../services/analyticsFallbackService.js';
 
 export const getTeacherAnalytics = async (req, res) => {
     try {
@@ -59,13 +62,21 @@ export const getStudentAnalytics = async (req, res) => {
 export const getCourseAnalytics = async (req, res) => {
     try {
         const { courseId } = req.params;
+        const data = await calculateCourseAnalytics(courseId);
+        res.json(data);
+    } catch (error) {
+        console.error('Course Analytics Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
 
-        // 1. Course Details & Total Enrollments
-        const course = await Course.findById(courseId).select('title enrolledStudents');
-        if (!course) {
-            return res.status(404).json({ message: 'Course not found' });
-        }
-        const enrolledStudentsStr = course.enrolledStudents.map(id => id.toString());
+export const calculateCourseAnalytics = async (courseId) => {
+    // 1. Course Details & Total Enrollments
+    const course = await Course.findById(courseId).select('title enrolledStudents');
+    if (!course) {
+        throw new Error('Course not found');
+    }
+    const enrolledStudentsStr = course.enrolledStudents.map(id => id.toString());
         const totalEnrollments = enrolledStudentsStr.length;
 
         // 2. Course Completion Rate & Learning Funnel
@@ -335,7 +346,7 @@ export const getCourseAnalytics = async (req, res) => {
             healthScore = tempScore;
         }
 
-        res.json({
+        return {
             course: {
                 id: course._id,
                 title: course.title
@@ -366,9 +377,74 @@ export const getCourseAnalytics = async (req, res) => {
                 totalLectures,
                 averageAttendeeCount
             }
-        });
+        };
+};
+
+export const getCourseAIInsights = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const { forceRefresh } = req.query;
+
+        // Currently no active UI filters modify backend aggregations, so contextHash is static.
+        const contextHash = 'default';
+
+        if (forceRefresh !== 'true') {
+            const cached = await CourseInsightCache.findOne({ courseId, contextHash });
+            if (cached) {
+                return res.json({
+                    source: 'ai',
+                    cached: true,
+                    generatedAt: cached.generatedAt,
+                    ...cached.insightsData
+                });
+            }
+        }
+
+        const analyticsData = await calculateCourseAnalytics(courseId);
+
+        const sanitizedSummary = {
+            courseTitle: analyticsData.course.title,
+            kpis: analyticsData.kpis,
+            progressDistribution: analyticsData.progressDistribution,
+            learningFunnel: analyticsData.learningFunnel,
+            videoSummary: analyticsData.videoAnalytics,
+            performanceDistribution: analyticsData.performanceDistribution
+        };
+
+        try {
+            const aiResult = await generateCourseInsights(sanitizedSummary);
+            
+            const expiresAt = new Date();
+            expiresAt.setHours(expiresAt.getHours() + 6);
+
+            await CourseInsightCache.findOneAndUpdate(
+                { courseId, contextHash },
+                { 
+                    insightsData: aiResult,
+                    generatedAt: new Date(),
+                    expiresAt
+                },
+                { upsert: true, new: true }
+            );
+
+            return res.json({
+                source: 'ai',
+                cached: false,
+                generatedAt: new Date(),
+                ...aiResult
+            });
+        } catch (aiError) {
+            console.error('AI Insight Generation Failed, using fallback:', aiError.message);
+            const fallbackResult = generateDeterministicCourseInsights(sanitizedSummary);
+            
+            return res.json({
+                source: 'fallback',
+                cached: false,
+                generatedAt: new Date(),
+                ...fallbackResult
+            });
+        }
     } catch (error) {
-        console.error('Course Analytics Error:', error);
         res.status(500).json({ message: error.message });
     }
 };
