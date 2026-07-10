@@ -566,8 +566,9 @@ export default function CourseAnalytics() {
                   </div>
                 </div>
               )}
-           </div>
+            </div>
 
+         </div>
         </div>
       </div>
     </PageLayout>
