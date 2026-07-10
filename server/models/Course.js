@@ -8,6 +8,7 @@ const lessonSchema = new mongoose.Schema({
   duration:  { type: Number, default: 0 },
   isFree:    { type: Boolean, default: false },
   resources: [{ name: String, url: String }],
+  whQuestions: [{ question: String, answer: String }],
 })
 
 const sectionSchema = new mongoose.Schema({

@@ -231,7 +231,7 @@ function NotesList({ course, selectedNote, onSelectNote }) {
                   return (
                     <div 
                       key={`${lesson._id}-${rIdx}`} 
-                      onClick={() => onSelectNote({ name: res.name || `Notes for ${lesson.title}`, url: res.url, lessonTitle: lesson.title })}
+                      onClick={() => onSelectNote({ name: res.name || `Notes for ${lesson.title}`, url: res.url, lessonTitle: lesson.title, whQuestions: lesson.whQuestions || [] })}
                       className={`rounded-2xl p-4 border flex justify-between items-center gap-3 transition-all duration-200 cursor-pointer ${
                         isSelected 
                           ? 'border-[#7C3AED] bg-[rgba(124,58,237,0.08)] shadow-[0_0_15px_rgba(124,58,237,0.15)]' 
@@ -293,7 +293,8 @@ export default function CourseFeaturePage({ feature }) {
           setSelectedNote({
             name: res.name || `Notes for ${lessonWithNotes.title}`,
             url: res.url,
-            lessonTitle: lessonWithNotes.title
+            lessonTitle: lessonWithNotes.title,
+            whQuestions: lessonWithNotes.whQuestions || []
           })
           break
         }
@@ -494,6 +495,23 @@ export default function CourseFeaturePage({ feature }) {
                                 allow="fullscreen"
                               />
                             </div>
+
+                            {/* WH Questions Section */}
+                            {selectedNote.whQuestions && selectedNote.whQuestions.length > 0 && (
+                              <div className="mt-6 pt-6 border-t border-gray-800">
+                                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                  <Brain size={18} className="text-[#7C3AED]" /> Key Questions to Remember
+                                </h3>
+                                <div className="space-y-4">
+                                  {selectedNote.whQuestions.map((q, idx) => (
+                                    <div key={idx} className="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
+                                      <p className="text-sm font-semibold text-indigo-400 mb-2">Q: {q.question}</p>
+                                      <p className="text-sm text-gray-300">A: {q.answer}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
                           </div>
                         ) : (

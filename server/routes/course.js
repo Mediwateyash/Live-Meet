@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import {
-  browse, getFeatured, getBySlug, createCourse, updateCourse, deleteCourse, enroll, getLearn, addReview, getYoutubeMeta
+  browse, getFeatured, getBySlug, createCourse, updateCourse, deleteCourse, enroll, getLearn, addReview, getYoutubeMeta, generateLessonWH, saveLessonWH
 } from '../controllers/courseController.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { requireRole }   from '../middleware/role.js'
@@ -18,5 +18,7 @@ router.delete('/:id',         authMiddleware, requireRole('instructor', 'admin')
 router.post('/:id/enroll',    authMiddleware, enrollLimiter, enroll)
 router.get ('/:id/learn',     authMiddleware, getLearn)
 router.post('/:id/review',    authMiddleware, addReview)
+router.post('/:id/sections/:sectionIndex/lessons/:lessonIndex/generate-wh', authMiddleware, requireRole('instructor', 'admin'), writeLimiter, generateLessonWH)
+router.put ('/:id/sections/:sectionIndex/lessons/:lessonIndex/wh-questions', authMiddleware, requireRole('instructor', 'admin'), writeLimiter, saveLessonWH)
 
 export default router

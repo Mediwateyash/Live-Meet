@@ -8,6 +8,7 @@ import { ApiResponse } from '../utils/ApiResponse.js'
 import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
 import jwt from 'jsonwebtoken'
 import { validateUrlForSsrf } from '../utils/ssrfFilter.js'
+import { generateWHQuestions } from '../services/aiService.js'
 
 export async function browse(req, res, next) {
   try {
@@ -415,7 +416,74 @@ export async function getYoutubeMeta(req, res, next) {
     const thumbMatch = html.match(/link\s+itemprop="thumbnailUrl"\s+href="([^"]+)"/) || html.match(/property="og:image"\s+content="([^"]+)"/)
     const thumbnail = thumbMatch ? thumbMatch[1] : null
 
-    res.json(new ApiResponse(200, { title, duration: durationSeconds, thumbnail }))
   } catch (err) { next(err) }
 }
 
+export async function generateLessonWH(req, res, next) {
+  try {
+    const { id, sectionIndex, lessonIndex } = req.params;
+    const { pdfUrl } = req.body;
+    
+    if (!pdfUrl) throw new ApiError(400, 'PDF URL is required');
+
+    const course = await Course.findById(id);
+    if (!course) throw new ApiError(404, 'Course not found');
+    if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      throw new ApiError(403, 'Not authorized');
+    }
+
+    const lesson = course.curriculum[sectionIndex]?.lessons[lessonIndex];
+    if (!lesson) throw new ApiError(404, 'Lesson not found');
+
+    // Fetch the PDF file securely
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(pdfUrl);
+    } catch (e) {
+      throw new ApiError(400, 'Invalid PDF URL format');
+    }
+    
+    const response = await fetch(parsedUrl.href);
+    if (!response.ok) throw new ApiError(400, 'Failed to fetch PDF file');
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const fileBuffer = Buffer.from(arrayBuffer);
+
+    // Call AI Service
+    const whQuestions = await generateWHQuestions({
+      fileBuffer,
+      mimeType: 'application/pdf',
+      numQuestions: 5,
+      chapterName: lesson.title
+    });
+
+    res.json(new ApiResponse(200, whQuestions, 'WH Questions generated'));
+  } catch (err) { next(err); }
+}
+
+export async function saveLessonWH(req, res, next) {
+  try {
+    const { id, sectionIndex, lessonIndex } = req.params;
+    const { whQuestions } = req.body;
+
+    if (!Array.isArray(whQuestions)) throw new ApiError(400, 'whQuestions must be an array');
+
+    const course = await Course.findById(id);
+    if (!course) throw new ApiError(404, 'Course not found');
+    if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      throw new ApiError(403, 'Not authorized');
+    }
+
+    if (!course.curriculum[sectionIndex] || !course.curriculum[sectionIndex].lessons[lessonIndex]) {
+      throw new ApiError(404, 'Lesson not found');
+    }
+
+    course.curriculum[sectionIndex].lessons[lessonIndex].whQuestions = whQuestions;
+    
+    // Mark modified so mongoose saves the mixed subdocument properly
+    course.markModified('curriculum');
+    await course.save();
+
+    res.json(new ApiResponse(200, course, 'WH Questions saved successfully'));
+  } catch (err) { next(err); }
+}

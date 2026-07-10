@@ -16,7 +16,10 @@ import {
   BookOpenCheck,
   FolderPlus,
   Plus,
-  Edit2
+  Edit2,
+  Sparkles,
+  Save,
+  X
 } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
@@ -34,6 +37,16 @@ export default function UploadNotes() {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedSections, setExpandedSections] = useState({})
   const [uploadingLessonId, setUploadingLessonId] = useState(null)
+
+  // WH Questions Modal state
+  const [whModalState, setWhModalState] = useState({
+    isOpen: false,
+    isGenerating: false,
+    questions: [],
+    sectionIndex: null,
+    lessonIndex: null,
+    resourceName: '',
+  })
 
   // Creation states
   const [isAddingSection, setIsAddingSection] = useState(false)
@@ -333,6 +346,51 @@ export default function UploadNotes() {
     )
   }
 
+  // ── WH Questions Actions ──
+  const handleGenerateWH = async (sectionIndex, lessonIndex, resourceUrl, resourceName) => {
+    setWhModalState({
+      isOpen: true,
+      isGenerating: true,
+      questions: [],
+      sectionIndex,
+      lessonIndex,
+      resourceName,
+    })
+
+    try {
+      const res = await api.post(`/courses/${course._id}/sections/${sectionIndex}/lessons/${lessonIndex}/generate-wh`, { pdfUrl: resourceUrl })
+      setWhModalState(prev => ({
+        ...prev,
+        isGenerating: false,
+        questions: res.data.data
+      }))
+    } catch (err) {
+      toast.error('Failed to generate WH questions')
+      setWhModalState(prev => ({ ...prev, isOpen: false, isGenerating: false }))
+    }
+  }
+
+  const handlePublishWH = async () => {
+    const { sectionIndex, lessonIndex, questions } = whModalState
+    const toastId = toast.loading('Publishing WH Questions...')
+    try {
+      const res = await api.put(`/courses/${course._id}/sections/${sectionIndex}/lessons/${lessonIndex}/wh-questions`, { whQuestions: questions })
+      setCourse(res.data.data)
+      toast.success('WH Questions published to the module!', { id: toastId })
+      setWhModalState(prev => ({ ...prev, isOpen: false }))
+    } catch (err) {
+      toast.error('Failed to publish WH questions', { id: toastId })
+    }
+  }
+
+  const handleWHChange = (index, field, value) => {
+    setWhModalState(prev => {
+      const updated = [...prev.questions]
+      updated[index][field] = value
+      return { ...prev, questions: updated }
+    })
+  }
+
   // Filter sections and lessons by search query
   const filteredCurriculum = course?.curriculum?.map((section) => {
     const matchedLessons = section.lessons?.filter(lesson => 
@@ -597,6 +655,13 @@ export default function UploadNotes() {
                                                 </div>
 
                                                 <div className="flex items-center gap-1.5 shrink-0">
+                                                  <button
+                                                    onClick={() => handleGenerateWH(sectionIndex, lessonIndex, res.url, res.name)}
+                                                    title="Generate WH Questions"
+                                                    className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-colors"
+                                                  >
+                                                    <Sparkles size={12} /> Gen WH
+                                                  </button>
                                                   <a 
                                                     href={res.url} 
                                                     target="_blank" 
@@ -738,6 +803,96 @@ export default function UploadNotes() {
           confirmLabel="Delete"
           confirmVariant="danger"
         />
+
+        {/* Glassmorphism Modal for WH Questions */}
+        <AnimatePresence>
+          {whModalState.isOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-xl bg-black/40"
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                className="bg-white/90 dark:bg-gray-900/90 w-full max-w-3xl max-h-[85vh] rounded-3xl shadow-2xl border border-white/20 overflow-hidden flex flex-col"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800/50 bg-white/50 dark:bg-gray-800/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600">
+                      <Sparkles size={20} />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                        AI Generated Questions
+                      </h2>
+                      <p className="text-xs text-gray-500">From: {whModalState.resourceName}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setWhModalState(prev => ({ ...prev, isOpen: false }))}
+                    className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  {whModalState.isGenerating ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-indigo-500">
+                      <Loader2 size={48} className="animate-spin mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Reading Document...</h3>
+                      <p className="text-sm text-gray-500 mt-2 text-center max-w-sm">
+                        Our AI is extracting key concepts and forming WH questions. This takes just a moment!
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {whModalState.questions.map((q, idx) => (
+                        <div key={idx} className="bg-white/60 dark:bg-gray-800/60 p-5 rounded-2xl border border-gray-100 dark:border-gray-700/50 shadow-sm space-y-4">
+                          <div>
+                            <label className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1.5 block">Question {idx + 1}</label>
+                            <input
+                              type="text"
+                              value={q.question}
+                              onChange={(e) => handleWHChange(idx, 'question', e.target.value)}
+                              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:border-indigo-500 transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1.5 block">Answer</label>
+                            <textarea
+                              value={q.answer}
+                              onChange={(e) => handleWHChange(idx, 'answer', e.target.value)}
+                              rows={3}
+                              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                {!whModalState.isGenerating && (
+                  <div className="p-5 border-t border-gray-200 dark:border-gray-800/50 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end gap-3">
+                    <Button variant="outline" onClick={() => setWhModalState(prev => ({ ...prev, isOpen: false }))}>
+                      Discard
+                    </Button>
+                    <Button onClick={handlePublishWH} className="flex items-center gap-2">
+                      <Save size={16} /> Publish to Module
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     </PageLayout>
