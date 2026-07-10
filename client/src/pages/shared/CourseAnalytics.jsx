@@ -212,10 +212,10 @@ export default function CourseAnalytics() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
           {[
             { label: 'Total Enrollments', value: kpis.totalEnrollments, icon: Users, color: '#2563EB', bg: '#EFF6FF' },
-            { label: 'Avg Watch Time', value: formatTime(kpis.averageWatchTime), icon: PlayCircle, color: '#10B981', bg: '#F0FDF4' },
-            { label: 'Avg Attendance', value: `${kpis.averageAttendanceRate.toFixed(1)}%`, icon: CheckCircle, color: '#8B5CF6', bg: '#F5F3FF' },
+            { label: 'Avg Watch Time', value: kpis.averageWatchTime === null ? 'No Data Yet' : formatTime(kpis.averageWatchTime), icon: PlayCircle, color: '#10B981', bg: '#F0FDF4' },
+            { label: 'Avg Attendance', value: kpis.averageAttendanceRate === null ? 'No Lectures in Period' : `${kpis.averageAttendanceRate.toFixed(1)}%`, icon: CheckCircle, color: '#8B5CF6', bg: '#F5F3FF' },
             { label: 'Avg Progress', value: `${kpis.averageProgressPercentage.toFixed(1)}%`, icon: BarChart2, color: '#F59E0B', bg: '#FFFBEB' },
-            { label: 'Assessment Avg', value: `${kpis.assessmentAverage.toFixed(1)}%`, icon: ShieldAlert, color: '#EC4899', bg: '#FDF2F8' },
+            { label: 'Assessment Avg', value: kpis.assessmentAverage === null ? 'No Assessments in Period' : `${kpis.assessmentAverage.toFixed(1)}%`, icon: ShieldAlert, color: '#EC4899', bg: '#FDF2F8' },
             { label: 'Health Score', value: `${kpis.courseHealthScore.toFixed(1)} / 100`, icon: Star, color: '#14B8A6', bg: '#F0FDFA' },
           ].map((kpi, i) => (
             <div key={i} className="p-5 rounded-2xl border flex items-center gap-4 transition-all hover:shadow-sm" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>

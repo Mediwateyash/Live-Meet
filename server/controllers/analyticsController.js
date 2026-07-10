@@ -154,7 +154,7 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
     const learningFunnel = { enrolled: totalEnrollments, started, reached50, reached75, completed: completedStudents };
 
     // 4. Assessment Average, Trend, and Performance Distribution
-    let assessmentAverage = 0;
+    let assessmentAverage = null;
     const assessmentTrend = [];
     const performanceDistribution = {
         excellent: 0, good: 0, average: 0, atRisk: 0, noAssessmentData: totalEnrollments
@@ -171,8 +171,8 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
             if (!enrolledStudentsSet.has(studentIdStr)) return;
 
             const quizInfo = quizMap.get(String(r.quizId));
-            if (quizInfo && quizInfo.maxScore > 0) {
-                const normalized = (r.score / quizInfo.maxScore) * 100;
+            if (quizInfo) {
+                const normalized = r.score; // Result.score is already a percentage (0-100)
                 totalNormalizedScore += normalized;
                 validResultsCount++;
 
@@ -221,12 +221,16 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
 
     // 5. Average Attendance and Attendance Trend
     const totalLectures = lectures.length;
-    let averageAttendanceRate = 0;
+    let averageAttendanceRate = null;
     let totalAttendeeCount = 0;
     const attendanceTrend = [];
 
-    if (totalLectures > 0 && totalEnrollments > 0) {
+    if (totalLectures > 0) {
         let totalLectureRates = 0;
+        
+        if (totalEnrollments === 0) {
+            averageAttendanceRate = 0;
+        } else {
 
         lectures.forEach(lecture => {
             const uniqueAttendees = new Set();
@@ -249,7 +253,9 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
                 attendeeCount: validAttendees
             });
         });
-        averageAttendanceRate = totalLectureRates / totalLectures;
+        if (totalEnrollments > 0) {
+            averageAttendanceRate = totalLectureRates / totalLectures;
+        }
     }
     const averageAttendeeCount = totalLectures > 0 ? (totalAttendeeCount / totalLectures) : 0;
 
@@ -291,8 +297,8 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
     const validVideoEngagementCount = videoEngagements.filter(ve => enrolledStudentsSet.has(String(ve.studentId))).length;
     
     const videoAnalytics = {
-        averageWatchTime: engagedLearnerCount > 0 ? (totalWatchedSeconds / engagedLearnerCount) : 0,
-        averageUniqueWatchTime: engagedLearnerCount > 0 ? (totalUniqueWatchedSeconds / engagedLearnerCount) : 0,
+        averageWatchTime: validVideoEngagementCount > 0 ? (engagedLearnerCount > 0 ? (totalWatchedSeconds / engagedLearnerCount) : 0) : null,
+        averageUniqueWatchTime: validVideoEngagementCount > 0 ? (engagedLearnerCount > 0 ? (totalUniqueWatchedSeconds / engagedLearnerCount) : 0) : null,
         averageVideoCompletion: validVideoEngagementCount > 0 ? (totalVideoCompletion / validVideoEngagementCount) : 0,
         videoCompletionRate: validVideoEngagementCount > 0 ? (completedVideoCount / validVideoEngagementCount) * 100 : 0,
         totalVideoSessions,
@@ -318,13 +324,13 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
     let activeWeightsTotal = 0;
     const availableMetrics = {};
     
-    if (totalLectures > 0) { availableMetrics.attendance = averageAttendanceRate; activeWeightsTotal += weights.attendance; }
+    if (totalLectures > 0) { availableMetrics.attendance = averageAttendanceRate || 0; activeWeightsTotal += weights.attendance; }
     else { availableMetrics.attendance = null; }
 
     availableMetrics.progress = averageProgressPercentage;
     activeWeightsTotal += weights.progress;
 
-    if (results.length > 0) { availableMetrics.assessment = assessmentAverage; activeWeightsTotal += weights.assessment; }
+    if (validResultsCount > 0) { availableMetrics.assessment = assessmentAverage || 0; activeWeightsTotal += weights.assessment; }
     else { availableMetrics.assessment = null; }
 
     availableMetrics.activity = recentActivityRate;
@@ -373,7 +379,7 @@ export const getCourseAIInsights = async (req, res) => {
         const { forceRefresh, dateRange = 'all' } = req.query;
 
         // Generate deterministic contextHash based on normalized filters
-        const analyticsVersion = 'v1';
+        const analyticsVersion = 'v2';
         const contextPayload = { courseId, dateRange, analyticsVersion };
         const contextHash = Buffer.from(JSON.stringify(contextPayload)).toString('base64');
 
