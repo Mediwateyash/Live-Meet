@@ -437,27 +437,45 @@ export default function CourseAnalytics() {
             <div className="flex-1 w-full">
               {assessmentTrend && assessmentTrend.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={assessmentTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <LineChart data={assessmentTrend} margin={{ top: 20, right: 30, left: -10, bottom: 25 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6B7280' }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} tickLine={false} axisLine={false} domain={[0, 100]} />
+                    <XAxis 
+                      dataKey="quizTitle" 
+                      tick={{ fontSize: 11, fill: '#6B7280' }} 
+                      tickLine={false} 
+                      axisLine={false} 
+                      tickFormatter={(val) => val.length > 12 ? val.substring(0, 12) + '...' : val}
+                      angle={-25}
+                      textAnchor="end"
+                      dy={10}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 12, fill: '#6B7280' }} 
+                      tickLine={false} 
+                      axisLine={false} 
+                      domain={[0, 100]} 
+                      tickFormatter={(val) => `${val}%`}
+                    />
                     <RechartsTooltip 
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload
                           return (
                             <div className="bg-white p-3 border rounded-xl shadow-lg text-sm">
-                              <p className="font-bold mb-1">{data.quizTitle}</p>
-                              <p className="text-gray-500 mb-2">{data.date}</p>
-                              <p className="text-[#EC4899] font-semibold">Avg Score: {data.averageScore.toFixed(1)}%</p>
-                              <p className="text-gray-700">Attempts: {data.attempts}</p>
+                              <p className="font-bold mb-1 text-gray-800">{data.quizTitle}</p>
+                              <p className="text-gray-500 mb-2 text-xs">{data.date}</p>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="w-3 h-3 rounded-full bg-[#EC4899]"></span>
+                                <p className="text-[#EC4899] font-semibold">Avg Score: {data.averageScore.toFixed(1)}%</p>
+                              </div>
+                              <p className="text-gray-700 font-medium pl-5">People Attempted: {data.attempts}</p>
                             </div>
                           )
                         }
                         return null
                       }}
                     />
-                    <Line type="monotone" dataKey="averageScore" stroke="#EC4899" strokeWidth={3} dot={{ r: 4, fill: '#EC4899' }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="averageScore" stroke="#EC4899" strokeWidth={3} dot={{ r: 4, fill: '#EC4899' }} activeDot={{ r: 6 }} label={{ position: 'top', fill: '#EC4899', fontSize: 12, formatter: (val) => `${val.toFixed(0)}%`, dy: -10 }} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
