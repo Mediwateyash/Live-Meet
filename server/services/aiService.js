@@ -333,22 +333,22 @@ ${JSON.stringify(analyticsSummary, null, 2)}
             const responseText = result.response.text();
 
             let jsonStr = responseText.trim();
-            if (jsonStr.includes('\`\`\`')) {
-                jsonStr = jsonStr.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+            if (jsonStr.includes('```')) {
+                jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
             }
 
             const parsedInsights = JSON.parse(jsonStr);
             
             const { error, value } = courseInsightSchema.validate(parsedInsights, { stripUnknown: true });
             if (error) {
-                throw new Error(\`AI Output Validation Failed: \${error.message}\`);
+                throw new Error(`AI Output Validation Failed: ${error.message}`);
             }
             return value;
 
         } catch (error) {
-            console.error(\`AI Insight Attempt \${attempt} failed:\`, error.message);
+            console.error(`AI Insight Attempt ${attempt} failed:`, error.message);
             if (attempt === MAX_RETRIES) {
-                throw new Error(\`AI Insight Generation failed after \${MAX_RETRIES} attempts: \${error.message}\`);
+                throw new Error(`AI Insight Generation failed after ${MAX_RETRIES} attempts: ${error.message}`);
             }
         }
     }
