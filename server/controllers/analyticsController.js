@@ -329,7 +329,7 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
     availableMetrics.progress = averageProgressPercentage;
     activeWeightsTotal += weights.progress;
 
-    if (validResultsCount > 0) { availableMetrics.assessment = assessmentAverage || 0; activeWeightsTotal += weights.assessment; }
+    if (assessmentAverage !== null) { availableMetrics.assessment = assessmentAverage || 0; activeWeightsTotal += weights.assessment; }
     else { availableMetrics.assessment = null; }
 
     availableMetrics.activity = recentActivityRate;
