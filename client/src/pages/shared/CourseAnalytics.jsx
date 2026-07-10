@@ -562,12 +562,12 @@ export default function CourseAnalytics() {
                           ))}
                         </Bar>
                       </BarChart>
-                    </ResponsiveContainer>
-                 </div>
+                     </ResponsiveContainer>
+                  </div>
+                </div>
               )}
            </div>
 
-        </div>
         </div>
       </div>
     </PageLayout>
