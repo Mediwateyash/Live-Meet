@@ -85,6 +85,8 @@ export async function savePosition(req, res, next) {
     )
     res.json(new ApiResponse(200, progress))
   } catch (err) { next(err) }
+}
+
 export async function syncVideoProgress(req, res, next) {
   try {
     const { courseId, lessonId, videoDuration, lastPlaybackPosition, intervals, isNewSession, syncId } = req.body;
