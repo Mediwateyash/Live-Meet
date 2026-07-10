@@ -253,8 +253,7 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
                 attendeeCount: validAttendees
             });
         });
-        if (totalEnrollments > 0) {
-            averageAttendanceRate = totalLectureRates / totalLectures;
+        averageAttendanceRate = totalLectureRates / totalLectures;
         }
     }
     const averageAttendeeCount = totalLectures > 0 ? (totalAttendeeCount / totalLectures) : 0;
