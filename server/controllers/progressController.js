@@ -1,5 +1,6 @@
 import Progress from '../models/Progress.js'
 import Course   from '../models/Course.js'
+import VideoEngagement from '../models/VideoEngagement.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 
@@ -83,5 +84,92 @@ export async function savePosition(req, res, next) {
     )
     res.json(new ApiResponse(200, progress))
   } catch (err) { next(err) }
-}
+export async function syncVideoProgress(req, res, next) {
+  try {
+    const { courseId, lessonId, videoDuration, lastPlaybackPosition, pendingIntervals, isNewSession } = req.body;
+    const studentId = req.user._id;
 
+    if (!courseId || !lessonId || !pendingIntervals || !Array.isArray(pendingIntervals)) {
+      throw new ApiError(400, "Missing required fields");
+    }
+
+    // Filter valid intervals
+    const validIntervals = pendingIntervals.filter(i => 
+      typeof i.start === 'number' &&
+      typeof i.end === 'number' &&
+      i.start >= 0 && 
+      i.end >= i.start && 
+      (videoDuration ? i.end <= videoDuration + 2 : true)
+    );
+
+    const incrementalWatchedSeconds = validIntervals.reduce((total, i) => total + (i.end - i.start), 0);
+
+    let engagement = await VideoEngagement.findOne({ studentId, courseId, lessonId });
+
+    if (!engagement) {
+      engagement = new VideoEngagement({
+        studentId,
+        courseId,
+        lessonId,
+        videoDuration,
+        totalWatchedSeconds: 0,
+        watchedIntervals: [],
+        sessionCount: 0
+      });
+    }
+
+    // Update basic stats
+    if (videoDuration && engagement.videoDuration === 0) {
+      engagement.videoDuration = videoDuration;
+    }
+    engagement.lastPlaybackPosition = lastPlaybackPosition;
+    engagement.lastWatchedAt = new Date();
+    
+    if (isNewSession) {
+      engagement.sessionCount += 1;
+    }
+
+    if (incrementalWatchedSeconds > 0) {
+      engagement.totalWatchedSeconds += incrementalWatchedSeconds;
+      
+      const combinedIntervals = [...engagement.watchedIntervals, ...validIntervals];
+      
+      // Sort and merge overlapping intervals
+      combinedIntervals.sort((a, b) => a.start - b.start);
+      const merged = [combinedIntervals[0]];
+      for (let i = 1; i < combinedIntervals.length; i++) {
+        const current = combinedIntervals[i];
+        const lastMerged = merged[merged.length - 1];
+        
+        if (current.start <= lastMerged.end + 0.1) {
+          lastMerged.end = Math.max(lastMerged.end, current.end);
+        } else {
+          merged.push(current);
+        }
+      }
+      
+      engagement.watchedIntervals = merged;
+      
+      // Calculate unique watched seconds
+      engagement.uniqueWatchedSeconds = merged.reduce((total, i) => total + (i.end - i.start), 0);
+      
+      if (engagement.videoDuration > 0) {
+        engagement.completionPercentage = Math.min(100, (engagement.uniqueWatchedSeconds / engagement.videoDuration) * 100);
+        
+        if (engagement.completionPercentage >= 90) { 
+          engagement.isCompleted = true;
+          // Note: we do not silently modify the Progress document here to avoid breaking existing UI assumptions.
+        }
+      }
+    }
+
+    await engagement.save();
+
+    res.json(new ApiResponse(200, {
+      uniqueWatchedSeconds: engagement.uniqueWatchedSeconds,
+      completionPercentage: engagement.completionPercentage,
+      isCompleted: engagement.isCompleted
+    }, 'Video engagement synced'));
+    
+  } catch (err) { next(err) }
+}

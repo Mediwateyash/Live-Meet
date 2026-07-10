@@ -88,6 +88,61 @@ export default function CoursePlayer() {
   const [feedbackRating, setFeedbackRating] = useState(5)
   const [submittingFeedback, setSubmittingFeedback] = useState(false)
 
+  // Video Tracking Refs
+  const trackingRef = useRef({
+    currentInterval: null,
+    pendingIntervals: [],
+    isNewSession: true,
+    videoDuration: 0,
+    courseId: null,
+    lessonId: null,
+  })
+
+  const flushEngagement = async () => {
+    const state = trackingRef.current;
+    if (!state.courseId || !state.lessonId) return;
+    
+    let intervalsToSync = [...state.pendingIntervals];
+    if (state.currentInterval) {
+      intervalsToSync.push(state.currentInterval);
+      state.currentInterval = null;
+    }
+    
+    if (intervalsToSync.length === 0) return;
+    
+    // Optimistic clear
+    state.pendingIntervals = [];
+
+    try {
+      await progressAPI.syncVideoProgress({
+        courseId: state.courseId,
+        lessonId: state.lessonId,
+        videoDuration: state.videoDuration,
+        lastPlaybackPosition: playerRef.current?.getCurrentTime() || 0,
+        pendingIntervals: intervalsToSync,
+        isNewSession: state.isNewSession
+      });
+      state.isNewSession = false;
+    } catch (err) {
+      // restore on failure
+      state.pendingIntervals = [...intervalsToSync, ...state.pendingIntervals];
+    }
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+       flushEngagement();
+    }, 15000);
+    return () => {
+       clearInterval(timer);
+       flushEngagement();
+    };
+  }, []);
+
+  useEffect(() => {
+    trackingRef.current.courseId = course?._id;
+  }, [course]);
+
   // Polling / Refetch Progress
   const refetchProgress = async () => {
     if (!course) return;
@@ -126,6 +181,14 @@ export default function CoursePlayer() {
   }, [course])
 
   useEffect(() => {
+    if (currentLesson) {
+      flushEngagement();
+      trackingRef.current.lessonId = currentLesson._id;
+      trackingRef.current.currentInterval = null;
+      trackingRef.current.pendingIntervals = [];
+      trackingRef.current.isNewSession = true;
+      trackingRef.current.videoDuration = 0;
+    }
     setVideoEnded(false)
     setQuickQuizActive(false)
     setQuickQuizMCQs([])
@@ -299,8 +362,29 @@ export default function CoursePlayer() {
                 width="100%"
                 height="100%"
                 controls
+                onDuration={(dur) => {
+                   trackingRef.current.videoDuration = dur;
+                }}
+                onPause={() => {
+                   flushEngagement();
+                }}
                 onProgress={({ playedSeconds, played }) => {
                   if (course) progressAPI.savePosition(course._id, { lessonId: currentLesson._id, position: Math.floor(playedSeconds) }).catch(() => { })
+                  
+                  // Tracking logic
+                  const state = trackingRef.current;
+                  if (!state.currentInterval) {
+                    state.currentInterval = { start: playedSeconds, end: playedSeconds };
+                  } else {
+                    if (playedSeconds >= state.currentInterval.end && playedSeconds <= state.currentInterval.end + 2) {
+                      state.currentInterval.end = playedSeconds;
+                    } else {
+                      // Seek occurred
+                      state.pendingIntervals.push({ ...state.currentInterval });
+                      state.currentInterval = { start: playedSeconds, end: playedSeconds };
+                    }
+                  }
+
                   if (played >= 0.9 && !videoEnded) {
                     setVideoEnded(true)
                     if (!isCompleted(currentLesson?._id) && !marking) {
@@ -309,6 +393,7 @@ export default function CoursePlayer() {
                   }
                 }}
                 onEnded={() => {
+                  flushEngagement();
                   if (!videoEnded) {
                     setVideoEnded(true)
                     if (!isCompleted(currentLesson?._id) && !marking) {
