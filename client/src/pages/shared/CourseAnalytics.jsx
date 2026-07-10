@@ -36,11 +36,13 @@ export default function CourseAnalytics() {
   const [dateRange, setDateRange] = useState('7d')
   const [batch, setBatch] = useState('')
   const [module, setModule] = useState('')
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
-    setLoading(true)
+    if (!course) setLoading(true)
+    else setIsRefreshing(true)
     
-    analyticsAPI.getCourseStats(courseId)
+    analyticsAPI.getCourseStats(courseId, dateRange)
       .then(res => {
         setCourse(res.data.course)
         setKpis(res.data.kpis)
@@ -58,14 +60,23 @@ export default function CourseAnalytics() {
       })
       .finally(() => {
         setLoading(false)
+        setIsRefreshing(false)
       })
-  }, [courseId])
+  }, [courseId, dateRange])
+
+  useEffect(() => {
+    // Automatically attempt to load a cached AI insight for the new dateRange
+    if (course) {
+      setAiInsights(null) // clear stale insights immediately
+      fetchAiInsights(false)
+    }
+  }, [dateRange, courseId])
 
   const fetchAiInsights = async (forceRefresh = false) => {
     setLoadingAi(true);
     setAiError(null);
     try {
-      const res = await analyticsAPI.getCourseAIInsights(courseId, forceRefresh);
+      const res = await analyticsAPI.getCourseAIInsights(courseId, forceRefresh, dateRange);
       setAiInsights(res.data);
     } catch (err) {
       console.error(err);
@@ -158,6 +169,7 @@ export default function CourseAnalytics() {
               <h1 className="text-3xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
                 {course.title}
               </h1>
+              {isRefreshing && <span className="ml-3 text-sm font-medium text-blue-500 animate-pulse">Updating...</span>}
             </div>
             
             {/* Filters */}
@@ -172,22 +184,26 @@ export default function CourseAnalytics() {
                 ]}
                 className="w-40"
               />
-              <Select 
-                value={batch} 
-                onChange={setBatch}
-                options={[
-                  { value: '', label: 'All Batches' }
-                ]}
-                className="w-40"
-              />
-              <Select 
-                value={module} 
-                onChange={setModule}
-                options={[
-                  { value: '', label: 'All Modules' }
-                ]}
-                className="w-40"
-              />
+              <div title="Batch analytics is unavailable because course-specific batch membership is not currently mapped." className="opacity-60 cursor-not-allowed">
+                <Select 
+                  value={batch} 
+                  onChange={() => {}}
+                  options={[
+                    { value: '', label: 'All Batches' }
+                  ]}
+                  className="w-40 pointer-events-none"
+                />
+              </div>
+              <div title="Module analytics requires module mapping for assessments and live lectures." className="opacity-60 cursor-not-allowed">
+                <Select 
+                  value={module} 
+                  onChange={() => {}}
+                  options={[
+                    { value: '', label: 'All Modules' }
+                  ]}
+                  className="w-40 pointer-events-none"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -214,7 +230,8 @@ export default function CourseAnalytics() {
           ))}
         </div>
 
-        {/* AI Course Insights Panel */}
+        <div className={`transition-opacity duration-300 ${isRefreshing ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
+          {/* AI Course Insights Panel */}
         <div className="mb-8 p-6 rounded-2xl border shadow-sm relative overflow-hidden" style={{ background: 'linear-gradient(145deg, var(--bg-surface) 0%, rgba(124, 58, 237, 0.03) 100%)', borderColor: 'var(--border-default)' }}>
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 border-b pb-4" style={{ borderColor: 'var(--border-default)' }}>
                 <div className="flex items-center gap-3">
@@ -547,10 +564,10 @@ export default function CourseAnalytics() {
                       </BarChart>
                     </ResponsiveContainer>
                  </div>
-               </div>
-             )}
-          </div>
+              )}
+           </div>
 
+        </div>
         </div>
       </div>
     </PageLayout>
