@@ -19,7 +19,8 @@ import {
   Sparkles,
   Save,
   X,
-  RefreshCw
+  RefreshCw,
+  Brain
 } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
