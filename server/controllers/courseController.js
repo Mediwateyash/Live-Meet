@@ -422,7 +422,7 @@ export async function getYoutubeMeta(req, res, next) {
 export async function generateLessonWH(req, res, next) {
   try {
     const { id, sectionIndex, lessonIndex } = req.params;
-    const { pdfUrl } = req.body;
+    const { pdfUrl, numQuestions = 5 } = req.body;
     
     if (!pdfUrl) throw new ApiError(400, 'PDF URL is required');
 
@@ -453,7 +453,7 @@ export async function generateLessonWH(req, res, next) {
     const whQuestions = await generateWHQuestions({
       fileBuffer,
       mimeType: 'application/pdf',
-      numQuestions: 5,
+      numQuestions: Math.min(Math.max(parseInt(numQuestions), 2), 20),
       chapterName: lesson.title
     });
 

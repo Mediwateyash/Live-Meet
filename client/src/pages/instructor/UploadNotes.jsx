@@ -15,11 +15,11 @@ import {
   Search,
   BookOpenCheck,
   FolderPlus,
-  Plus,
   Edit2,
   Sparkles,
   Save,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
@@ -41,11 +41,13 @@ export default function UploadNotes() {
   // WH Questions Modal state
   const [whModalState, setWhModalState] = useState({
     isOpen: false,
-    isGenerating: false,
+    step: 'setup', // 'setup', 'generating', 'edit'
     questions: [],
     sectionIndex: null,
     lessonIndex: null,
+    resourceUrl: '',
     resourceName: '',
+    numQuestions: 5,
   })
 
   // Creation states
@@ -347,26 +349,36 @@ export default function UploadNotes() {
   }
 
   // ── WH Questions Actions ──
-  const handleGenerateWH = async (sectionIndex, lessonIndex, resourceUrl, resourceName) => {
+  const handleOpenWHModal = (sectionIndex, lessonIndex, resourceUrl, resourceName, existingQuestions = null) => {
     setWhModalState({
       isOpen: true,
-      isGenerating: true,
-      questions: [],
+      step: existingQuestions && existingQuestions.length > 0 ? 'edit' : 'setup',
+      questions: existingQuestions ? [...existingQuestions] : [],
       sectionIndex,
       lessonIndex,
+      resourceUrl,
       resourceName,
+      numQuestions: existingQuestions ? existingQuestions.length : 5,
     })
+  }
+
+  const handleGenerateWH = async () => {
+    const { sectionIndex, lessonIndex, resourceUrl, numQuestions } = whModalState
+    setWhModalState(prev => ({ ...prev, step: 'generating' }))
 
     try {
-      const res = await api.post(`/courses/${course._id}/sections/${sectionIndex}/lessons/${lessonIndex}/generate-wh`, { pdfUrl: resourceUrl })
+      const res = await api.post(`/courses/${course._id}/sections/${sectionIndex}/lessons/${lessonIndex}/generate-wh`, { 
+        pdfUrl: resourceUrl,
+        numQuestions 
+      })
       setWhModalState(prev => ({
         ...prev,
-        isGenerating: false,
+        step: 'edit',
         questions: res.data.data
       }))
     } catch (err) {
       toast.error('Failed to generate WH questions')
-      setWhModalState(prev => ({ ...prev, isOpen: false, isGenerating: false }))
+      setWhModalState(prev => ({ ...prev, step: 'setup' }))
     }
   }
 
@@ -655,13 +667,23 @@ export default function UploadNotes() {
                                                 </div>
 
                                                 <div className="flex items-center gap-1.5 shrink-0">
-                                                  <button
-                                                    onClick={() => handleGenerateWH(sectionIndex, lessonIndex, res.url, res.name)}
-                                                    title="Generate WH Questions"
-                                                    className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-colors"
-                                                  >
-                                                    <Sparkles size={12} /> Gen WH
-                                                  </button>
+                                                  {lesson.whQuestions && lesson.whQuestions.length > 0 ? (
+                                                    <button
+                                                      onClick={() => handleOpenWHModal(sectionIndex, lessonIndex, res.url, res.name, lesson.whQuestions)}
+                                                      title="Edit WH Questions"
+                                                      className="flex items-center gap-1 px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg text-xs font-bold transition-colors"
+                                                    >
+                                                      <Edit2 size={12} /> Edit WH
+                                                    </button>
+                                                  ) : (
+                                                    <button
+                                                      onClick={() => handleOpenWHModal(sectionIndex, lessonIndex, res.url, res.name)}
+                                                      title="Generate WH Questions"
+                                                      className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-colors"
+                                                    >
+                                                      <Sparkles size={12} /> Gen WH
+                                                    </button>
+                                                  )}
                                                   <a 
                                                     href={res.url} 
                                                     target="_blank" 
@@ -842,34 +864,102 @@ export default function UploadNotes() {
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                  {whModalState.isGenerating ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-indigo-500">
-                      <Loader2 size={48} className="animate-spin mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Reading Document...</h3>
-                      <p className="text-sm text-gray-500 mt-2 text-center max-w-sm">
-                        Our AI is extracting key concepts and forming WH questions. This takes just a moment!
+                  {whModalState.step === 'setup' && (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-6 border border-indigo-100 dark:border-indigo-800/30">
+                        <Brain size={32} className="text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center" style={{ fontFamily: 'Outfit, sans-serif' }}>Configure Generation</h3>
+                      <p className="text-sm text-gray-500 text-center max-w-sm mb-8">
+                        How many WH (Who, What, Where, When, Why) questions would you like the AI to extract from this document?
+                      </p>
+                      
+                      <div className="w-full max-w-md bg-white dark:bg-gray-800/60 p-6 rounded-2xl border border-gray-100 dark:border-gray-700/50 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                          <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Number of Questions</label>
+                          <span className="text-lg font-black text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-xl">
+                            {whModalState.numQuestions}
+                          </span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="2" 
+                          max="20" 
+                          value={whModalState.numQuestions}
+                          onChange={(e) => setWhModalState(prev => ({ ...prev, numQuestions: parseInt(e.target.value) }))}
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 dark:bg-gray-700"
+                        />
+                        <div className="flex justify-between text-xs text-gray-400 mt-2 font-medium">
+                          <span>2 min</span>
+                          <span>20 max</span>
+                        </div>
+                      </div>
+                      
+                      <button 
+                        onClick={handleGenerateWH}
+                        className="mt-8 flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95"
+                      >
+                        <Sparkles size={18} /> Start Generating
+                      </button>
+                    </div>
+                  )}
+
+                  {whModalState.step === 'generating' && (
+                    <div className="flex flex-col items-center justify-center py-20">
+                      <div className="relative w-24 h-24 mb-8">
+                        {/* Outer rotating ring */}
+                        <div className="absolute inset-0 border-4 border-t-indigo-500 border-r-transparent border-b-purple-500 border-l-transparent rounded-full animate-[spin_1.5s_linear_infinite]"></div>
+                        {/* Inner rotating ring (opposite direction) */}
+                        <div className="absolute inset-2 border-4 border-t-purple-400 border-l-transparent border-b-indigo-400 border-r-transparent rounded-full animate-[spin_1s_linear_infinite_reverse]"></div>
+                        {/* Center Icon */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full scale-75 shadow-inner">
+                          <Brain size={28} className="text-indigo-600 dark:text-indigo-400 animate-pulse" />
+                        </div>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 dark:text-white" style={{ fontFamily: 'Outfit, sans-serif' }}>Reading Document...</h3>
+                      <div className="w-64 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full mt-6 overflow-hidden relative">
+                        <div className="absolute top-0 bottom-0 w-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-[ping_1.5s_ease-in-out_infinite] opacity-50"></div>
+                        <div className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-[slide_1s_ease-in-out_infinite_alternate]"></div>
+                      </div>
+                      <style>{`
+                        @keyframes slide {
+                          from { left: 0%; }
+                          to { left: 66%; }
+                        }
+                      `}</style>
+                      <p className="text-sm text-gray-500 mt-5 text-center max-w-sm">
+                        Extracting core concepts and forming {whModalState.numQuestions} WH questions.
                       </p>
                     </div>
-                  ) : (
+                  )}
+
+                  {whModalState.step === 'edit' && (
                     <div className="space-y-6">
                       {whModalState.questions.map((q, idx) => (
-                        <div key={idx} className="bg-white/60 dark:bg-gray-800/60 p-5 rounded-2xl border border-gray-100 dark:border-gray-700/50 shadow-sm space-y-4">
-                          <div>
-                            <label className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1.5 block">Question {idx + 1}</label>
+                        <div key={idx} className="bg-white/60 dark:bg-gray-800/60 p-5 rounded-2xl border border-gray-100 dark:border-gray-700/50 shadow-sm space-y-4 relative group hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-colors">
+                          <div className="absolute -left-3 -top-3 w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 flex items-center justify-center font-bold text-sm shadow-sm border border-indigo-200 dark:border-indigo-800/30">
+                            {idx + 1}
+                          </div>
+                          <div className="pl-2">
+                            <label className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                              Question
+                            </label>
                             <input
                               type="text"
                               value={q.question}
                               onChange={(e) => handleWHChange(idx, 'question', e.target.value)}
-                              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:border-indigo-500 transition-colors"
+                              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium text-gray-800 dark:text-gray-100"
                             />
                           </div>
-                          <div>
-                            <label className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1.5 block">Answer</label>
+                          <div className="pl-2">
+                            <label className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                              Answer
+                            </label>
                             <textarea
                               value={q.answer}
                               onChange={(e) => handleWHChange(idx, 'answer', e.target.value)}
                               rows={3}
-                              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+                              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none text-gray-700 dark:text-gray-300 leading-relaxed"
                             />
                           </div>
                         </div>
@@ -879,14 +969,22 @@ export default function UploadNotes() {
                 </div>
 
                 {/* Footer */}
-                {!whModalState.isGenerating && (
-                  <div className="p-5 border-t border-gray-200 dark:border-gray-800/50 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => setWhModalState(prev => ({ ...prev, isOpen: false }))}>
-                      Discard
-                    </Button>
-                    <Button onClick={handlePublishWH} className="flex items-center gap-2">
-                      <Save size={16} /> Publish to Module
-                    </Button>
+                {whModalState.step === 'edit' && (
+                  <div className="p-5 border-t border-gray-200 dark:border-gray-800/50 bg-gray-50/50 dark:bg-gray-900/50 flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <Sparkles size={14} className="text-indigo-500" /> {whModalState.questions.length} Generated
+                    </span>
+                    <div className="flex gap-3">
+                      <Button variant="outline" onClick={() => setWhModalState(prev => ({ ...prev, step: 'setup' }))} className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200">
+                        <RefreshCw size={16} /> Regenerate
+                      </Button>
+                      <Button variant="outline" onClick={() => setWhModalState(prev => ({ ...prev, isOpen: false }))}>
+                        Discard
+                      </Button>
+                      <Button onClick={handlePublishWH} className="flex items-center gap-2 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40">
+                        <Save size={16} /> Save to Module
+                      </Button>
+                    </div>
                   </div>
                 )}
               </motion.div>
