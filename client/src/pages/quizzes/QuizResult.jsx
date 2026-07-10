@@ -54,7 +54,7 @@ const QuizResult = () => {
         doc.setFont('helvetica', 'bold');
         doc.text(`Student Name:`, margin, y);
         doc.setFont('helvetica', 'normal');
-        const studentName = typeof result.studentId === 'object' ? result.studentId.name : 'N/A';
+        const studentName = typeof result.studentId === 'object' ? (result.studentId.fullName || result.studentId.name || 'N/A') : 'N/A';
         doc.text(`${studentName}`, margin + 100, y);
         y += 20;
 
@@ -139,7 +139,7 @@ const QuizResult = () => {
             y += 20; // Space between questions
         });
 
-        doc.save(`QuizResult_${result.studentId?.name || 'Student'}_${result.quizId.title}.pdf`);
+        doc.save(`QuizResult_${result.studentId?.fullName || result.studentId?.name || 'Student'}_${result.quizId.title}.pdf`);
     };
 
     if (loading) return (
@@ -170,7 +170,7 @@ const QuizResult = () => {
                         {result.studentId && (
                             <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
                                 <User className="w-4 h-4" /> Student: <span className="font-semibold text-gray-700 dark:text-gray-300">
-                                    {typeof result.studentId === 'object' ? (result.studentId.name || result.studentId.email) : result.studentId}
+                                    {typeof result.studentId === 'object' ? (result.studentId.fullName || result.studentId.name || result.studentId.email) : result.studentId}
                                 </span>
                             </p>
                         )}

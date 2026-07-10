@@ -89,7 +89,7 @@ export const getResultById = async (req, res) => {
     try {
         const result = await Result.findById(req.params.id)
             .populate('quizId', 'title')
-            .populate('studentId', 'name email')
+            .populate('studentId', 'fullName name email')
             .populate({
                 path: 'answers.mcqId',
                 select: 'question options correctAnswer explanation'
@@ -114,17 +114,8 @@ export const getResultById = async (req, res) => {
         }
 
         const resultObj = result.toObject();
-        if (req.user.role === 'student') {
-            if (resultObj.answers) {
-                resultObj.answers.forEach(a => {
-                    if (a.mcqId) {
-                        a.mcqId.correctAnswer = undefined;
-                        a.mcqId.explanation = undefined;
-                    }
-                });
-            }
-        }
-
+        // Allow students to see the correct answers in their detailed review
+        
         res.json(resultObj);
     } catch (error) {
         console.error(`[getResultById] Error:`, error);
@@ -140,7 +131,7 @@ export const getTeacherResults = async (req, res) => {
 
         // Find all results for these quizzes
         const results = await Result.find({ quizId: { $in: quizIds } })
-            .populate('studentId', 'name email')
+            .populate('studentId', 'fullName name email')
             .populate('quizId', 'title')
             .sort({ createdAt: -1 });
 
