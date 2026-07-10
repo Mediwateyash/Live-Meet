@@ -20,7 +20,8 @@ import {
   Save,
   X,
   RefreshCw,
-  Brain
+  Brain,
+  Plus
 } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
