@@ -27,6 +27,37 @@ function getDownloadUrl(url) {
   return url;
 }
 
+function FAQItem({ question, answer }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="rounded-xl border border-[rgba(124,58,237,0.3)] bg-[rgba(124,58,237,0.05)] overflow-hidden">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="w-full p-4 flex items-start justify-between text-left transition-colors hover:bg-[rgba(124,58,237,0.08)]"
+      >
+        <span className="text-sm font-semibold text-indigo-300 pr-4 mt-0.5">Q: {question}</span>
+        <ChevronDown size={18} className={`shrink-0 text-indigo-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 pt-0 text-sm text-gray-300 mt-1">
+              <div className="pt-3 border-t border-[rgba(124,58,237,0.1)]">
+                <span className="font-semibold text-emerald-400 mr-2">A:</span>{answer}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 export default function CoursePlayer() {
   const { slug } = useParams()
   const { user } = useAuthStore()
@@ -390,6 +421,20 @@ export default function CoursePlayer() {
                         </a>
                       </div>
                     ))}
+
+                    {/* WH Questions FAQ Accordion */}
+                    {currentLesson?.whQuestions?.length > 0 && (
+                      <div className="mt-8 pt-6 border-t border-[rgba(255,255,255,0.1)]">
+                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                          <Brain size={18} color="#A78BFA" /> Key Questions to Remember
+                        </h3>
+                        <div className="space-y-3">
+                          {currentLesson.whQuestions.map((q, idx) => (
+                            <FAQItem key={idx} question={q.question} answer={q.answer} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center py-12 text-center">
