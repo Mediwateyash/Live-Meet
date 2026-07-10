@@ -103,7 +103,9 @@ export default function CoursePlayer() {
     if (!state.courseId || !state.lessonId) return;
     
     if (state.currentInterval) {
-      const syncId = crypto.randomUUID();
+      const syncId = (window.crypto && window.crypto.randomUUID) 
+        ? window.crypto.randomUUID() 
+        : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       state.pendingBatches.push({
         syncId,
         intervals: [state.currentInterval],
@@ -132,6 +134,11 @@ export default function CoursePlayer() {
       // Legacy Completion consistency - strictly depend on backend
       if (res.data?.isCompleted && !isCompleted(state.lessonId) && !marking && currentLesson?._id === state.lessonId) {
         markComplete();
+      }
+
+      // Save legacy playback position periodically (to avoid network spam in onProgress)
+      if (course) {
+        progressAPI.savePosition(course._id, { lessonId: state.lessonId, position: Math.floor(currentBatch.lastPlaybackPosition) }).catch(() => {});
       }
 
       // If more exist, flush again
@@ -389,8 +396,6 @@ export default function CoursePlayer() {
                    flushEngagement();
                 }}
                 onProgress={({ playedSeconds, played }) => {
-                  if (course) progressAPI.savePosition(course._id, { lessonId: currentLesson._id, position: Math.floor(playedSeconds) }).catch(() => { })
-                  
                   // Tracking logic
                   const state = trackingRef.current;
                   if (!state.currentInterval) {
@@ -400,7 +405,9 @@ export default function CoursePlayer() {
                       state.currentInterval.end = playedSeconds;
                     } else {
                       // Seek occurred - push immediately to batch queue
-                      const syncId = crypto.randomUUID();
+                      const syncId = (window.crypto && window.crypto.randomUUID) 
+                        ? window.crypto.randomUUID() 
+                        : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
                       state.pendingBatches.push({
                         syncId,
                         intervals: [{ ...state.currentInterval }],
