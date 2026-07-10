@@ -64,6 +64,7 @@ const TeacherResults = lazy(() => import('./pages/quizzes/TeacherResults.jsx'))
 
 // Shared pages
 const Notifications = lazy(() => import('./pages/Notifications.jsx'))
+const CourseAnalytics = lazy(() => import('./pages/shared/CourseAnalytics.jsx'))
 
 // Instructor pages
 const InstructorDashboard = lazy(() => import('./pages/instructor/Dashboard.jsx'))
@@ -208,6 +209,7 @@ export default function App() {
         <Route path="/live-lectures"        element={<RequireAuth><LiveLecturesRedirect /></RequireAuth>} />
         <Route path="/notifications"        element={<RequireAuth><Notifications /></RequireAuth>} />
         <Route path="/contact"              element={<RequireAuth><Contact /></RequireAuth>} />
+        <Route path="/course-analytics/:courseId" element={<RequireAuth><CourseAnalytics /></RequireAuth>} />
 
 
         <Route path="/quizzes/:quizId/take"   element={<RequireAuth><TakeQuiz /></RequireAuth>} />

@@ -178,7 +178,7 @@ export default function AdminInstructorManage() {
                               { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: '#EFF6FF', path: (id) => `/instructor/quizzes?courseId=${id}` },
                               { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: '#F0FDF4', path: (id) => `/instructor/quizzes/create?courseId=${id}` },
                               { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: '#FFFBEB', path: (id) => `/admin/live-lectures?courseId=${id}` },
-                              { icon: TrendingUp,    title: 'Progress',      color: '#EC4899', bg: '#FDF2F8', path: (id) => `/instructor/quizzes/results?courseId=${id}` },
+                              { icon: TrendingUp,    title: 'View Course Analytics', color: '#EC4899', bg: '#FDF2F8', path: (id) => `/course-analytics/${id}` },
                             ].map(({ icon: Icon, title, color, bg, path }) => (
                               <button
                                 key={title}
@@ -270,7 +270,7 @@ export default function AdminInstructorManage() {
                         { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: '#EFF6FF', path: (id) => `/instructor/quizzes?courseId=${id}` },
                         { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: '#F0FDF4', path: (id) => `/instructor/quizzes/create?courseId=${id}` },
                         { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: '#FFFBEB', path: (id) => `/admin/live-lectures?courseId=${id}` },
-                        { icon: TrendingUp,    title: 'Progress',      color: '#EC4899', bg: '#FDF2F8', path: (id) => `/instructor/quizzes/results?courseId=${id}` },
+                        { icon: TrendingUp,    title: 'View Course Analytics', color: '#EC4899', bg: '#FDF2F8', path: (id) => `/course-analytics/${id}` },
                       ].map(({ icon: Icon, title, color, bg, path }) => (
                         <button
                           key={title}

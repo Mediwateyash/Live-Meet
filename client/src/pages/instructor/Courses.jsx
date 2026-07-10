@@ -97,7 +97,7 @@ export default function InstructorCourses() {
                               { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: 'rgba(37,99,235,0.12)',   path: (id) => `/instructor/quizzes?courseId=${id}` },
                               { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: 'rgba(16,185,129,0.12)',  path: (id) => `/instructor/quizzes/create?courseId=${id}` },
                               { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  path: (id) => `/instructor/live-lectures?courseId=${id}` },
-                              { icon: TrendingUp,    title: 'Progress',      color: '#EC4899', bg: 'rgba(236,72,153,0.12)',  path: (id) => `/instructor/quizzes/results?courseId=${id}` },
+                              { icon: TrendingUp,    title: 'View Course Analytics', color: '#EC4899', bg: 'rgba(236,72,153,0.12)',  path: (id) => `/course-analytics/${id}` },
                             ].map(({ icon: Icon, title, color, bg, path }) => (
                               <button key={title} title={title} className="p-1.5 rounded-lg transition-colors touch-target flex items-center justify-center" onClick={() => navigate(path(course._id))}
                                 onMouseEnter={e => e.currentTarget.style.background = bg}
@@ -173,7 +173,7 @@ export default function InstructorCourses() {
                         { icon: ClipboardList, title: 'Tests',         color: '#2563EB', bg: 'rgba(37,99,235,0.12)',   path: (id) => `/instructor/quizzes?courseId=${id}` },
                         { icon: Brain,         title: 'MCQ',           color: '#10B981', bg: 'rgba(16,185,129,0.12)',  path: (id) => `/instructor/quizzes/create?courseId=${id}` },
                         { icon: Video,         title: 'Live Lectures', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  path: (id) => `/instructor/live-lectures?courseId=${id}` },
-                        { icon: TrendingUp,    title: 'Progress',      color: '#EC4899', bg: 'rgba(236,72,153,0.12)',  path: (id) => `/instructor/quizzes/results?courseId=${id}` },
+                        { icon: TrendingUp,    title: 'View Course Analytics', color: '#EC4899', bg: 'rgba(236,72,153,0.12)',  path: (id) => `/course-analytics/${id}` },
                       ].map(({ icon: Icon, title, color, bg, path }) => (
                         <button
                           key={title}
