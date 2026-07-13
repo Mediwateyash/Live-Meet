@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, FileText, ClipboardList, Brain, TrendingUp, Video, Calendar, Clock, ExternalLink, Radio, Monitor, Award, CheckCircle2, Play, Download } from 'lucide-react'
+import { ArrowLeft, FileText, ClipboardList, Brain, TrendingUp, Video, Calendar, Clock, ExternalLink, Radio, Monitor, Award, CheckCircle2, Play, Download, Link2 } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import { coursesAPI } from '../../api/courses.js'
 import { liveLecturesAPI } from '../../api/liveLectures.js'
@@ -8,6 +8,18 @@ import useAuthStore from '../../store/authStore.js'
 import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
 import CourseNotes from '../../components/quizzes/CourseNotes.jsx'
 import api from '../../api/axios.js'
+
+function isLinkResource(url) {
+  if (!url) return false
+  if (url.includes('cloudinary.com') || url.includes('s3.amazonaws.com') || url.includes('/upload/')) {
+    return false
+  }
+  const ext = url.split('.').pop().toLowerCase()
+  if (['pdf', 'docx', 'doc', 'txt', 'pptx', 'ppt'].includes(ext)) {
+    return false
+  }
+  return true
+}
 
 const FEATURES = {
   notes:       { icon: FileText,      label: 'Notes',          desc: 'Study materials uploaded by your instructor will appear here.' },
@@ -242,7 +254,7 @@ function NotesList({ course, selectedNote, onSelectNote }) {
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                           isSelected ? 'bg-[rgba(124,58,237,0.15)] text-[#A78BFA]' : 'bg-purple-50 dark:bg-purple-950/20 text-[#7C3AED]'
                         }`}>
-                          <FileText size={20} />
+                          {isLinkResource(res.url) ? <Link2 size={20} /> : <FileText size={20} />}
                         </div>
                         <div className="min-w-0 flex-1">
                           <h4 className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }} title={res.name || `Notes for ${lesson.title}`}>
@@ -472,29 +484,61 @@ export default function CourseFeaturePage({ feature }) {
                                 <p className="text-xs text-gray-400 truncate">Lesson: {selectedNote.lessonTitle}</p>
                               </div>
                               
-                              <a 
-                                href={getDownloadUrl(selectedNote.url)}
-                                download
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer"
-                              >
-                                <Download size={13} />
-                                Download PDF
-                              </a>
+                              {isLinkResource(selectedNote.url) ? (
+                                <a 
+                                  href={selectedNote.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer"
+                                >
+                                  <ExternalLink size={13} />
+                                  Open Link
+                                </a>
+                              ) : (
+                                <a 
+                                  href={getDownloadUrl(selectedNote.url)}
+                                  download
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer"
+                                >
+                                  <Download size={13} />
+                                  Download PDF
+                                </a>
+                              )}
                             </div>
 
-                            {/* PDF iframe frame — using Google Docs Viewer as proxy so all Cloudinary PDFs load regardless of account delivery settings */}
-                            <div className="rounded-xl overflow-hidden border border-gray-850 bg-white" style={{ height: '72vh' }}>
-                              <iframe 
-                                src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedNote.url)}&embedded=true`}
-                                width="100%" 
-                                height="100%" 
-                                className="border-none"
-                                title={selectedNote.name}
-                                allow="fullscreen"
-                              />
-                            </div>
+                            {/* PDF iframe frame or external link block */}
+                            {isLinkResource(selectedNote.url) ? (
+                              <div className="rounded-xl overflow-hidden border border-gray-850 bg-gray-900/30 flex flex-col items-center justify-center p-6 text-center" style={{ height: '72vh' }}>
+                                <div className="w-16 h-16 rounded-2xl bg-indigo-950/40 text-indigo-400 flex items-center justify-center mb-4">
+                                  <Link2 size={32} />
+                                </div>
+                                <h4 className="text-lg font-bold text-white mb-2">External Study Link</h4>
+                                <p className="text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
+                                  This study material is hosted on an external website. Click the button below to visit this link.
+                                </p>
+                                <a 
+                                  href={selectedNote.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-bold rounded-xl transition-all shadow-md active:scale-95"
+                                >
+                                  Visit this link <ExternalLink size={14} />
+                                </a>
+                              </div>
+                            ) : (
+                              <div className="rounded-xl overflow-hidden border border-gray-850 bg-white" style={{ height: '72vh' }}>
+                                <iframe 
+                                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedNote.url)}&embedded=true`}
+                                  width="100%" 
+                                  height="100%" 
+                                  className="border-none"
+                                  title={selectedNote.name}
+                                  allow="fullscreen"
+                                />
+                              </div>
+                            )}
 
                             {/* WH Questions Section */}
                             {selectedNote.whQuestions && selectedNote.whQuestions.length > 0 && (

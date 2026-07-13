@@ -21,7 +21,9 @@ import {
   X,
   RefreshCw,
   Brain,
-  Plus
+  Plus,
+  Link2,
+  ExternalLink
 } from 'lucide-react'
 import PageLayout from '../../components/layout/PageLayout.jsx'
 import Button from '../../components/ui/Button.jsx'
@@ -29,6 +31,18 @@ import ConfirmModal from '../../components/ui/ConfirmModal.jsx'
 import api from '../../api/axios.js'
 import { coursesAPI } from '../../api/courses.js'
 import toast from 'react-hot-toast'
+
+function isLinkResource(url) {
+  if (!url) return false
+  if (url.includes('cloudinary.com') || url.includes('s3.amazonaws.com') || url.includes('/upload/')) {
+    return false
+  }
+  const ext = url.split('.').pop().toLowerCase()
+  if (['pdf', 'docx', 'doc', 'txt', 'pptx', 'ppt'].includes(ext)) {
+    return false
+  }
+  return true
+}
 
 export default function UploadNotes() {
   const { id } = useParams()
@@ -58,6 +72,10 @@ export default function UploadNotes() {
   
   const [addingLessonToSection, setAddingLessonToSection] = useState(null)
   const [newLessonTitle, setNewLessonTitle] = useState('')
+
+  const [addingLinkToLesson, setAddingLinkToLesson] = useState(null)
+  const [newLinkName, setNewLinkName] = useState('')
+  const [newLinkUrl, setNewLinkUrl] = useState('')
 
   // Rename states
   const [editingSectionId, setEditingSectionId] = useState(null)
@@ -348,6 +366,37 @@ export default function UploadNotes() {
         }
       }
     )
+  }
+
+  const handleSaveLink = async (sectionIndex, lessonIndex) => {
+    if (!newLinkName.trim() || !newLinkUrl.trim()) {
+      toast.error('Link name and URL cannot be empty')
+      return
+    }
+
+    let url = newLinkUrl.trim()
+    if (!/^https?:\/\//i.test(url)) {
+      url = 'https://' + url
+    }
+
+    const toastId = toast.loading('Adding link...')
+    try {
+      const updatedCurriculum = JSON.parse(JSON.stringify(course.curriculum))
+      const targetLesson = updatedCurriculum[sectionIndex].lessons[lessonIndex]
+      
+      const newResource = { name: newLinkName.trim(), url }
+      targetLesson.resources = [...(targetLesson.resources || []), newResource]
+
+      const updateRes = await coursesAPI.update(course._id, { curriculum: updatedCurriculum })
+      setCourse(updateRes.data?.data || { ...course, curriculum: updatedCurriculum })
+      
+      toast.success('Link added successfully!', { id: toastId })
+      setAddingLinkToLesson(null)
+      setNewLinkName('')
+      setNewLinkUrl('')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to add link', { id: toastId })
+    }
   }
 
   // ── WH Questions Actions ──
@@ -662,38 +711,44 @@ export default function UploadNotes() {
                                                 style={{ background: 'var(--bg-page)', borderColor: 'var(--border-default)' }}
                                               >
                                                 <div className="flex items-center gap-2 overflow-hidden mr-2">
-                                                  <FileText size={16} className="text-red-500 shrink-0" />
+                                                  {isLinkResource(res.url) ? (
+                                                    <Link2 size={16} className="text-blue-500 shrink-0" />
+                                                  ) : (
+                                                    <FileText size={16} className="text-red-500 shrink-0" />
+                                                  )}
                                                   <span className="text-xs font-semibold truncate text-gray-700 dark:text-gray-300" title={res.name}>
                                                     {res.name}
                                                   </span>
                                                 </div>
 
                                                 <div className="flex items-center gap-1.5 shrink-0">
-                                                  {lesson.whQuestions && lesson.whQuestions.length > 0 ? (
-                                                    <button
-                                                      onClick={() => handleOpenWHModal(sectionIndex, lessonIndex, res.url, res.name, lesson.whQuestions)}
-                                                      title="Edit WH Questions"
-                                                      className="flex items-center gap-1 px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg text-xs font-bold transition-colors"
-                                                    >
-                                                      <Edit2 size={12} /> Edit WH
-                                                    </button>
-                                                  ) : (
-                                                    <button
-                                                      onClick={() => handleOpenWHModal(sectionIndex, lessonIndex, res.url, res.name)}
-                                                      title="Generate WH Questions"
-                                                      className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-colors"
-                                                    >
-                                                      <Sparkles size={12} /> Gen WH
-                                                    </button>
+                                                  {!isLinkResource(res.url) && (
+                                                    lesson.whQuestions && lesson.whQuestions.length > 0 ? (
+                                                      <button
+                                                        onClick={() => handleOpenWHModal(sectionIndex, lessonIndex, res.url, res.name, lesson.whQuestions)}
+                                                        title="Edit WH Questions"
+                                                        className="flex items-center gap-1 px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg text-xs font-bold transition-colors"
+                                                      >
+                                                        <Edit2 size={12} /> Edit WH
+                                                      </button>
+                                                    ) : (
+                                                      <button
+                                                        onClick={() => handleOpenWHModal(sectionIndex, lessonIndex, res.url, res.name)}
+                                                        title="Generate WH Questions"
+                                                        className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold transition-colors"
+                                                      >
+                                                        <Sparkles size={12} /> Gen WH
+                                                      </button>
+                                                    )
                                                   )}
                                                   <a 
                                                     href={res.url} 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
-                                                    title="View or Download Note"
+                                                    title={isLinkResource(res.url) ? "Open Link" : "View or Download Note"}
                                                     className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg text-[#7C3AED] transition-colors"
                                                   >
-                                                    <Download size={14} />
+                                                    {isLinkResource(res.url) ? <ExternalLink size={14} /> : <Download size={14} />}
                                                   </a>
                                                   <button
                                                     onClick={() => handleDeleteResource(sectionIndex, lessonIndex, rIdx, res.name)}
@@ -705,6 +760,39 @@ export default function UploadNotes() {
                                                 </div>
                                               </div>
                                             ))}
+                                          </div>
+                                        )}
+
+                                        {/* Inline Add Link Form */}
+                                        {addingLinkToLesson?.sectionIndex === sectionIndex && addingLinkToLesson?.lessonIndex === lessonIndex && (
+                                          <div className="mt-3 p-3 rounded-xl border border-[#7C3AED] bg-purple-50/20 dark:bg-purple-950/10 space-y-2">
+                                            <h5 className="text-xs font-bold text-gray-900 dark:text-white">Add External Link Notes</h5>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                              <input
+                                                type="text"
+                                                placeholder="Link Name (e.g. Reference Website)"
+                                                value={newLinkName}
+                                                onChange={e => setNewLinkName(e.target.value)}
+                                                className="px-3 py-1.5 text-xs rounded-lg border focus:outline-none"
+                                                style={{ background: 'var(--bg-page)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}
+                                              />
+                                              <input
+                                                type="url"
+                                                placeholder="URL (https://...)"
+                                                value={newLinkUrl}
+                                                onChange={e => setNewLinkUrl(e.target.value)}
+                                                className="px-3 py-1.5 text-xs rounded-lg border focus:outline-none"
+                                                style={{ background: 'var(--bg-page)', borderColor: 'var(--border-default)', color: 'var(--text-primary)' }}
+                                              />
+                                            </div>
+                                            <div className="flex gap-2 justify-end">
+                                              <Button size="xs" variant="outline" onClick={() => { setAddingLinkToLesson(null); setNewLinkName(''); setNewLinkUrl('') }}>
+                                                Cancel
+                                              </Button>
+                                              <Button size="xs" onClick={() => handleSaveLink(sectionIndex, lessonIndex)}>
+                                                Save Link
+                                              </Button>
+                                            </div>
                                           </div>
                                         )}
                                       </div>
@@ -731,6 +819,20 @@ export default function UploadNotes() {
                                             </button>
                                           </>
                                         )}
+
+                                        <button
+                                          type="button"
+                                          onClick={() => setAddingLinkToLesson({ sectionIndex, lessonIndex })}
+                                          className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border hover:border-[#7C3AED] hover:text-[#7C3AED] transition-all shadow-sm"
+                                          style={{
+                                            borderColor: 'var(--border-default)',
+                                            background: 'var(--bg-surface)',
+                                            color: 'var(--text-secondary)'
+                                          }}
+                                        >
+                                          <Link2 size={14} />
+                                          Add Link
+                                        </button>
 
                                         <label 
                                           className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border cursor-pointer select-none transition-all shadow-sm ${
