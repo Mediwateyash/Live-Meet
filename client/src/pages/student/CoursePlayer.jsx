@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ReactPlayer from 'react-player'
-import { ArrowLeft, CheckCircle2, ChevronDown, Check, FileText, ClipboardList, Brain, TrendingUp, Video, Award, Download, X } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, ChevronDown, Check, FileText, ClipboardList, Brain, TrendingUp, Video, Award, Download, X, Link2, ExternalLink } from 'lucide-react'
 import { coursesAPI } from '../../api/courses.js'
 import { progressAPI } from '../../api/progress.js'
 import ProgressBar from '../../components/ui/ProgressBar.jsx'
@@ -13,6 +13,18 @@ import CourseQuizzes from '../../components/quizzes/CourseQuizzes.jsx'
 import CertificateTemplate from '../../components/certificate/CertificateTemplate.jsx'
 import api from '../../api/axios.js'
 import { motion, AnimatePresence } from 'framer-motion'
+
+function isLinkResource(url) {
+  if (!url) return false
+  if (url.includes('cloudinary.com') || url.includes('s3.amazonaws.com') || url.includes('/upload/')) {
+    return false
+  }
+  const ext = url.split('.').pop().toLowerCase()
+  if (['pdf', 'docx', 'doc', 'txt', 'pptx', 'ppt'].includes(ext)) {
+    return false
+  }
+  return true
+}
 
 function getDownloadUrl(url) {
   if (!url) return '';
@@ -432,28 +444,48 @@ export default function CoursePlayer() {
                 }}
               />
             ) : currentLesson?.resources?.length > 0 ? (
-              <div className="w-full h-full bg-[#121222] flex flex-col p-4">
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-800">
-                  <div className="text-left">
-                    <h4 className="text-sm font-bold text-white truncate max-w-md">{currentLesson.resources[0].name || `Notes for ${currentLesson.title}`}</h4>
-                    <p className="text-xs text-gray-400">PDF Document</p>
+              isLinkResource(currentLesson.resources[0].url) ? (
+                <div className="w-full h-full bg-[#121222] flex flex-col p-8 items-center justify-center text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-950/40 text-indigo-400 flex items-center justify-center mb-4">
+                    <Link2 size={32} />
                   </div>
-                  <a
-                    href={getDownloadUrl(currentLesson.resources[0].url)}
-                    download
+                  <h4 className="text-lg font-bold text-white mb-2">{currentLesson.resources[0].name || `Notes for ${currentLesson.title}`}</h4>
+                  <p className="text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
+                    This study material is hosted on an external link. Please click below to visit this link.
+                  </p>
+                  <a 
+                    href={currentLesson.resources[0].url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
                   >
-                    <Download size={13} /> Download PDF
+                    Visit this link <ExternalLink size={14} />
                   </a>
                 </div>
-                <iframe src={currentLesson.resources[0].url} width="100%" height="100%" className="flex-1 rounded-xl overflow-hidden border border-gray-800 bg-white" title="Notes Viewer" />
-                <div className="mt-3 text-[11px] text-gray-405 bg-gray-950/60 p-3 rounded-lg leading-relaxed text-left border border-gray-850/80">
-                  <p className="font-semibold text-yellow-500 mb-0.5">⚠️ Cloudinary PDF Settings Info:</p>
-                  <p>If the PDF fails to display, please log into your Cloudinary Console and under <strong>Settings ➔ Security ➔ PDF and ZIP files delivery</strong>, ensure <strong>"Allow delivery of PDF and ZIP files"</strong> is enabled.</p>
+              ) : (
+                <div className="w-full h-full bg-[#121222] flex flex-col p-4">
+                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-800">
+                    <div className="text-left">
+                      <h4 className="text-sm font-bold text-white truncate max-w-md">{currentLesson.resources[0].name || `Notes for ${currentLesson.title}`}</h4>
+                      <p className="text-xs text-gray-400">PDF Document</p>
+                    </div>
+                    <a
+                      href={getDownloadUrl(currentLesson.resources[0].url)}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors"
+                    >
+                      <Download size={13} /> Download PDF
+                    </a>
+                  </div>
+                  <iframe src={currentLesson.resources[0].url} width="100%" height="100%" className="flex-1 rounded-xl overflow-hidden border border-gray-800 bg-white" title="Notes Viewer" />
+                  <div className="mt-3 text-[11px] text-gray-405 bg-gray-950/60 p-3 rounded-lg leading-relaxed text-left border border-gray-850/80">
+                    <p className="font-semibold text-yellow-500 mb-0.5">⚠️ Cloudinary PDF Settings Info:</p>
+                    <p>If the PDF fails to display, please log into your Cloudinary Console and under <strong>Settings ➔ Security ➔ PDF and ZIP files delivery</strong>, ensure <strong>"Allow delivery of PDF and ZIP files"</strong> is enabled.</p>
+                  </div>
                 </div>
-              </div>
+              )
             ) : (
               <div className="w-full h-full flex items-center justify-center text-base" style={{ color: '#666' }}>
                 No video or notes available
@@ -519,22 +551,31 @@ export default function CoursePlayer() {
                 {currentLesson?.resources?.length > 0 ? (
                   <div className="space-y-3">
                     <h3 className="text-lg font-semibold text-white mb-4">Lesson Resources</h3>
-                    {currentLesson.resources.map((res, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-[rgba(124,58,237,0.3)] bg-[rgba(124,58,237,0.05)]">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[rgba(124,58,237,0.15)]">
-                            <FileText size={20} color="#A78BFA" />
+                    {currentLesson.resources.map((res, i) => {
+                      const isLink = isLinkResource(res.url);
+                      return (
+                        <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-[rgba(124,58,237,0.3)] bg-[rgba(124,58,237,0.05)]">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[rgba(124,58,237,0.15)]">
+                              {isLink ? <Link2 size={20} color="#A78BFA" /> : <FileText size={20} color="#A78BFA" />}
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-white">{res.name || `Notes for ${currentLesson.title}`}</h4>
+                              <p className="text-xs text-gray-400">{isLink ? "External Link Notes" : "PDF Document"}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-sm font-semibold text-white">{res.name || `Notes for ${currentLesson.title}`}</h4>
-                            <p className="text-xs text-gray-400">PDF Document</p>
-                          </div>
+                          {isLink ? (
+                            <a href={res.url} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1">
+                              <ExternalLink size={13} /> Visit Link
+                            </a>
+                          ) : (
+                            <a href={getDownloadUrl(res.url)} download target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1">
+                              <Download size={13} /> Download
+                            </a>
+                          )}
                         </div>
-                        <a href={getDownloadUrl(res.url)} download target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1">
-                          <Download size={13} /> Download
-                        </a>
-                      </div>
-                    ))}
+                      );
+                    })}
 
                     {/* WH Questions FAQ Accordion */}
                     {currentLesson?.whQuestions?.length > 0 && (
