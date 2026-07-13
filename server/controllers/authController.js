@@ -69,18 +69,20 @@ export async function login(req, res, next) {
     if (!user) throw new ApiError(401, 'Invalid credentials')
 
     // Check account lockout status
-    if (user.lockUntil && user.lockUntil > Date.now()) {
+    if (user.role !== 'admin' && user.lockUntil && user.lockUntil > Date.now()) {
       throw new ApiError(423, 'Account is temporarily locked. Please try again later.')
     }
 
     const valid = await user.comparePassword(password)
     if (!valid) {
       // Increment login attempts
-      user.loginAttempts = (user.loginAttempts || 0) + 1
-      if (user.loginAttempts >= 5) {
-        user.lockUntil = new Date(Date.now() + 30 * 60 * 1000) // 30 minutes lockout
+      if (user.role !== 'admin') {
+        user.loginAttempts = (user.loginAttempts || 0) + 1
+        if (user.loginAttempts >= 5) {
+          user.lockUntil = new Date(Date.now() + 30 * 60 * 1000) // 30 minutes lockout
+        }
+        await user.save({ validateBeforeSave: false })
       }
-      await user.save({ validateBeforeSave: false })
       throw new ApiError(401, 'Invalid credentials')
     }
 

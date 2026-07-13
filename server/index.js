@@ -120,6 +120,13 @@ app.use(helmet({
   xssFilter: true,
 }));
 
+// Security & Permissions custom headers
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=()')
+  res.setHeader('X-XSS-Protection', '1; mode=block')
+  next()
+})
+
 app.use(cors(corsOptions))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))

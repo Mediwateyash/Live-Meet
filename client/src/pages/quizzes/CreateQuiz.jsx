@@ -3,6 +3,7 @@ import api from '../../api/axios.js';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Upload, Brain, CheckCircle, AlertCircle, Loader, RefreshCw, FileText, Clock, AlertTriangle, Trash2, X, Edit2, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageLayout from '../../components/layout/PageLayout.jsx';
 
 const FakeProgress = () => {
     const [progress, setProgress] = useState(0);
@@ -193,7 +194,7 @@ const CreateQuiz = () => {
                 mcqIds: Array.from(selectedMcqs)
             });
             toast.success("Quiz successfully published to the course!");
-            navigate('/instructor'); 
+            navigate('/instructor/quizzes'); 
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to publish quiz');
         }
@@ -228,28 +229,29 @@ const CreateQuiz = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <Link to="/instructor" className="text-gray-500 hover:text-indigo-600 transition-colors">
-                        <ArrowLeft className="w-5 h-5" />
-                    </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Teacher Dashboard</h1>
+        <PageLayout>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+                        <Link to="/instructor/dashboard" className="text-gray-500 hover:text-indigo-600 transition-colors">
+                            <ArrowLeft className="w-5 h-5" />
+                        </Link>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-[var(--text-primary)] tracking-tight">Teacher Dashboard</h1>
+                    </div>
                 </div>
-            </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 {/* ---------------------------------------------------------------- */}
                 {/* LEFT PANEL: UPLOAD & GENERATE MCQS (1 column)                    */}
                 {/* ---------------------------------------------------------------- */}
                 <div className="xl:col-span-1 space-y-8">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                            <Upload className="w-5 h-5 text-indigo-600" />
+                    <div className="bg-white dark:bg-[var(--bg-surface)] p-6 rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)]">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-[var(--text-primary)] flex items-center gap-2">
+                            <Upload className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                             Upload & Generate
                         </h3>
                         
-                        <div className="mt-2 text-sm text-gray-500 mb-4">
+                        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
                             Supported formats: PDF, DOCX, PPTX, TXT. Max size: 10MB.
                         </div>
 
@@ -259,25 +261,27 @@ const CreateQuiz = () => {
                                     type="file"
                                     onChange={handleFileChange}
                                     accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
-                                    className="w-full text-sm text-gray-500
+                                    className="w-full text-sm text-gray-500 dark:text-gray-400
                                         file:mr-4 file:py-2.5 file:px-4
                                         file:rounded-md file:border-0
                                         file:text-sm file:font-semibold
                                         file:bg-indigo-50 file:text-indigo-600
-                                        hover:file:bg-indigo-100"
+                                        hover:file:bg-indigo-100
+                                        file:dark:bg-indigo-950/40 file:dark:text-indigo-400
+                                        hover:file:dark:bg-indigo-900/30"
                                 />
                                 
                                 <input
                                     type="text"
                                     value={chapterName}
                                     onChange={(e) => setChapterName(e.target.value)}
-                                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                    className="w-full p-2.5 bg-white dark:bg-[var(--bg-body)] border border-gray-300 dark:border-[var(--border-default)] rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-gray-900 dark:text-[var(--text-primary)] text-sm shadow-sm"
                                     placeholder="Optional Module/Chapter Name"
                                 />
                             </div>
                             
                             <div className="flex flex-col gap-4 mb-2 mt-2">
-                                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-3 bg-gray-50 dark:bg-[var(--bg-body)] p-3 rounded-lg border border-gray-200 dark:border-[var(--border-default)]">
                                     <input 
                                         type="checkbox" 
                                         id="gen-mcq-main"
@@ -285,7 +289,7 @@ const CreateQuiz = () => {
                                         onChange={(e) => setGenerateMCQ(e.target.checked)}
                                         className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
                                     />
-                                    <label htmlFor="gen-mcq-main" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                                    <label htmlFor="gen-mcq-main" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer flex-1">
                                         Generate MCQs
                                     </label>
                                     {generateMCQ && (
@@ -293,14 +297,14 @@ const CreateQuiz = () => {
                                             <input 
                                                 type="range" min="1" max="15" value={mcqCount} 
                                                 onChange={(e) => setMcqCount(parseInt(e.target.value))}
-                                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                                className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                             />
-                                            <span className="text-xs font-bold text-indigo-600 w-6 text-right">{mcqCount}</span>
+                                            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 w-6 text-right">{mcqCount}</span>
                                         </div>
                                     )}
                                 </div>
                                 
-                                <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <div className="flex items-center gap-3 bg-gray-50 dark:bg-[var(--bg-body)] p-3 rounded-lg border border-gray-200 dark:border-[var(--border-default)]">
                                     <input 
                                         type="checkbox" 
                                         id="gen-wh-main"
@@ -308,7 +312,7 @@ const CreateQuiz = () => {
                                         onChange={(e) => setGenerateWH(e.target.checked)}
                                         className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
                                     />
-                                    <label htmlFor="gen-wh-main" className="text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                                    <label htmlFor="gen-wh-main" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer flex-1">
                                         Generate WH Questions
                                     </label>
                                     {generateWH && (
@@ -316,9 +320,9 @@ const CreateQuiz = () => {
                                             <input 
                                                 type="range" min="1" max="15" value={whCount} 
                                                 onChange={(e) => setWhCount(parseInt(e.target.value))}
-                                                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                                className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                             />
-                                            <span className="text-xs font-bold text-indigo-600 w-6 text-right">{whCount}</span>
+                                            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 w-6 text-right">{whCount}</span>
                                         </div>
                                     )}
                                 </div>
@@ -326,24 +330,24 @@ const CreateQuiz = () => {
                             
                             <div className="flex items-end gap-3 sm:gap-4 flex-wrap sm:flex-nowrap mt-2">
                                 <div className="flex-1 w-full sm:w-auto">
-                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Start Page (Optional)</label>
+                                    <label className="block text-[11px] font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-1">Start Page (Optional)</label>
                                     <input
                                         type="number"
                                         min="1"
                                         value={startPage}
                                         onChange={(e) => setStartPage(e.target.value)}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                        className="w-full p-2.5 bg-white dark:bg-[var(--bg-body)] border border-gray-300 dark:border-[var(--border-default)] rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-gray-900 dark:text-[var(--text-primary)] text-sm shadow-sm"
                                         placeholder="e.g. 1"
                                     />
                                 </div>
                                 <div className="flex-1 w-full sm:w-auto">
-                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">End Page (Optional)</label>
+                                    <label className="block text-[11px] font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider mb-1">End Page (Optional)</label>
                                     <input
                                         type="number"
                                         min="1"
                                         value={endPage}
                                         onChange={(e) => setEndPage(e.target.value)}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                        className="w-full p-2.5 bg-white dark:bg-[var(--bg-body)] border border-gray-300 dark:border-[var(--border-default)] rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-gray-900 dark:text-[var(--text-primary)] text-sm shadow-sm"
                                         placeholder="e.g. 5"
                                     />
                                 </div>
@@ -359,7 +363,7 @@ const CreateQuiz = () => {
                         </div>
                         
                         {status === 'error' && (
-                            <div className="mt-5 p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2 text-sm font-medium border border-red-100">
+                            <div className="mt-5 p-3 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 rounded-lg flex items-center gap-2 text-sm font-medium border border-red-100 dark:border-red-900/30">
                                 <AlertCircle className="w-5 h-5 text-red-500" />
                                 {message}
                             </div>
@@ -373,37 +377,37 @@ const CreateQuiz = () => {
                 <div className="xl:col-span-2">
                     {!publishingMaterial ? (
                         // STATE A: Show Your Study Materials List
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col">
-                            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                <h3 className="text-lg font-semibold text-gray-800">Your Study Materials</h3>
-                                <button onClick={fetchMaterials} className="text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1 font-medium">
+                        <div className="bg-white dark:bg-[var(--bg-surface)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] overflow-hidden h-full flex flex-col">
+                            <div className="px-6 py-4 border-b border-gray-100 dark:border-[var(--border-default)] flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/10">
+                                <h3 className="text-lg font-semibold text-gray-800 dark:text-[var(--text-primary)]">Your Study Materials</h3>
+                                <button onClick={fetchMaterials} className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 font-medium">
                                     <RefreshCw className={`w-4 h-4 ${loadingMaterials ? 'animate-spin' : ''}`} /> Refresh
                                 </button>
                             </div>
                             
                             {materials.length === 0 ? (
-                                <div className="p-12 text-center text-gray-500 flex flex-col items-center">
-                                    <FileText className="w-12 h-12 text-gray-300 mb-3" />
+                                <div className="p-12 text-center text-gray-500 dark:text-gray-400 flex flex-col items-center">
+                                    <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
                                     No materials uploaded yet. Upload a document to start generating quizzes!
                                 </div>
                             ) : (
-                                <ul className="divide-y divide-gray-100 flex-1 overflow-y-auto max-h-[700px]">
+                                <ul className="divide-y divide-gray-100 dark:divide-[var(--border-default)] flex-1 overflow-y-auto max-h-[700px]">
                                     {materials.map((m) => (
-                                        <li key={m._id} className="p-4 sm:px-6 hover:bg-gray-50 transition-colors flex items-center justify-between group">
+                                        <li key={m._id} className="p-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-gray-850/40 transition-colors flex items-center justify-between group">
                                             <div className="flex items-center gap-4">
-                                                <div className="bg-indigo-50 p-3 rounded-lg text-indigo-600">
+                                                <div className="bg-indigo-50 dark:bg-indigo-950/40 p-3 rounded-lg text-indigo-600 dark:text-indigo-400">
                                                     <FileText className="w-6 h-6" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-md font-semibold text-gray-900 line-clamp-1" title={m.chapterName || m.fileName}>{m.chapterName || m.fileName}</h4>
-                                                    <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                                                        <span className="uppercase font-medium bg-gray-200 px-2 py-0.5 rounded text-gray-700">{m.fileType}</span>
+                                                    <h4 className="text-md font-semibold text-gray-900 dark:text-[var(--text-primary)] line-clamp-1" title={m.chapterName || m.fileName}>{m.chapterName || m.fileName}</h4>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
+                                                        <span className="uppercase font-medium bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded text-gray-700 dark:text-gray-300">{m.fileType}</span>
                                                         {m.startPage && m.endPage && (
-                                                            <span className="font-medium bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">Pages: {m.startPage}–{m.endPage}</span>
+                                                            <span className="font-medium bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded">Pages: {m.startPage}–{m.endPage}</span>
                                                         )}
                                                         <span>• {new Date(m.createdAt).toLocaleDateString()}</span>
                                                     </div>
-                                                    {m.chapterName && <div className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><FileText className="w-3 h-3"/> {m.fileName}</div>}
+                                                    {m.chapterName && <div className="text-xs text-gray-450 dark:text-gray-550 mt-0.5 flex items-center gap-1"><FileText className="w-3 h-3"/> {m.fileName}</div>}
                                                     {m.status === 'failed' && m.error && (
                                                         <div className="text-xs text-red-500 mt-1 font-medium">Failed: {m.error}</div>
                                                     )}
@@ -414,7 +418,7 @@ const CreateQuiz = () => {
                                                 <div className="flex flex-col items-end gap-1">
                                                     <div className="flex items-center gap-2">
                                                         {getStatusIcon(m.status)}
-                                                        <span className="text-sm text-gray-600 capitalize font-medium hidden sm:inline">
+                                                        <span className="text-sm text-gray-600 dark:text-gray-300 capitalize font-medium hidden sm:inline">
                                                             {m.status === 'processing' ? 'Generating...' : m.status}
                                                         </span>
                                                     </div>
@@ -423,14 +427,14 @@ const CreateQuiz = () => {
                                                 {m.status === 'completed' && (
                                                     <button 
                                                         onClick={() => handlePrepareQuiz(m)} 
-                                                        className="ml-4 px-3 py-1.5 text-sm bg-white border border-gray-200 text-gray-700 rounded-md hover:bg-gray-50 hover:text-indigo-600 font-bold transition-colors shadow-sm"
+                                                        className="ml-4 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition-colors shadow-sm"
                                                     >
                                                         Create Quiz
                                                     </button>
                                                 )}
                                                 <button 
                                                     onClick={() => handleDelete(m._id)} 
-                                                    className="ml-2 p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                                    className="ml-2 p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md transition-colors"
                                                     title="Delete Material"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
@@ -443,15 +447,15 @@ const CreateQuiz = () => {
                         </div>
                     ) : (
                         // STATE B: Review & Publish Quiz
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col h-full animate-fade-in">
-                            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                    <Brain className="w-5 h-5 text-indigo-600" /> 
+                        <div className="bg-white dark:bg-[var(--bg-surface)] rounded-xl shadow-sm border border-gray-100 dark:border-[var(--border-default)] flex flex-col h-full animate-fade-in">
+                            <div className="px-6 py-4 border-b border-gray-100 dark:border-[var(--border-default)] flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/10">
+                                <h3 className="text-lg font-semibold text-gray-800 dark:text-[var(--text-primary)] flex items-center gap-2">
+                                    <Brain className="w-5 h-5 text-indigo-600 dark:text-indigo-400" /> 
                                     Review & Publish Quiz
                                 </h3>
                                 <button 
                                     onClick={() => setPublishingMaterial(null)} 
-                                    className="text-gray-400 hover:text-gray-600"
+                                    className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -460,12 +464,12 @@ const CreateQuiz = () => {
                             <div className="p-6 space-y-6 flex-1 overflow-y-auto">
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div className="sm:col-span-2">
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Target Course</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Target Course</label>
                                         <select 
                                             required
                                             value={selectedCourseId}
                                             onChange={e => setSelectedCourseId(e.target.value)}
-                                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm bg-gray-50"
+                                            className="w-full p-2.5 bg-white dark:bg-[var(--bg-body)] border border-gray-300 dark:border-[var(--border-default)] text-gray-900 dark:text-[var(--text-primary)] rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
                                         >
                                             <option value="">-- Select Course --</option>
                                             {courses.map(c => (
@@ -474,43 +478,43 @@ const CreateQuiz = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1">Timer (Minutes)</label>
+                                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Timer (Minutes)</label>
                                         <input 
                                             required
                                             type="number" 
                                             min="1"
                                             value={quizTimer}
                                             onChange={e => setQuizTimer(Number(e.target.value))}
-                                            className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                            className="w-full p-2.5 bg-white dark:bg-[var(--bg-body)] border border-gray-300 dark:border-[var(--border-default)] text-gray-900 dark:text-[var(--text-primary)] rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
                                         />
                                     </div>
                                 </div>
                                 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Quiz Title</label>
+                                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Quiz Title</label>
                                     <input 
                                         required
                                         type="text" 
                                         value={quizTitle}
                                         onChange={e => setQuizTitle(e.target.value)}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
+                                        className="w-full p-2.5 bg-white dark:bg-[var(--bg-body)] border border-gray-300 dark:border-[var(--border-default)] text-gray-900 dark:text-[var(--text-primary)] rounded-lg focus:ring-indigo-600 focus:border-indigo-600 text-sm shadow-sm"
                                     />
                                 </div>
 
-                                <div className="pt-4 border-t border-gray-100">
+                                <div className="pt-4 border-t border-gray-100 dark:border-[var(--border-default)]">
                                     <div className="flex justify-between items-center mb-4">
-                                        <h4 className="font-bold text-gray-800">Select Questions</h4>
-                                        <span className="text-sm text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded">{selectedMcqs.size} of {mcqs.length} selected</span>
+                                        <h4 className="font-bold text-gray-800 dark:text-[var(--text-primary)]">Select Questions</h4>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 font-medium bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">{selectedMcqs.size} of {mcqs.length} selected</span>
                                     </div>
                                     <div className="space-y-3">
                                         {mcqs.map((mcq, idx) => {
                                             if (editingMcqId === mcq._id) {
                                                 return (
-                                                    <div key={mcq._id} className="p-4 rounded-lg border border-indigo-300 bg-indigo-50 shadow-sm space-y-4">
+                                                    <div key={mcq._id} className="p-4 rounded-lg border border-indigo-300 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950/20 shadow-sm space-y-4">
                                                         <div>
-                                                            <label className="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wider">Question {idx+1}</label>
+                                                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">Question {idx+1}</label>
                                                             <textarea 
-                                                                className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                                                                className="w-full p-2 bg-white dark:bg-[var(--bg-body)] text-gray-900 dark:text-[var(--text-primary)] border border-gray-300 dark:border-[var(--border-default)] rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" 
                                                                 rows="2"
                                                                 value={editFormData.question}
                                                                 onChange={(e) => handleEditChange('question', e.target.value)}
@@ -519,10 +523,10 @@ const CreateQuiz = () => {
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                             {editFormData.options.map((opt, oIdx) => (
                                                                 <div key={oIdx} className="flex items-center gap-2">
-                                                                    <span className="text-xs font-bold text-gray-500">{String.fromCharCode(65 + oIdx)}.</span>
+                                                                    <span className="text-xs font-bold text-gray-550 dark:text-gray-450">{String.fromCharCode(65 + oIdx)}.</span>
                                                                     <input 
                                                                         type="text" 
-                                                                        className="flex-1 p-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                                        className="flex-1 p-2 bg-white dark:bg-[var(--bg-body)] text-gray-900 dark:text-[var(--text-primary)] border border-gray-300 dark:border-[var(--border-default)] rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
                                                                         value={opt}
                                                                         onChange={(e) => handleOptionChange(oIdx, e.target.value)}
                                                                     />
@@ -530,9 +534,9 @@ const CreateQuiz = () => {
                                                             ))}
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wider">Correct Answer (must match an option exactly)</label>
+                                                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 uppercase tracking-wider">Correct Answer (must match an option exactly)</label>
                                                             <select 
-                                                                className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                                className="w-full p-2 bg-white dark:bg-[var(--bg-body)] text-gray-900 dark:text-[var(--text-primary)] border border-gray-300 dark:border-[var(--border-default)] rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
                                                                 value={editFormData.correctAnswer}
                                                                 onChange={(e) => handleEditChange('correctAnswer', e.target.value)}
                                                             >
@@ -541,8 +545,8 @@ const CreateQuiz = () => {
                                                                 ))}
                                                             </select>
                                                         </div>
-                                                        <div className="flex justify-end gap-2 pt-2 border-t border-indigo-100">
-                                                            <button onClick={() => setEditingMcqId(null)} className="px-3 py-1.5 text-xs font-bold text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50">Cancel</button>
+                                                        <div className="flex justify-end gap-2 pt-2 border-t border-indigo-100 dark:border-indigo-900">
+                                                            <button onClick={() => setEditingMcqId(null)} className="px-3 py-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
                                                             <button onClick={saveMcqEdit} className="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded hover:bg-indigo-700 flex items-center gap-1"><Save className="w-3 h-3"/> Save</button>
                                                         </div>
                                                     </div>
@@ -550,7 +554,7 @@ const CreateQuiz = () => {
                                             }
 
                                             return (
-                                                <label key={mcq._id} className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${selectedMcqs.has(mcq._id) ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                                                <label key={mcq._id} className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${selectedMcqs.has(mcq._id) ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-900 shadow-sm' : 'bg-white dark:bg-[var(--bg-surface)] border-gray-200 dark:border-[var(--border-default)] hover:bg-gray-50 dark:hover:bg-gray-850'}`}>
                                                     <input 
                                                         type="checkbox"
                                                         className="mt-1 flex-shrink-0 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
@@ -560,17 +564,17 @@ const CreateQuiz = () => {
                                                     <div className="flex-1">
                                                         <div className="flex justify-between items-start mb-2">
                                                             <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
-                                                                mcq.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
-                                                                mcq.difficulty === 'hard' ? 'bg-red-100 text-red-700' :
-                                                                'bg-yellow-100 text-yellow-700'
+                                                                mcq.difficulty === 'easy' ? 'bg-green-100 dark:bg-emerald-950/40 text-green-700 dark:text-emerald-400' :
+                                                                mcq.difficulty === 'hard' ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400' :
+                                                                'bg-yellow-100 dark:bg-amber-950/40 text-yellow-700 dark:text-amber-400'
                                                             }`}>
                                                                 {mcq.difficulty || 'medium'}
                                                             </span>
-                                                            <button onClick={(e) => handleEditClick(e, mcq)} className="text-gray-400 hover:text-indigo-600 transition-colors p-1" title="Edit Question">
+                                                            <button onClick={(e) => handleEditClick(e, mcq)} className="text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1" title="Edit Question">
                                                                 <Edit2 className="w-4 h-4" />
                                                             </button>
                                                         </div>
-                                                        <p className="font-medium text-gray-800 text-sm leading-relaxed"><span className="text-gray-400 mr-2 font-bold">Q{idx+1}.</span>{mcq.question}</p>
+                                                        <p className="font-medium text-gray-800 dark:text-gray-200 text-sm leading-relaxed"><span className="text-gray-400 dark:text-gray-500 mr-2 font-bold">Q{idx+1}.</span>{mcq.question}</p>
                                                     </div>
                                                 </label>
                                             );
@@ -579,10 +583,10 @@ const CreateQuiz = () => {
                                 </div>
                             </div>
                             
-                            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 rounded-b-xl">
+                            <div className="p-6 border-t border-gray-100 dark:border-[var(--border-default)] bg-gray-50 dark:bg-gray-900/10 flex justify-end gap-3 rounded-b-xl">
                                 <button 
                                     onClick={() => setPublishingMaterial(null)}
-                                    className="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                                    className="px-6 py-2.5 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-850 rounded-lg transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -599,7 +603,8 @@ const CreateQuiz = () => {
                     )}
                 </div>
             </div>
-        </div>
+            </div>
+        </PageLayout>
     );
 };
 

@@ -5,6 +5,7 @@ import PageLayout from '../../components/layout/PageLayout.jsx'
 import Select from '../../components/ui/Select.jsx'
 import { analyticsAPI } from '../../api/analytics.js'
 import toast from 'react-hot-toast'
+import useUIStore from '../../store/uiStore.js'
 import { 
   PieChart, Pie, Cell, 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -14,6 +15,7 @@ import {
 export default function CourseAnalytics() {
   const { courseId } = useParams()
   const navigate = useNavigate()
+  const darkMode = useUIStore(state => state.darkMode)
   
   const [course, setCourse] = useState(null)
   const [kpis, setKpis] = useState(null)
@@ -121,7 +123,7 @@ export default function CourseAnalytics() {
   const pieData = [
     { name: 'Completed', value: progressDist?.completed || 0, color: '#10B981' },
     { name: 'In Progress', value: progressDist?.inProgress || 0, color: '#F59E0B' },
-    { name: 'Not Started', value: progressDist?.notStarted || 0, color: '#E5E7EB' }
+    { name: 'Not Started', value: progressDist?.notStarted || 0, color: darkMode ? '#374151' : '#E5E7EB' }
   ]
   const pieTotal = pieData.reduce((acc, cur) => acc + cur.value, 0)
 
@@ -130,7 +132,7 @@ export default function CourseAnalytics() {
     { name: 'Good', count: performanceDist?.good || 0, color: '#3B82F6' },
     { name: 'Average', count: performanceDist?.average || 0, color: '#F59E0B' },
     { name: 'At Risk', count: performanceDist?.atRisk || 0, color: '#EF4444' },
-    { name: 'No Data', count: performanceDist?.noAssessmentData || 0, color: '#9CA3AF' }
+    { name: 'No Data', count: performanceDist?.noAssessmentData || 0, color: darkMode ? '#4B5563' : '#9CA3AF' }
   ]
 
   const funnelData = [
@@ -211,20 +213,20 @@ export default function CourseAnalytics() {
         {/* Top KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
           {[
-            { label: 'Total Enrollments', value: kpis.totalEnrollments, icon: Users, color: '#2563EB', bg: '#EFF6FF' },
-            { label: 'Avg Watch Time', value: kpis.averageWatchTime === null ? 'No Data Yet' : formatTime(kpis.averageWatchTime), icon: PlayCircle, color: '#10B981', bg: '#F0FDF4' },
-            { label: 'Avg Attendance', value: kpis.averageAttendanceRate === null ? 'No Lectures in Period' : `${kpis.averageAttendanceRate.toFixed(1)}%`, icon: CheckCircle, color: '#8B5CF6', bg: '#F5F3FF' },
-            { label: 'Avg Progress', value: `${kpis.averageProgressPercentage.toFixed(1)}%`, icon: BarChart2, color: '#F59E0B', bg: '#FFFBEB' },
-            { label: 'Assessment Avg', value: kpis.assessmentAverage === null ? 'No Assessments in Period' : `${kpis.assessmentAverage.toFixed(1)}%`, icon: ShieldAlert, color: '#EC4899', bg: '#FDF2F8' },
-            { label: 'Health Score', value: `${kpis.courseHealthScore.toFixed(1)} / 100`, icon: Star, color: '#14B8A6', bg: '#F0FDFA' },
+            { label: 'Total Enrollments', value: kpis.totalEnrollments, icon: Users, color: darkMode ? '#60A5FA' : '#2563EB', bg: darkMode ? 'rgba(96, 165, 250, 0.15)' : '#EFF6FF' },
+            { label: 'Avg Watch Time', value: kpis.averageWatchTime === null ? 'No Data' : formatTime(kpis.averageWatchTime), icon: PlayCircle, color: darkMode ? '#34D399' : '#10B981', bg: darkMode ? 'rgba(52, 211, 153, 0.15)' : '#F0FDF4' },
+            { label: 'Avg Attendance', value: kpis.averageAttendanceRate === null ? 'No Lectures' : `${kpis.averageAttendanceRate.toFixed(1)}%`, icon: CheckCircle, color: darkMode ? '#A78BFA' : '#8B5CF6', bg: darkMode ? 'rgba(167, 139, 250, 0.15)' : '#F5F3FF' },
+            { label: 'Avg Progress', value: `${kpis.averageProgressPercentage.toFixed(1)}%`, icon: BarChart2, color: darkMode ? '#FBBF24' : '#F59E0B', bg: darkMode ? 'rgba(251, 191, 36, 0.15)' : '#FFFBEB' },
+            { label: 'Assessment Avg', value: kpis.assessmentAverage === null ? 'No Quizzes' : `${kpis.assessmentAverage.toFixed(1)}%`, icon: ShieldAlert, color: darkMode ? '#F472B6' : '#EC4899', bg: darkMode ? 'rgba(244, 114, 182, 0.15)' : '#FDF2F8' },
+            { label: 'Health Score', value: `${kpis.courseHealthScore.toFixed(1)} / 100`, icon: Star, color: darkMode ? '#2DD4BF' : '#14B8A6', bg: darkMode ? 'rgba(45, 212, 191, 0.15)' : '#F0FDFA' },
           ].map((kpi, i) => (
-            <div key={i} className="p-5 rounded-2xl border flex items-center gap-4 transition-all hover:shadow-sm" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: kpi.bg, color: kpi.color }}>
-                <kpi.icon size={24} />
+            <div key={i} className="p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all hover:shadow-sm" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: kpi.bg, color: kpi.color }}>
+                <kpi.icon size={20} />
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{kpi.label}</p>
-                <h3 className="text-2xl font-black" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>{kpi.value}</h3>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{kpi.label}</p>
+                <h3 className={`font-black leading-tight ${kpi.value.toString().length > 10 ? 'text-lg' : 'text-2xl'}`} style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>{kpi.value}</h3>
               </div>
             </div>
           ))}
@@ -262,20 +264,20 @@ export default function CourseAnalytics() {
             </div>
 
             {aiError && (
-                <div className="p-4 bg-red-50 text-red-600 rounded-xl mb-4 text-sm font-medium border border-red-100 flex items-center gap-2">
+                <div className="p-4 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl mb-4 text-sm font-medium border border-red-100 dark:border-red-900/30 flex items-center gap-2">
                     <ShieldAlert size={18} /> {aiError}
                 </div>
             )}
 
             {!aiInsights && !loadingAi && !aiError && (
-                <div className="py-12 text-center text-gray-500">
+                <div className="py-12 text-center text-gray-500 dark:text-gray-400">
                     <Star size={40} className="mx-auto mb-3 opacity-20" />
                     <p className="font-medium">Click 'Generate AI Analysis' to interpret your course metrics.</p>
                 </div>
             )}
 
             {loadingAi && !aiInsights && (
-                <div className="py-12 text-center text-purple-500 animate-pulse">
+                <div className="py-12 text-center text-purple-500 dark:text-purple-400 animate-pulse">
                     <div className="w-8 h-8 rounded-full border-4 border-current border-t-transparent animate-spin mx-auto mb-3"></div>
                     <p className="font-medium">Analyzing course data...</p>
                 </div>
@@ -284,22 +286,28 @@ export default function CourseAnalytics() {
             {aiInsights && (
                 <div className="space-y-6">
                     <div className="p-5 rounded-xl border" style={{ backgroundColor: 'var(--bg-body)', borderColor: 'var(--border-default)' }}>
-                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">Overall Summary</h4>
-                        <p className="text-gray-800 leading-relaxed font-medium">{aiInsights.summary}</p>
+                        <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Overall Summary</h4>
+                        <p className="text-gray-800 dark:text-gray-200 leading-relaxed font-medium">{aiInsights.summary}</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
-                            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Key Insights</h4>
+                            <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Key Insights</h4>
                             <div className="space-y-3">
                                 {aiInsights.insights?.map((insight, idx) => (
                                     <div key={idx} className="p-4 rounded-xl border flex gap-3 items-start" style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${insight.type === 'warning' ? 'bg-red-100 text-red-600' : insight.type === 'positive' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                          insight.type === 'warning' 
+                                            ? 'bg-red-100 dark:bg-red-950/40 text-red-650 dark:text-red-400' 
+                                            : insight.type === 'positive' 
+                                              ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-650 dark:text-emerald-400' 
+                                              : 'bg-blue-100 dark:bg-blue-950/40 text-blue-650 dark:text-blue-400'
+                                        }`}>
                                             {insight.type === 'warning' ? <ShieldAlert size={16} /> : insight.type === 'positive' ? <CheckCircle size={16} /> : <BarChart2 size={16} />}
                                         </div>
                                         <div>
-                                            <h5 className="font-bold text-gray-900 text-sm mb-1">{insight.title}</h5>
-                                            <p className="text-sm text-gray-600">{insight.message}</p>
+                                            <h5 className="font-bold text-gray-900 dark:text-gray-100 text-sm mb-1">{insight.title}</h5>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">{insight.message}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -307,17 +315,17 @@ export default function CourseAnalytics() {
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Recommended Actions</h4>
+                            <h4 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Recommended Actions</h4>
                             <div className="space-y-3">
                                 {aiInsights.recommendations?.map((rec, idx) => (
                                     <div key={idx} className="p-4 rounded-xl border flex gap-3 items-start relative overflow-hidden" style={{ backgroundColor: 'var(--bg-body)', borderColor: 'var(--border-default)' }}>
                                         <div className={`absolute top-0 left-0 w-1 h-full ${rec.priority === 'high' ? 'bg-red-500' : rec.priority === 'medium' ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-gray-100 text-gray-600 ml-1">
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 ml-1">
                                             <Star size={16} />
                                         </div>
                                         <div>
-                                            <h5 className="font-bold text-gray-900 text-sm mb-1">{rec.title}</h5>
-                                            <p className="text-sm text-gray-600">{rec.reason}</p>
+                                            <h5 className="font-bold text-gray-900 dark:text-gray-100 text-sm mb-1">{rec.title}</h5>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">{rec.reason}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -336,7 +344,7 @@ export default function CourseAnalytics() {
             <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Course Progress Distribution</h3>
             <div className="flex-1 w-full relative">
               {pieTotal === 0 ? (
-                 <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">No enrollment data</div>
+                 <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">No enrollment data</div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -353,14 +361,14 @@ export default function CourseAnalytics() {
               )}
               {pieTotal > 0 && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-3xl font-bold">{pieTotal}</span>
-                  <span className="text-xs text-gray-500 uppercase">Enrolled</span>
+                  <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">{pieTotal}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 uppercase">Enrolled</span>
                 </div>
               )}
             </div>
             <div className="flex justify-center gap-4 mt-2">
               {pieData.map(d => (
-                <div key={d.name} className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
+                <div key={d.name} className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }}></div>
                   {d.name}
                 </div>
@@ -373,17 +381,17 @@ export default function CourseAnalytics() {
             <h3 className="text-lg font-bold mb-6" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Course Learning Funnel</h3>
             <div className="flex-1 flex flex-col justify-center space-y-4">
               {pieTotal === 0 ? (
-                <div className="flex items-center justify-center h-full text-sm text-gray-500">No enrollment data</div>
+                <div className="flex items-center justify-center h-full text-sm text-gray-500 dark:text-gray-400">No enrollment data</div>
               ) : (
                 funnelData.map((item, index) => {
                   const percentage = pieTotal > 0 ? (item.value / pieTotal) * 100 : 0
                   return (
                     <div key={index} className="w-full">
                       <div className="flex justify-between text-sm font-medium mb-1.5">
-                        <span className="text-gray-700">{item.label}</span>
-                        <span className="text-gray-900">{item.value} ({percentage.toFixed(1)}%)</span>
+                        <span className="text-gray-700 dark:text-gray-300">{item.label}</span>
+                        <span className="text-gray-900 dark:text-gray-100">{item.value} ({percentage.toFixed(1)}%)</span>
                       </div>
-                      <div className="w-full bg-gray-100 rounded-full h-3">
+                      <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
                         <div 
                           className="h-3 rounded-full transition-all duration-1000" 
                           style={{ width: `${percentage}%`, backgroundColor: '#8B5CF6', opacity: 1 - (index * 0.15) }}
@@ -403,19 +411,19 @@ export default function CourseAnalytics() {
               {attendanceTrend && attendanceTrend.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={attendanceTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6B7280' }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} tickLine={false} axisLine={false} domain={[0, 100]} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? '#374151' : '#E5E7EB'} />
+                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280' }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280' }} tickLine={false} axisLine={false} domain={[0, 100]} />
                     <RechartsTooltip 
                       content={({ active, payload }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload
                           return (
-                            <div className="bg-white p-3 border rounded-xl shadow-lg text-sm">
-                              <p className="font-bold mb-1">{data.lectureTitle}</p>
-                              <p className="text-gray-500 mb-2">{data.date}</p>
-                              <p className="text-[#8B5CF6] font-semibold">Rate: {data.attendanceRate.toFixed(1)}%</p>
-                              <p className="text-gray-700">Attendees: {data.attendeeCount}</p>
+                            <div className="bg-white dark:bg-[#1E1E24] p-3 border border-gray-200 dark:border-[#2D2D35] rounded-xl shadow-lg text-sm">
+                              <p className="font-bold mb-1 text-gray-900 dark:text-gray-100">{data.lectureTitle}</p>
+                              <p className="text-gray-500 dark:text-gray-400 mb-2">{data.date}</p>
+                              <p className="text-[#8B5CF6] dark:text-[#A78BFA] font-semibold">Rate: {data.attendanceRate.toFixed(1)}%</p>
+                              <p className="text-gray-700 dark:text-gray-300">Attendees: {data.attendeeCount}</p>
                             </div>
                           )
                         }
@@ -426,7 +434,7 @@ export default function CourseAnalytics() {
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-full text-sm text-gray-500 border border-dashed rounded-xl">No lectures hosted yet</div>
+                <div className="flex items-center justify-center h-full text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">No lectures hosted yet</div>
               )}
             </div>
           </div>
@@ -438,10 +446,10 @@ export default function CourseAnalytics() {
               {assessmentTrend && assessmentTrend.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={assessmentTrend} margin={{ top: 20, right: 30, left: -10, bottom: 25 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? '#374151' : '#E5E7EB'} />
                     <XAxis 
                       dataKey="quizTitle" 
-                      tick={{ fontSize: 11, fill: '#6B7280' }} 
+                      tick={{ fontSize: 11, fill: darkMode ? '#9CA3AF' : '#6B7280' }} 
                       tickLine={false} 
                       axisLine={false} 
                       tickFormatter={(val) => val.length > 12 ? val.substring(0, 12) + '...' : val}
@@ -451,7 +459,7 @@ export default function CourseAnalytics() {
                     />
                     <YAxis 
                       yAxisId="left"
-                      tick={{ fontSize: 12, fill: '#6B7280' }} 
+                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280' }} 
                       tickLine={false} 
                       axisLine={false} 
                       domain={[0, 100]} 
@@ -460,7 +468,7 @@ export default function CourseAnalytics() {
                     <YAxis 
                       yAxisId="right"
                       orientation="right"
-                      tick={{ fontSize: 12, fill: '#6B7280' }} 
+                      tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280' }} 
                       tickLine={false} 
                       axisLine={false}
                       allowDecimals={false}
@@ -470,16 +478,16 @@ export default function CourseAnalytics() {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload
                           return (
-                            <div className="bg-white p-3 border rounded-xl shadow-lg text-sm">
-                              <p className="font-bold mb-1 text-gray-800">{data.quizTitle}</p>
-                              <p className="text-gray-500 mb-2 text-xs">{data.date}</p>
+                            <div className="bg-white dark:bg-[#1E1E24] p-3 border border-gray-200 dark:border-[#2D2D35] rounded-xl shadow-lg text-sm">
+                              <p className="font-bold mb-1 text-gray-800 dark:text-gray-200">{data.quizTitle}</p>
+                              <p className="text-gray-500 dark:text-gray-400 mb-2 text-xs">{data.date}</p>
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="w-3 h-3 rounded-full bg-[#EC4899]"></span>
-                                <p className="text-[#EC4899] font-semibold">Avg Score: {data.averageScore.toFixed(1)}%</p>
+                                <p className="text-[#EC4899] dark:text-[#F472B6] font-semibold">Avg Score: {data.averageScore.toFixed(1)}%</p>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-[#E9D5FF]"></span>
-                                <p className="text-gray-700 font-medium">People Attempted: {data.attempts}</p>
+                                <span className="w-3 h-3 rounded-full bg-[#E9D5FF] dark:bg-[#C084FC]"></span>
+                                <p className="text-gray-700 dark:text-gray-300 font-medium">People Attempted: {data.attempts}</p>
                               </div>
                             </div>
                           )
@@ -487,12 +495,12 @@ export default function CourseAnalytics() {
                         return null
                       }}
                     />
-                    <Bar yAxisId="right" dataKey="attempts" fill="#E9D5FF" radius={[4, 4, 0, 0]} barSize={40} />
-                    <Line yAxisId="left" type="monotone" dataKey="averageScore" stroke="#EC4899" strokeWidth={3} dot={{ r: 4, fill: '#EC4899' }} activeDot={{ r: 6 }} label={{ position: 'top', fill: '#EC4899', fontSize: 12, formatter: (val) => `${val.toFixed(0)}%`, dy: -10 }} />
+                    <Bar yAxisId="right" dataKey="attempts" fill={darkMode ? '#4A2A6B' : '#E9D5FF'} radius={[4, 4, 0, 0]} barSize={40} />
+                    <Line yAxisId="left" type="monotone" dataKey="averageScore" stroke="#EC4899" strokeWidth={3} dot={{ r: 4, fill: '#EC4899' }} activeDot={{ r: 6 }} label={{ position: 'top', fill: darkMode ? '#F472B6' : '#EC4899', fontSize: 12, formatter: (val) => `${val.toFixed(0)}%`, dy: -10 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-full text-sm text-gray-500 border border-dashed rounded-xl">No assessment data available</div>
+                <div className="flex items-center justify-center h-full text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">No assessment data available</div>
               )}
             </div>
           </div>
@@ -501,21 +509,21 @@ export default function CourseAnalytics() {
           <div className="p-6 rounded-2xl border flex flex-col h-[380px]" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Student Performance</h3>
-              <button className="text-xs font-semibold text-[#2563EB] bg-[#EFF6FF] px-3 py-1.5 rounded-lg hover:bg-[#DBEAFE] transition-colors">
+              <button className="text-xs font-semibold text-[#2563EB] dark:text-[#60A5FA] bg-[#EFF6FF] dark:bg-blue-950/30 px-3 py-1.5 rounded-lg hover:bg-[#DBEAFE] dark:hover:bg-blue-900/40 transition-colors">
                 View Student Analysis
               </button>
             </div>
             <div className="flex-1 w-full">
               {pieTotal === 0 ? (
-                <div className="flex items-center justify-center h-full text-sm text-gray-500 border border-dashed rounded-xl">No enrollment data</div>
+                <div className="flex items-center justify-center h-full text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-200 dark:border-gray-700 rounded-xl">No enrollment data</div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={perfBarData} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
-                    <XAxis type="number" tick={{ fontSize: 12, fill: '#6B7280' }} tickLine={false} axisLine={false} />
-                    <YAxis dataKey="name" type="category" tick={{ fontSize: 12, fill: '#374151', fontWeight: 500 }} tickLine={false} axisLine={false} width={80} />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={darkMode ? '#374151' : '#E5E7EB'} />
+                    <XAxis type="number" tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280' }} tickLine={false} axisLine={false} />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 12, fill: darkMode ? '#E5E7EB' : '#374151', fontWeight: 500 }} tickLine={false} axisLine={false} width={80} />
                     <RechartsTooltip 
-                      cursor={{ fill: '#F3F4F6' }}
+                      cursor={{ fill: darkMode ? 'rgba(255, 255, 255, 0.05)' : '#F3F4F6' }}
                       formatter={(value, name, props) => [`${value} Students (${((value/pieTotal)*100).toFixed(1)}%)`, 'Count']}
                     />
                     <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={24}>
@@ -541,59 +549,57 @@ export default function CourseAnalytics() {
                </div>
              ) : (
                <div className="flex flex-col xl:flex-row gap-6 w-full h-full">
-                 
-                 {/* Mini KPIs */}
-                 <div className="flex flex-col gap-3 w-full xl:w-64 shrink-0">
-                   <div className="p-4 rounded-xl border border-[rgba(37,99,235,0.2)] bg-[rgba(37,99,235,0.02)]">
-                     <p className="text-xs font-bold text-gray-500 uppercase">Avg Watch Time</p>
-                     <p className="text-xl font-bold text-blue-600 mt-1">{formatTime(videoAnalytics.averageWatchTime)}</p>
-                     <p className="text-[10px] text-gray-400 mt-0.5">Unique: {formatTime(videoAnalytics.averageUniqueWatchTime)}</p>
-                   </div>
-                   <div className="p-4 rounded-xl border border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.02)]">
-                     <p className="text-xs font-bold text-gray-500 uppercase">Avg Video Completion</p>
-                     <p className="text-xl font-bold text-emerald-600 mt-1">{videoAnalytics.averageVideoCompletion.toFixed(1)}%</p>
-                   </div>
-                   <div className="p-4 rounded-xl border border-[rgba(245,158,11,0.2)] bg-[rgba(245,158,11,0.02)]">
-                     <p className="text-xs font-bold text-gray-500 uppercase">Video Completion Rate</p>
-                     <p className="text-xl font-bold text-amber-600 mt-1">{videoAnalytics.videoCompletionRate.toFixed(1)}%</p>
-                   </div>
-                   <div className="p-4 rounded-xl border border-[rgba(139,92,246,0.2)] bg-[rgba(139,92,246,0.02)]">
-                     <p className="text-xs font-bold text-gray-500 uppercase">Engaged Learners</p>
-                     <p className="text-xl font-bold text-purple-600 mt-1">{videoAnalytics.engagedLearners}</p>
-                   </div>
-                 </div>
+                  <div className="flex flex-col gap-3 w-full xl:w-64 shrink-0">
+                    <div className="p-4 rounded-xl border border-[rgba(37,99,235,0.2)] dark:border-[rgba(59,130,246,0.3)] bg-[rgba(37,99,235,0.02)] dark:bg-[rgba(59,130,246,0.05)]">
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Avg Watch Time</p>
+                      <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">{formatTime(videoAnalytics.averageWatchTime)}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">Unique: {formatTime(videoAnalytics.averageUniqueWatchTime)}</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-[rgba(16,185,129,0.2)] dark:border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.02)] dark:bg-[rgba(16,185,129,0.05)]">
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Avg Video Completion</p>
+                      <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{videoAnalytics.averageVideoCompletion.toFixed(1)}%</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-[rgba(245,158,11,0.2)] dark:border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.02)] dark:bg-[rgba(245,158,11,0.05)]">
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Video Completion Rate</p>
+                      <p className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1">{videoAnalytics.videoCompletionRate.toFixed(1)}%</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-[rgba(139,92,246,0.2)] dark:border-[rgba(139,92,246,0.3)] bg-[rgba(139,92,246,0.02)] dark:bg-[rgba(139,92,246,0.05)]">
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Engaged Learners</p>
+                      <p className="text-xl font-bold text-purple-600 dark:text-[#A78BFA] mt-1">{videoAnalytics.engagedLearners}</p>
+                    </div>
+                  </div>
 
-                 {/* Lecture Chart */}
-                 <div className="flex-1 w-full h-[300px] xl:h-auto min-h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={lectureVideoPerformance} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
-                        <XAxis type="number" tick={{ fontSize: 12, fill: '#6B7280' }} tickLine={false} axisLine={false} domain={[0, 100]} />
-                        <YAxis dataKey="lessonTitle" type="category" tick={{ fontSize: 11, fill: '#374151' }} tickLine={false} axisLine={false} width={120} />
-                        <RechartsTooltip 
-                          cursor={{ fill: '#F3F4F6' }}
-                          content={({ active, payload }) => {
-                            if (active && payload && payload.length) {
-                              const data = payload[0].payload
-                              return (
-                                <div className="bg-white p-3 border rounded-xl shadow-lg text-sm z-10 relative">
-                                  <p className="font-bold mb-2">{data.lessonTitle}</p>
-                                  <p className="text-gray-600">Completion: <span className="font-semibold text-emerald-600">{data.averageCompletionPercentage.toFixed(1)}%</span></p>
-                                  <p className="text-gray-600">Avg Watch: <span className="font-semibold text-blue-600">{formatTime(data.averageWatchTime)}</span></p>
-                                  <p className="text-gray-600">Engaged: <span className="font-semibold">{data.engagedLearners} learners</span></p>
-                                </div>
-                              )
-                            }
-                            return null
-                          }}
-                        />
-                        <Bar dataKey="averageCompletionPercentage" radius={[0, 4, 4, 0]} barSize={20}>
-                          {lectureVideoPerformance?.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill="#10B981" />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                     </ResponsiveContainer>
+                  {/* Lecture Chart */}
+                  <div className="flex-1 w-full h-[300px] xl:h-auto min-h-[300px]">
+                     <ResponsiveContainer width="100%" height="100%">
+                       <BarChart data={lectureVideoPerformance} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
+                         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={darkMode ? '#374151' : '#E5E7EB'} />
+                         <XAxis type="number" tick={{ fontSize: 12, fill: darkMode ? '#9CA3AF' : '#6B7280' }} tickLine={false} axisLine={false} domain={[0, 100]} />
+                         <YAxis dataKey="lessonTitle" type="category" tick={{ fontSize: 11, fill: darkMode ? '#E5E7EB' : '#374151' }} tickLine={false} axisLine={false} width={120} />
+                         <RechartsTooltip 
+                           cursor={{ fill: darkMode ? 'rgba(255, 255, 255, 0.05)' : '#F3F4F6' }}
+                           content={({ active, payload }) => {
+                             if (active && payload && payload.length) {
+                               const data = payload[0].payload
+                               return (
+                                 <div className="bg-white dark:bg-[#1E1E24] p-3 border border-gray-200 dark:border-[#2D2D35] rounded-xl shadow-lg text-sm z-10 relative">
+                                   <p className="font-bold mb-2 text-gray-900 dark:text-gray-100">{data.lessonTitle}</p>
+                                   <p className="text-gray-600 dark:text-gray-400">Completion: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{data.averageCompletionPercentage.toFixed(1)}%</span></p>
+                                   <p className="text-gray-600 dark:text-gray-400">Avg Watch: <span className="font-semibold text-blue-600 dark:text-blue-400">{formatTime(data.averageWatchTime)}</span></p>
+                                   <p className="text-gray-600 dark:text-gray-400">Engaged: <span className="font-semibold text-gray-900 dark:text-gray-200">{data.engagedLearners} learners</span></p>
+                                 </div>
+                               )
+                             }
+                             return null
+                           }}
+                         />
+                         <Bar dataKey="averageCompletionPercentage" radius={[0, 4, 4, 0]} barSize={20}>
+                           {lectureVideoPerformance?.map((entry, index) => (
+                             <Cell key={`cell-${index}`} fill="#10B981" />
+                           ))}
+                         </Bar>
+                       </BarChart>
+                      </ResponsiveContainer>
                   </div>
                 </div>
               )}
