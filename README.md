@@ -35,9 +35,11 @@
 - **Student Dashboard**: 
   - Browse featured courses, wishlist items, and enroll in up to 50 courses.
   - Access structured video players, track lesson progression, and download official PDF certificates upon course completion.
+  - **Auto-Switching Notes Hub**: Text-based lessons automatically direct the student to the Notes tab, displaying custom visitor layout components for external resource links.
   - Take quizzes with on-screen utility calculators and notepad tools.
 - **Instructor Dashboard**:
   - Full-featured course builder (drag-and-drop lecture arranging, thumbnail uploading, description writing).
+  - **Dynamic Notes Organizer**: Upload study notes files (PDF, DOCX, TXT) or add external URL links to the lesson curriculum.
   - Class scheduler to set up WebRTC rooms or custom URLs.
   - Automated MCQ builder with AI generation tools.
   - Student progress and grading charts.

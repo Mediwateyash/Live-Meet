@@ -227,6 +227,10 @@ export default function CoursePlayer() {
       trackingRef.current.pendingIntervals = [];
       trackingRef.current.isNewSession = true;
       trackingRef.current.videoDuration = 0;
+
+      if (!currentLesson.videoUrl && currentLesson.resources?.length > 0) {
+        setTab('notes');
+      }
     }
     setVideoEnded(false)
     setQuickQuizActive(false)
@@ -444,48 +448,21 @@ export default function CoursePlayer() {
                 }}
               />
             ) : currentLesson?.resources?.length > 0 ? (
-              isLinkResource(currentLesson.resources[0].url) ? (
-                <div className="w-full h-full bg-[#121222] flex flex-col p-8 items-center justify-center text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-indigo-950/40 text-indigo-400 flex items-center justify-center mb-4">
-                    <Link2 size={32} />
-                  </div>
-                  <h4 className="text-lg font-bold text-white mb-2">{currentLesson.resources[0].name || `Notes for ${currentLesson.title}`}</h4>
-                  <p className="text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
-                    This study material is hosted on an external link. Please click below to visit this link.
-                  </p>
-                  <a 
-                    href={currentLesson.resources[0].url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-bold rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
-                  >
-                    Visit this link <ExternalLink size={14} />
-                  </a>
+              <div className="w-full h-full bg-gradient-to-br from-[#1e1b4b]/60 via-[#111827] to-[#0f0f13] flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 text-[#A78BFA] flex items-center justify-center mb-4 border border-[rgba(124,58,237,0.2)] animate-pulse">
+                  {isLinkResource(currentLesson.resources[0].url) ? <Link2 size={30} /> : <FileText size={30} />}
                 </div>
-              ) : (
-                <div className="w-full h-full bg-[#121222] flex flex-col p-4">
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-800">
-                    <div className="text-left">
-                      <h4 className="text-sm font-bold text-white truncate max-w-md">{currentLesson.resources[0].name || `Notes for ${currentLesson.title}`}</h4>
-                      <p className="text-xs text-gray-400">PDF Document</p>
-                    </div>
-                    <a
-                      href={getDownloadUrl(currentLesson.resources[0].url)}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-lg transition-colors"
-                    >
-                      <Download size={13} /> Download PDF
-                    </a>
-                  </div>
-                  <iframe src={currentLesson.resources[0].url} width="100%" height="100%" className="flex-1 rounded-xl overflow-hidden border border-gray-800 bg-white" title="Notes Viewer" />
-                  <div className="mt-3 text-[11px] text-gray-405 bg-gray-950/60 p-3 rounded-lg leading-relaxed text-left border border-gray-850/80">
-                    <p className="font-semibold text-yellow-500 mb-0.5">⚠️ Cloudinary PDF Settings Info:</p>
-                    <p>If the PDF fails to display, please log into your Cloudinary Console and under <strong>Settings ➔ Security ➔ PDF and ZIP files delivery</strong>, ensure <strong>"Allow delivery of PDF and ZIP files"</strong> is enabled.</p>
-                  </div>
-                </div>
-              )
+                <h4 className="text-xl font-bold text-white mb-2">{currentLesson.title}</h4>
+                <p className="text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
+                  This lesson is text-based. You can view or download the study notes and resources in the <strong>Notes</strong> tab below.
+                </p>
+                <button
+                  onClick={() => setTab('notes')}
+                  className="px-6 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-semibold rounded-xl transition-all shadow-md active:scale-95"
+                >
+                  Go to Notes Tab
+                </button>
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-base" style={{ color: '#666' }}>
                 No video or notes available
