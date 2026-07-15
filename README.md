@@ -1,4 +1,4 @@
-# Zenius AI 🎥🎓
+# Zenius AI — Learn Without Limits 🎥🎓
 
 <div align="center">
 
@@ -15,53 +15,47 @@
   ![Cloudinary](https://img.shields.io/badge/CLOUDINARY-MEDIA-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
 
   <p align="center">
-    Zenius AI is a modern, real-time e-learning and virtual classroom platform designed to deliver interactive education experiences. Built with a robust MERN (MongoDB, Express, React, Node.js) architecture, it connects Students, Instructors, and Admins via tailormade control panels, real-time WebRTC audio/video streaming, collaborative tools, and Gemini AI-driven study tools.
+    Zenius AI is a premium, real-time e-learning and virtual classroom platform designed to deliver outstanding education experiences. Built with a robust MERN (MongoDB, Express, React, Node.js) architecture, it connects Students, Instructors, and Admins via tailormade control panels, real-time WebRTC audio/video streaming, cooperative whiteboard tools, and dynamic Google Gemini AI-driven study tools.
   </p>
 
-  🔗 **Live Deployment URL**: [https://live-meet.onrender.com/](https://live-meet.onrender.com/)
+  🔗 **Production Live Site**: [https://live-meet.onrender.com/](https://live-meet.onrender.com/)
 
 </div>
 
 ---
 
-## 🚀 Key Features
+## 🚀 Key Functional Modules
 
-### 1. Interactive Live Classrooms
-- **WebRTC Live Rooms**: Real-time virtual classrooms at `/live/:roomId` supporting camera streaming, microphone sharing, and screen sharing.
-- **Collaborative Whiteboard & Chat**: Real-time whiteboard canvas collaboration alongside an instant chat interface powered by **Socket.io**.
-- **Attendance Logs**: Automatically records classroom joining and departure times.
+### 1. Interactive Live Classrooms (WebRTC & Socket.IO)
+- **WebRTC P2P Rooms**: Virtual classrooms at `/live/:roomId` supporting video stream, microphone toggling, and screen sharing.
+- **Synchronized Whiteboard**: Interactive collaborative whiteboard canvas synced in real-time across users using Socket.io.
+- **Contextual Live Chat**: Instant classroom messages in sidebars.
+- **Automatic Attendance Logs**: Records student entrance and departure timestamps automatically in database models.
 
-### 2. Multi-Role Tailored Dashboards
-- **Student Dashboard**: 
-  - Browse featured courses, wishlist items, and enroll in up to 50 courses.
-  - Access structured video players, track lesson progression, and download official PDF certificates upon course completion.
-  - **Auto-Switching Notes Hub**: Text-based lessons automatically direct the student to the Notes tab, displaying custom visitor layout components for external resource links.
-  - Take quizzes with on-screen utility calculators and notepad tools.
-- **Instructor Dashboard**:
-  - Full-featured course builder (drag-and-drop lecture arranging, thumbnail uploading, description writing).
-  - **Dynamic Notes Organizer**: Upload study notes files (PDF, DOCX, TXT) or add external URL links to the lesson curriculum.
-  - Class scheduler to set up WebRTC rooms or custom URLs.
-  - Automated MCQ builder with AI generation tools.
-  - Student progress and grading charts.
-- **Admin Dashboard**:
+### 2. Tailored Dashboards
+- **Student Portal**:
+  - Catalog browsing, course wishlists, and enrolling in up to 50 active courses.
+  - Video lecture player with dynamic completion tracking.
+  - **Dynamic Notes Tab & Redirect**: Notes-based lessons automatically redirect users to the Notes tab, displaying custom visitor layout components for external links.
+  - Quizzes with on-screen utility calculators, notepad drafts, and feedback ratings to claim PDF certificates.
+- **Instructor Portal**:
+  - Drag-and-drop lecture outlines, course thumbnail updates, and description managers.
+  - **Note Links & Files Builder**: Upload study notes (PDF, DOCX, TXT) or add external URL links to the curriculum outline.
+  - Live session scheduling (WebRTC rooms or external URLs).
+  - Student progress and grade charts.
+- **Admin Portal**:
   - Manage all system users, suspend accounts, and approve/reject instructor applications.
-  - Centralized customer support ticketing system with accordion-style message replies.
-  - Centralized dashboard control panel showing user counts, active courses, and revenue.
+  - Ticket support desk with accordion responses.
+  - Dynamic page configuration using **Feature Flags** with graceful fallback views.
 
-### 3. Gemini AI Multimodal Processing
-- **AI Quiz Generation**: Integrates the **Google Generative AI SDK** (using `gemini-2.5-flash`) to generate structured MCQ quizzes automatically from uploaded course files (PDFs, DOCX, and PPTX).
-- **Background Extraction**: Asynchronously extracts core concepts and details without blocking main server processing thread tasks.
+### 3. Google Gemini AI Integration
+- **AI Quiz Builder**: Automatically creates MCQ quizzes from uploaded files (PDF, DOCX, TXT) using `gemini-2.5-flash`.
+- **Background Extraction**: Offloads text extraction to async workers to ensure the Express thread remains un-blocked.
 
-### 4. Admin Feature Flags
-- **Dynamic Configuration**: Admin settings page to toggle page visibility on-the-fly.
-- **Graceful Fallbacks**: Beautiful fallback views displayed when a page or document is disabled by administrators.
-
-### 5. Enterprise-Grade Security Remediations
-- **Clickjacking & CSP Protection**: Strict Content Security Policy (CSP) and double-click framing protection configured globally using Helmet headers.
+### 4. Advanced Security Measures
 - **Double-Submit CSRF Cookies**: Custom token header validation mapping on state-changing API endpoints.
-- **Brute Force Lockout**: Accounts locked for 30 minutes after 5 consecutive failed login attempts.
-- **ReDoS Mitigation**: Strict sanitization of user search strings to escape special characters before Mongoose query processing.
-- **SSRF Shields**: Allowed-host checks and connection timeouts on external URL fetches.
+- **Brute Force Lockout**: Temporary 30-minute account ban after 5 consecutive failed passwords.
+- **NoSQL SSRF & ReDoS Shields**: Escapes Mongo query selectors and validates resource link hosts during note uploading.
 
 ---
 
@@ -69,26 +63,42 @@
 
 | Layer | Technologies |
 |---|---|
-| **Frontend (Client)** | React (v18), Vite, Zustand (State Management), Tailwind CSS, Lucide Icons, Framer Motion, Socket.io-client, Recharts, HTML2Canvas, jsPDF |
+| **Frontend (Client)** | React (v18), Vite (v6), Zustand, Tailwind CSS, Lucide Icons, Framer Motion, Socket.io-client, Recharts, HTML2Canvas, jsPDF |
 | **Backend (Server)** | Node.js, Express, MongoDB (Mongoose), Socket.io, Helmet, CORS, Cookie Parser, bcryptjs, Multer, Nodemailer |
-| **AI Processing** | Google Generative AI SDK (`@google/generative-ai`) |
+| **Obfuscation Engine** | `rollup-obfuscator` & `javascript-obfuscator` (Vite build time only) |
 
 ---
 
 ## 📁 Repository Structure
 
 ```
-├── client/          # React frontend (Vite, Tailwind CSS, Lucide Icons, Framer Motion)
-├── server/          # Node.js Express backend API (Mongoose schemas, socket handlers)
-├── package.json     # Root dependency orchestration scripts
-└── README.md        # Documentation
+├── client/                  # Frontend SPA
+│   ├── public/              # Static files (manifest, favicon, llms.txt)
+│   ├── src/
+│   │   ├── api/             # Axios API services
+│   │   ├── components/      # Common components (Whiteboard, Quizzes)
+│   │   ├── hooks/           # WebRTC and theme listeners
+│   │   ├── pages/           # Views (auth, student, instructor, admin, legal)
+│   │   ├── store/           # Zustand state configurations
+│   │   └── utils/           # Time and unit formatters
+│   └── vite.config.js       # Vite build configurations with Rollup obfuscator
+│
+├── server/                  # Backend REST API
+│   ├── config/              # MongoDB and Cloudinary setups
+│   ├── controllers/         # Request handling logic
+│   ├── middleware/          # Rate limiting, CSRF, security filters
+│   ├── models/              # Mongoose collection schemas
+│   ├── routes/              # Express API endpoints
+│   ├── services/            # Gemini AI, SMTP, and upload service layers
+│   ├── socket/              # WebRTC & Whiteboard Socket.io handlers
+│   └── index.js             # Main Express server bootstrapper & sitemaps
 ```
 
 ---
 
 ## ⚙️ Environment Configuration
 
-To run Zenius AI locally, set up a `.env` file at the root directory of the project:
+Create a `.env` file at the project root directory:
 
 ```env
 # ── Server Config ──
@@ -122,12 +132,10 @@ SMTP_PASS=your_gmail_app_password
 
 ## 🏃 Running the Application Locally
 
-You can run the frontend client and backend server concurrently from the root directory.
-
 ### 1. Installation
-Install dependencies in both client and server:
+Install dependencies in both folders:
 ```bash
-# Install root orchestration tools
+# Install root tools
 npm install
 
 # Install client packages
@@ -142,24 +150,17 @@ From the project root directory, run:
 ```bash
 npm run dev
 ```
-*This command concurrently starts the backend server (at `http://localhost:5000`) and the Vite React frontend dev server (at `http://localhost:5173`).*
+- Client runs on: [http://localhost:5173](http://localhost:5173)
+- Server runs on: [http://localhost:5000](http://localhost:5000)
 
----
-
-## 📦 Production Builds
-
-To compile the React frontend application for production deployment:
+### 3. Production Build & Obfuscation
+To build and obfuscate the client code for production:
 ```bash
-# Build the client production assets
+# Bundles and obfuscates client source files into client/dist/
 npm run build
 ```
-The compiled files will be output to `client/dist`. To start the production API service:
-```bash
-npm start
-```
 
 ---
-
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=10B981&height=120&section=footer&reversal=false" alt="Footer Wave" width="100%"/>
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=7C3AED&height=120&section=footer&reversal=false" alt="Footer Wave" width="100%"/>
 </p>

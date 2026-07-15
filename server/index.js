@@ -143,7 +143,18 @@ app.get('/robots.txt', (req, res) => {
   const protocol = req.headers['x-forwarded-proto'] || (host.includes('localhost') || host.includes('127.0.0.1') ? req.protocol : 'https')
   const baseUrl = `${protocol}://${host}`
   res.type('text/plain')
-  res.send(`User-agent: *\nDisallow: /api/\nDisallow: /admin/\nAllow: /\n\nSitemap: ${baseUrl}/sitemap.xml`)
+  res.send(`User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /instructor/
+Disallow: /my-learning/
+Disallow: /course/*/learn
+Disallow: /live/
+Allow: /
+Allow: /browse
+Allow: /course/
+
+Sitemap: ${baseUrl}/sitemap.xml`)
 })
 
 // Routes
@@ -180,20 +191,22 @@ app.get('/sitemap.xml', async (req, res, next) => {
     // Get all published courses
     const courses = await Course.find({ status: 'published' }).select('slug updatedAt')
 
+    const todayStr = new Date().toISOString().split('T')[0];
+
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Static Pages -->
+  <!-- Primary Static Pages -->
   <url>
     <loc>${baseUrl}/</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <lastmod>${todayStr}</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>${baseUrl}/browse</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <lastmod>${todayStr}</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>${baseUrl}/login</loc>
@@ -213,6 +226,62 @@ app.get('/sitemap.xml', async (req, res, next) => {
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
+
+  <!-- Legal Dynamic/Friendly Sub-pages -->
+  <url>
+    <loc>${baseUrl}/privacy-policy</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/terms-and-conditions</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/cookie-policy</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/refund-policy</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/disclaimer</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/acceptable-use</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/community-guidelines</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/grievance</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/copyright</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
 `;
 
     // Dynamic course routes
@@ -220,12 +289,12 @@ app.get('/sitemap.xml', async (req, res, next) => {
       const courseUrl = `${baseUrl}/course/${course.slug}`;
       const lastMod = course.updatedAt 
         ? new Date(course.updatedAt).toISOString().split('T')[0] 
-        : new Date().toISOString().split('T')[0];
+        : todayStr;
       xml += `  <url>
     <loc>${courseUrl}</loc>
     <lastmod>${lastMod}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
 `;
     });
