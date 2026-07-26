@@ -160,6 +160,11 @@ To build and obfuscate the client code for production:
 npm run build
 ```
 
+### 4. `yt-dlp` Video Duration Extraction Setup
+For automatic YouTube video duration extraction on the backend:
+- **Local Machine**: Ensure `yt-dlp` is installed and accessible in system PATH (`pip install yt-dlp` or `winget install yt-dlp`).
+- **Render Deployment**: Add `pip install yt-dlp` to your Render build command (e.g. `pip install yt-dlp && npm run build`).
+
 ---
 <p align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=7C3AED&height=120&section=footer&reversal=false" alt="Footer Wave" width="100%"/>

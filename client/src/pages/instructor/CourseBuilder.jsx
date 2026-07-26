@@ -838,40 +838,58 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
     if (!url) return
     if (isYouTubeUrl(url) && url !== lesson.videoUrl) {
       try {
-        toast.loading('Fetching YouTube metadata...', { id: `yt-meta-${si}-${li}` })
+        toast.loading('Fetching YouTube video metadata via yt-dlp...', { id: `yt-meta-${si}-${li}` })
         const { data } = await coursesAPI.getYoutubeMeta(url)
         
-        // 1. Update Title (if the current title is empty or "New Lesson")
+        // 1. Update Title (if empty or "New Lesson")
         if (!lesson.title || lesson.title.trim() === '' || lesson.title.trim() === 'New Lesson') {
           onUpdateLesson(si, li, 'title', data.data.title)
         }
         
-        // 2. Update Duration
+        // 2. Update Duration (seconds extracted by yt-dlp)
         const mins = Math.round(data.data.duration / 60)
         setDurationInput(mins > 0 ? mins.toString() : '0')
-        onUpdateLesson(si, li, 'duration', data.data.duration)
+        onUpdateLesson(si, li, 'duration', data.data.duration || 0)
         
         // 3. Update videoUrl
         onUpdateLesson(si, li, 'videoUrl', url)
         
-        toast.success('YouTube metadata loaded automatically!', { id: `yt-meta-${si}-${li}` })
+        toast.success(`Metadata loaded! Video duration: ${mins} min`, { id: `yt-meta-${si}-${li}` })
       } catch (err) {
-        toast.error('Could not fetch YouTube metadata automatically.', { id: `yt-meta-${si}-${li}` })
+        toast.error(err.response?.data?.message || 'Could not fetch YouTube metadata.', { id: `yt-meta-${si}-${li}` })
       }
     }
   }
 
-  const applyYt = () => {
+  const applyYt = async () => {
     const url = ytInput.trim()
     if (!url) return
     if (!isYouTubeUrl(url)) {
       toast.error('Enter a valid YouTube URL (youtube.com/watch?v=... or youtu.be/...)')
       return
     }
-    const mins = parseInt(durationInput) || 0
+    
+    // Automatically fetch metadata via yt-dlp if duration is not set yet
+    if (!lesson.duration || url !== lesson.videoUrl) {
+      try {
+        toast.loading('Fetching YouTube metadata via yt-dlp...', { id: `yt-meta-${si}-${li}` })
+        const { data } = await coursesAPI.getYoutubeMeta(url)
+        const mins = Math.round(data.data.duration / 60)
+        setDurationInput(mins > 0 ? mins.toString() : '0')
+        onUpdateLesson(si, li, 'duration', data.data.duration || 0)
+        onUpdateLesson(si, li, 'videoUrl', url)
+        toast.success(`YouTube video saved (${mins} min)!`, { id: `yt-meta-${si}-${li}` })
+        return
+      } catch (err) {
+        // If metadata fetch failed, show error message
+        toast.error(err.response?.data?.message || 'Could not verify video metadata.', { id: `yt-meta-${si}-${li}` })
+      }
+    }
+
+    const mins = parseInt(durationInput) || (lesson.duration ? Math.round(lesson.duration / 60) : 0)
     onUpdateLesson(si, li, 'videoUrl', url)
     onUpdateLesson(si, li, 'duration', mins * 60)
-    toast.success('YouTube link and duration saved!')
+    toast.success('YouTube link saved!')
   }
 
   const clearYt = () => {
@@ -927,11 +945,12 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
             </div>
             
             <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg shrink-0"
-              style={{ border: '1px solid var(--border-default)', background: 'var(--bg-muted)', width: '85px' }}>
+              style={{ border: '1px solid var(--border-default)', background: 'var(--bg-muted)', minWidth: '80px' }}
+              title="Detected duration in minutes (extracted automatically via yt-dlp)">
               <input
                 type="number"
                 min="0"
-                placeholder="Mins"
+                placeholder="Auto"
                 value={durationInput}
                 onChange={e => setDurationInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && applyYt()}

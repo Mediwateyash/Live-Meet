@@ -3,7 +3,19 @@ import User from '../models/User.js'
 
 export async function seedCybersecurityCourseIfMissing() {
   try {
-    // 0. Update manually promoted instructors who are missing isApprovedInstructor: true
+    // 0. Ensure default admin exists
+    let adminUser = await User.findOne({ email: 'admin@zenius.ai' })
+    if (!adminUser) {
+      adminUser = await User.create({
+        fullName: 'Zenius Admin',
+        email:    'admin@zenius.ai',
+        password: 'Admin@2026',
+        role:     'admin',
+      })
+      console.log('🛡️ Created fallback admin user:', adminUser.email)
+    }
+
+    // 0b. Update manually promoted instructors who are missing isApprovedInstructor: true
     const promotedResult = await User.updateMany(
       { role: 'instructor', isApprovedInstructor: { $ne: true } },
       { $set: { isApprovedInstructor: true, instructorRequestStatus: 'approved' } }

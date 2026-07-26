@@ -9,6 +9,7 @@ import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
 import jwt from 'jsonwebtoken'
 import { validateUrlForSsrf } from '../utils/ssrfFilter.js'
 import { generateWHQuestions } from '../services/aiService.js'
+import { fetchYoutubeMetadata } from '../services/youtubeService.js'
 
 export async function browse(req, res, next) {
   try {
@@ -356,12 +357,11 @@ export async function getYoutubeMeta(req, res, next) {
     }
 
     // Block URLs that embed credentials — these are a primary SSRF bypass vector
-    // e.g. http://youtube.com@attacker.com resolves to attacker.com, not youtube.com
     if (parsedUrl.username || parsedUrl.password) {
       throw new ApiError(400, 'Credentials in URL are not allowed');
     }
 
-    // Only accept exact-match YouTube hostnames (hostname is already decoded by URL parser)
+    // Only accept exact-match YouTube hostnames
     const allowedHostnames = new Set(['youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com']);
     if (!allowedHostnames.has(parsedUrl.hostname)) {
       throw new ApiError(400, 'Only YouTube URLs are allowed');
@@ -373,49 +373,14 @@ export async function getYoutubeMeta(req, res, next) {
       throw new ApiError(400, ssrfErr.message);
     }
 
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 5000)
-    let response;
+    let meta;
     try {
-      response = await fetch(parsedUrl.href, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-        }
-      })
-    } catch (fetchErr) {
-      clearTimeout(timeout)
-      throw new ApiError(400, 'Failed to connect to YouTube or request timed out')
-    } finally {
-      clearTimeout(timeout)
+      meta = await fetchYoutubeMetadata(url);
+    } catch (ytErr) {
+      throw new ApiError(400, ytErr.message || 'Could not fetch YouTube video metadata.');
     }
 
-    if (!response.ok) throw new ApiError(400, 'Failed to fetch YouTube page')
-    
-    const contentLength = response.headers.get('content-length')
-    if (contentLength && parseInt(contentLength, 10) > 1024 * 1024) {
-      throw new ApiError(400, 'YouTube response content too large')
-    }
-
-    const html = await response.text()
-
-    // Title
-    const titleMatch = html.match(/itemprop="name"\s+content="([^"]+)"/) || html.match(/<title>([^<]+)<\/title>/)
-    let title = titleMatch ? titleMatch[1] : 'YouTube Video'
-    title = title.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-
-    // Duration
-    const durationMatch = html.match(/itemprop="duration"\s+content="([^"]+)"/) || html.match(/meta\s+itemprop="duration"\s+content="([^"]+)"/)
-    const durationISO = durationMatch ? durationMatch[1] : null
-    let durationSeconds = 0
-    if (durationISO) {
-      durationSeconds = parseISO8601Duration(durationISO)
-    }
-
-    // Thumbnail
-    const thumbMatch = html.match(/link\s+itemprop="thumbnailUrl"\s+href="([^"]+)"/) || html.match(/property="og:image"\s+content="([^"]+)"/)
-    const thumbnail = thumbMatch ? thumbMatch[1] : null
-
+    res.json(new ApiResponse(200, meta, 'YouTube metadata retrieved successfully'));
   } catch (err) { next(err) }
 }
 

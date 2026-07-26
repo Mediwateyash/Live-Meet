@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /instructor/
+Disallow: /my-learning/
+Disallow: /course/*/learn
+Disallow: /live/
+Allow: /
+Allow: /browse
+Allow: /course/
+
+Sitemap: https://live-meet.onrender.com/sitemap.xml

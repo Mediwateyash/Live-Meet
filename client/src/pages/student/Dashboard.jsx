@@ -36,7 +36,7 @@ export default function StudentDashboard() {
   }, [user])
 
   const completed = enrolled.filter(c => progresses[c._id]?.percentComplete === 100).length
-  const hoursWatched = Object.values(progresses).reduce((a, p) => a + (p.lastWatchedPosition || 0) / 3600, 0)
+  const hoursWatched = Object.values(progresses).reduce((a, p) => a + ((p?.lastWatchedPosition || 0) / 3600), 0)
 
   const stats = [
     { label: 'Enrolled',      value: user?.enrolledCourses?.length || 0, icon: BookOpen, color: '#7C3AED' },

@@ -4,13 +4,15 @@ import { createPortal } from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import App from './App.jsx'
+import { ErrorBoundary } from './components/shared/ErrorBoundary.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-      {createPortal(
+    <ErrorBoundary>
+      <BrowserRouter>
+        <App />
+        {createPortal(
         <Toaster
           position="top-right"
           containerStyle={{ top: '76px', zIndex: 999999 }}
@@ -32,6 +34,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         document.body
       )}
     </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 )
 

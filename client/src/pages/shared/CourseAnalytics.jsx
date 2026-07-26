@@ -143,14 +143,18 @@ export default function CourseAnalytics() {
     { label: 'Completed', value: learningFunnel?.completed || 0 }
   ]
 
+  const safeFixed = (num, decimals = 1) => {
+    const val = Number(num);
+    return isNaN(val) ? '0' : val.toFixed(decimals);
+  };
+
   const formatTime = (seconds) => {
-    if (!seconds) return '0s';
+    if (!seconds || seconds <= 0) return '0m';
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
     if (h > 0) return `${h}h ${m}m`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
+    if (m > 0) return `${m}m`;
+    return `${Math.round(seconds)}s`;
   };
 
   return (
@@ -211,22 +215,23 @@ export default function CourseAnalytics() {
         </div>
 
         {/* Top KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
           {[
-            { label: 'Total Enrollments', value: kpis.totalEnrollments, icon: Users, color: darkMode ? '#60A5FA' : '#2563EB', bg: darkMode ? 'rgba(96, 165, 250, 0.15)' : '#EFF6FF' },
-            { label: 'Avg Watch Time', value: kpis.averageWatchTime === null ? 'No Data' : formatTime(kpis.averageWatchTime), icon: PlayCircle, color: darkMode ? '#34D399' : '#10B981', bg: darkMode ? 'rgba(52, 211, 153, 0.15)' : '#F0FDF4' },
-            { label: 'Avg Attendance', value: kpis.averageAttendanceRate === null ? 'No Lectures' : `${kpis.averageAttendanceRate.toFixed(1)}%`, icon: CheckCircle, color: darkMode ? '#A78BFA' : '#8B5CF6', bg: darkMode ? 'rgba(167, 139, 250, 0.15)' : '#F5F3FF' },
-            { label: 'Avg Progress', value: `${kpis.averageProgressPercentage.toFixed(1)}%`, icon: BarChart2, color: darkMode ? '#FBBF24' : '#F59E0B', bg: darkMode ? 'rgba(251, 191, 36, 0.15)' : '#FFFBEB' },
-            { label: 'Assessment Avg', value: kpis.assessmentAverage === null ? 'No Quizzes' : `${kpis.assessmentAverage.toFixed(1)}%`, icon: ShieldAlert, color: darkMode ? '#F472B6' : '#EC4899', bg: darkMode ? 'rgba(244, 114, 182, 0.15)' : '#FDF2F8' },
-            { label: 'Health Score', value: `${kpis.courseHealthScore.toFixed(1)} / 100`, icon: Star, color: darkMode ? '#2DD4BF' : '#14B8A6', bg: darkMode ? 'rgba(45, 212, 191, 0.15)' : '#F0FDFA' },
+            { label: 'Total Enrollments', value: kpis?.totalEnrollments || 0, icon: Users, color: darkMode ? '#60A5FA' : '#2563EB', bg: darkMode ? 'rgba(96, 165, 250, 0.15)' : '#EFF6FF' },
+            { label: 'Total Duration', value: formatTime(kpis?.totalCourseDuration), icon: Clock, color: darkMode ? '#C084FC' : '#9333EA', bg: darkMode ? 'rgba(192, 132, 252, 0.15)' : '#F3E8FF' },
+            { label: 'Avg Watch Time', value: !kpis?.averageWatchTime ? '0m' : formatTime(kpis?.averageWatchTime), icon: PlayCircle, color: darkMode ? '#34D399' : '#10B981', bg: darkMode ? 'rgba(52, 211, 153, 0.15)' : '#F0FDF4' },
+            { label: 'Avg Attendance', value: kpis?.averageAttendanceRate === null || kpis?.averageAttendanceRate === undefined ? 'No Lectures' : `${safeFixed(kpis?.averageAttendanceRate)}%`, icon: CheckCircle, color: darkMode ? '#A78BFA' : '#8B5CF6', bg: darkMode ? 'rgba(167, 139, 250, 0.15)' : '#F5F3FF' },
+            { label: 'Avg Progress', value: `${safeFixed(kpis?.averageProgressPercentage)}%`, icon: BarChart2, color: darkMode ? '#FBBF24' : '#F59E0B', bg: darkMode ? 'rgba(251, 191, 36, 0.15)' : '#FFFBEB' },
+            { label: 'Assessment Avg', value: kpis?.assessmentAverage === null || kpis?.assessmentAverage === undefined ? 'No Quizzes' : `${safeFixed(kpis?.assessmentAverage)}%`, icon: ShieldAlert, color: darkMode ? '#F472B6' : '#EC4899', bg: darkMode ? 'rgba(244, 114, 182, 0.15)' : '#FDF2F8' },
+            { label: 'Health Score', value: `${safeFixed(kpis?.courseHealthScore)} / 100`, icon: Star, color: darkMode ? '#2DD4BF' : '#14B8A6', bg: darkMode ? 'rgba(45, 212, 191, 0.15)' : '#F0FDFA' },
           ].map((kpi, i) => (
-            <div key={i} className="p-5 rounded-2xl border flex flex-col justify-between gap-4 transition-all hover:shadow-sm" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: kpi.bg, color: kpi.color }}>
-                <kpi.icon size={20} />
+            <div key={i} className="p-4 rounded-2xl border flex flex-col justify-between gap-3 transition-all hover:shadow-sm" style={{ background: 'var(--bg-surface)', borderColor: 'var(--border-default)' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: kpi.bg, color: kpi.color }}>
+                <kpi.icon size={18} />
               </div>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{kpi.label}</p>
-                <h3 className={`font-black leading-tight ${kpi.value.toString().length > 10 ? 'text-lg' : 'text-2xl'}`} style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>{kpi.value}</h3>
+                <h3 className={`font-black leading-tight ${kpi.value.toString().length > 10 ? 'text-sm' : 'text-xl'}`} style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>{kpi.value}</h3>
               </div>
             </div>
           ))}
@@ -557,15 +562,15 @@ export default function CourseAnalytics() {
                     </div>
                     <div className="p-4 rounded-xl border border-[rgba(16,185,129,0.2)] dark:border-[rgba(16,185,129,0.3)] bg-[rgba(16,185,129,0.02)] dark:bg-[rgba(16,185,129,0.05)]">
                       <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Avg Video Completion</p>
-                      <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{videoAnalytics.averageVideoCompletion.toFixed(1)}%</p>
+                      <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{safeFixed(videoAnalytics?.averageVideoCompletion)}%</p>
                     </div>
                     <div className="p-4 rounded-xl border border-[rgba(245,158,11,0.2)] dark:border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.02)] dark:bg-[rgba(245,158,11,0.05)]">
                       <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Video Completion Rate</p>
-                      <p className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1">{videoAnalytics.videoCompletionRate.toFixed(1)}%</p>
+                      <p className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1">{safeFixed(videoAnalytics?.videoCompletionRate)}%</p>
                     </div>
                     <div className="p-4 rounded-xl border border-[rgba(139,92,246,0.2)] dark:border-[rgba(139,92,246,0.3)] bg-[rgba(139,92,246,0.02)] dark:bg-[rgba(139,92,246,0.05)]">
                       <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">Engaged Learners</p>
-                      <p className="text-xl font-bold text-purple-600 dark:text-[#A78BFA] mt-1">{videoAnalytics.engagedLearners}</p>
+                      <p className="text-xl font-bold text-purple-600 dark:text-[#A78BFA] mt-1">{videoAnalytics?.engagedLearners || 0}</p>
                     </div>
                   </div>
 
@@ -584,7 +589,7 @@ export default function CourseAnalytics() {
                                return (
                                  <div className="bg-white dark:bg-[#1E1E24] p-3 border border-gray-200 dark:border-[#2D2D35] rounded-xl shadow-lg text-sm z-10 relative">
                                    <p className="font-bold mb-2 text-gray-900 dark:text-gray-100">{data.lessonTitle}</p>
-                                   <p className="text-gray-600 dark:text-gray-400">Completion: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{data.averageCompletionPercentage.toFixed(1)}%</span></p>
+                                   <p className="text-gray-600 dark:text-gray-400">Completion: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{safeFixed(data.averageCompletionPercentage)}%</span></p>
                                    <p className="text-gray-600 dark:text-gray-400">Avg Watch: <span className="font-semibold text-blue-600 dark:text-blue-400">{formatTime(data.averageWatchTime)}</span></p>
                                    <p className="text-gray-600 dark:text-gray-400">Engaged: <span className="font-semibold text-gray-900 dark:text-gray-200">{data.engagedLearners} learners</span></p>
                                  </div>

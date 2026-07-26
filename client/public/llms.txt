@@ -1,91 +1,15 @@
-# Zenius AI Codebase & Architecture Specification
+# Zenius AI — AI-Powered E-Learning Platform
 
-Zenius AI is a premium, real-time e-learning and virtual classroom platform built on a modern MERN stack. It incorporates WebRTC audio/video rooms, cooperative whiteboards, and Google Gemini AI features for generating study quizzes.
+> Zenius AI is a virtual classroom platform with WebRTC live rooms, collaborative whiteboards, and Gemini AI study tools.
 
-## Tech Stack Summary
+## Core Pages
+- [Home](https://live-meet.onrender.com/): Zenius AI landing page and feature highlights.
+- [Browse Courses](https://live-meet.onrender.com/browse): Catalog of interactive courses across technology, business, and design.
 
-- **Frontend**: React (v18), Vite, Zustand (State Management), Tailwind CSS, Lucide Icons, Framer Motion, Socket.io-client, Recharts, HTML2Canvas, jsPDF.
-- **Backend**: Node.js, Express, MongoDB (Mongoose), Socket.io, Helmet (CSP/Security Headers), CORS, Cookie Parser, bcryptjs, Multer, Nodemailer.
-- **AI Integration**: Google Generative AI SDK (`@google/generative-ai` with `gemini-2.5-flash`).
-- **Media Uploads**: Cloudinary API integrations.
+## API Documentation
+- [Auth API](https://live-meet.onrender.com/api/auth/me): Authentication endpoints and session status.
+- [Courses API](https://live-meet.onrender.com/api/courses): Public course discovery and curriculum data.
 
----
-
-## Directory Organization
-
-```
-├── client/                  # React Frontend (Vite)
-│   ├── public/              # Static public files (favicon, manifest, robots, sitemaps)
-│   ├── src/
-│   │   ├── api/             # Frontend API request handlers (Axios clients)
-│   │   ├── components/      # UI components (quizzes, live room, whiteboard, layout)
-│   │   ├── hooks/           # Custom React hooks (WebRTC peer connections, UI listeners)
-│   │   ├── pages/           # View pages grouped by role (auth, public, student, instructor, admin, legal)
-│   │   ├── store/           # Zustand stores (authentication, user profile, UI themes)
-│   │   ├── utils/           # Formatting & utility functions
-│   │   ├── App.jsx          # Route declarations and role gates
-│   │   └── main.jsx         # Application bootstrapper
-│   └── vite.config.js       # Vite build setup (conditional production rollup obfuscator)
-│
-├── server/                  # Node.js Express Backend
-│   ├── config/              # MongoDB & Cloudinary service configurations
-│   ├── controllers/         # Request handling logic mapping Express routers
-│   ├── middleware/          # Security (CSRF, CSP, Auth, SSRF Shield, rate limiters)
-│   ├── models/              # Mongoose collection schemas (User, Course, Progress, LiveRoom)
-│   ├── queue/               # Asynchronous tasks and processing queues
-│   ├── routes/              # Express API endpoints
-│   ├── services/            # Google Gemini AI services, SMTP, and Cloudinary managers
-│   ├── socket/              # WebRTC & Whiteboard Socket.io events
-│   ├── utils/               # Sanitizers, validation helpers, and response wrappers
-│   └── index.js             # Main server setup and dynamic robots/sitemaps server
-```
-
----
-
-## Main Functional Components
-
-### 1. Multi-Role Gateways
-- **Student Dashboard**: Browse catalogs, track course progress, take quizzes, view certificates.
-- **Instructor Dashboard**: Create courses, manage lectures, upload/add note links, view grading analytics.
-- **Admin Dashboard**: System administration (users, support tickets, approval queues, feature flags).
-
-### 2. Real-Time Interactions (WebRTC & Socket.IO)
-- **Video Rooms**: P2P audio/video streaming via native browser WebRTC connections.
-- **Shared Whiteboard**: HTML5 Canvas synchronized instantly across room members using Socket.io.
-- **Class Chat**: Live text messaging in classroom side panels.
-
-### 3. Gemini AI integration
-- **AI Quiz Builder**: Automatically creates MCQ quizzes from uploaded files (PDF, DOCX, TXT) using `gemini-2.5-flash`.
-- **Engagement Logs**: Records student live room entry/exit to track attendance.
-
----
-
-## API Spec & Routes
-
-All API endpoints are prefixed with `/api`.
-
-### Auth & User Routes (`/api/auth`, `/api/users`)
-- `POST /auth/register` - Create student account
-- `POST /auth/login` - Secure login (with brute-force lockout checks)
-- `POST /auth/logout` - Clear cookies
-- `GET /auth/me` - Fetch profile state
-- `GET /users/enrolled` - Get student's enrolled courses
-
-### Courses & Material Routes (`/api/courses`, `/api/material`)
-- `GET /courses` - Get all published courses
-- `POST /courses` - Create new course outline
-- `PUT /courses/:id` - Edit curriculum nodes
-- `POST /material/notes` - Upload file resource or save external link notes
-
-### Analytics & Quizzes (`/api/analytics`, `/api/quiz`)
-- `GET /analytics/course/:id` - Fetch course completion metrics
-- `POST /quiz/generate` - Trigger Gemini AI MCQ generator
-
----
-
-## Security Framework
-
-- **CSRF Defense**: Double-submit cookie pattern mapping validation tokens on all mutable HTTP requests.
-- **Content Security Policy (CSP)**: Strict Helmet configurations allowing resource loading from trusted origins only.
-- **Lockout Shield**: Temporary 30-minute account ban after 5 consecutive failed passwords.
-- **SSRF Blockers**: Validates URL hosts during note linking, rejecting loopback or private ranges.
+## System Architecture
+- [System Manifest](https://live-meet.onrender.com/site.webmanifest): Application metadata and icons.
+- [Robots Rules](https://live-meet.onrender.com/robots.txt): Search engine crawler specifications.

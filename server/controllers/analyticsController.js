@@ -84,7 +84,7 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
     // If dateRange === 'all', startDate remains null
 
     // 1. Course Details & Total Enrollments
-    const course = await Course.findById(courseId).select('title enrolledStudents').lean();
+    const course = await Course.findById(courseId).select('title enrolledStudents totalDuration').lean();
     if (!course) {
         throw new Error('Course not found');
     }
@@ -295,8 +295,12 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
     const engagedLearnerCount = engagedLearnersSet.size;
     const validVideoEngagementCount = videoEngagements.filter(ve => enrolledStudentsSet.has(String(ve.studentId))).length;
     
+    const overallAvgWatchTime = totalEnrollments > 0
+        ? (totalUniqueWatchedSeconds / totalEnrollments)
+        : (engagedLearnerCount > 0 ? (totalUniqueWatchedSeconds / engagedLearnerCount) : 0);
+
     const videoAnalytics = {
-        averageWatchTime: validVideoEngagementCount > 0 ? (engagedLearnerCount > 0 ? (totalWatchedSeconds / engagedLearnerCount) : 0) : null,
+        averageWatchTime: overallAvgWatchTime,
         averageUniqueWatchTime: validVideoEngagementCount > 0 ? (engagedLearnerCount > 0 ? (totalUniqueWatchedSeconds / engagedLearnerCount) : 0) : null,
         averageVideoCompletion: validVideoEngagementCount > 0 ? (totalVideoCompletion / validVideoEngagementCount) : 0,
         videoCompletionRate: validVideoEngagementCount > 0 ? (completedVideoCount / validVideoEngagementCount) * 100 : 0,
@@ -348,8 +352,9 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
         course: { id: course._id, title: course.title },
         kpis: {
             totalEnrollments,
+            totalCourseDuration: course.totalDuration || 0,
             recentlyActiveLearners,
-            averageWatchTime: videoAnalytics.averageWatchTime,
+            averageWatchTime: overallAvgWatchTime,
             averageAttendanceRate,
             averageProgressPercentage,
             completionRate,

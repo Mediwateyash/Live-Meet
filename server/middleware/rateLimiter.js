@@ -18,7 +18,7 @@ export const forgotPasswordLimiter = rateLimit({
 
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 300 : 100,                  // 300 requests in prod, 100 in dev
+  max: process.env.NODE_ENV === 'production' ? 1000 : 5000,                // 1000 requests in prod, 5000 in dev
   message: { success: false, message: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -26,7 +26,7 @@ export const apiLimiter = rateLimit({
 
 export const writeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 50 : 100,                   // 50 attempts in prod, 100 in dev
+  max: process.env.NODE_ENV === 'production' ? 300 : 1000,                 // 300 attempts in prod, 1000 in dev
   message: { success: false, message: 'Too many updates, please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,

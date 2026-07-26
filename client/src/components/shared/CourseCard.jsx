@@ -79,6 +79,7 @@ export default function CourseCard({ course, showProgress = false, compact = fal
           <img
             src={course.thumbnail || 'https://placehold.co/400x225/EDE9FE/7C3AED?text=Course'}
             alt={course.title}
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
           />
           {course.isFree && (
@@ -97,6 +98,7 @@ export default function CourseCard({ course, showProgress = false, compact = fal
           {!showProgress && (
             <button
               onClick={handleWishlist}
+              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
               className="absolute top-3 right-3 w-11 h-11 rounded-full flex items-center justify-center backdrop-blur-sm shadow transition-transform hover:scale-110 touch-target"
               style={{ background: 'rgba(255,255,255,0.88)' }}
             >

@@ -5,6 +5,7 @@ import useUIStore from './store/uiStore.js'
 import { authAPI } from './api/auth.js'
 import LoginModal from './components/ui/LoginModal.jsx'
 import LegalGate from './components/shared/LegalGate.jsx'
+import Home from './pages/public/Home.jsx'
 
 // Helper component for loading state
 function PageLoader() {
@@ -22,7 +23,6 @@ function PageLoader() {
 
 // Lazy loaded page components
 // Public pages
-const Home = lazy(() => import('./pages/public/Home.jsx'))
 const Browse = lazy(() => import('./pages/public/Browse.jsx'))
 const CourseDetail = lazy(() => import('./pages/public/CourseDetail.jsx'))
 const NotFound = lazy(() => import('./pages/public/NotFound.jsx'))
