@@ -35,36 +35,46 @@ function parseDurationString(str) {
 
 /**
  * Robustly extract duration in seconds from any yt-dlp / YouTube JSON metadata structure.
+ * Handles single video objects, playlist entry arrays, and stringified properties.
  */
-function extractDurationFromObject(obj) {
-  if (!obj) return 0
+function extractDurationFromObject(json, videoId) {
+  if (!json) return 0
 
-  // 1. Direct numeric duration (in seconds)
-  if (typeof obj.duration === 'number' && !isNaN(obj.duration) && obj.duration > 0) {
-    return Math.round(obj.duration)
+  let target = json
+  if (json._type === 'playlist' || (Array.isArray(json.entries) && json.entries.length > 0)) {
+    console.log('[YouTubeService:ExtractorType] Detected _type = playlist/multi_video. Extracting entry...')
+    if (videoId) {
+      const matchEntry = json.entries.find(e => e && e.id === videoId)
+      if (matchEntry) target = matchEntry
+      else target = json.entries[0]
+    } else {
+      target = json.entries[0]
+    }
   }
 
-  // 2. Stringified numeric duration
-  if (obj.duration && !isNaN(Number(obj.duration)) && Number(obj.duration) > 0) {
-    return Math.round(Number(obj.duration))
+  if (!target) return 0
+
+  // Primary: integer seconds from `duration` property
+  if (typeof target.duration === 'number' && !isNaN(target.duration) && target.duration > 0) {
+    return Math.round(target.duration)
   }
 
-  // 3. Formatted duration string (e.g. "03:33" or "1:15:40")
-  if (obj.duration_string) {
-    const parsed = parseDurationString(obj.duration_string)
+  // Backup numeric fields
+  if (target.duration && !isNaN(Number(target.duration)) && Number(target.duration) > 0) {
+    return Math.round(Number(target.duration))
+  }
+
+  if (target.duration_string) {
+    const parsed = parseDurationString(target.duration_string)
     if (parsed > 0) return parsed
   }
 
-  // 4. lengthSeconds / length_seconds field
-  const lenSec = obj.lengthSeconds || obj.length_seconds || obj.videoDetails?.lengthSeconds
-  if (lenSec && !isNaN(Number(lenSec)) && Number(lenSec) > 0) {
-    return Math.round(Number(lenSec))
+  if (target.lengthSeconds && !isNaN(Number(target.lengthSeconds)) && Number(target.lengthSeconds) > 0) {
+    return Math.round(Number(target.lengthSeconds))
   }
 
-  // 5. approxDurationMs field
-  const approxMs = obj.approxDurationMs || obj.approx_duration_ms
-  if (approxMs && !isNaN(Number(approxMs)) && Number(approxMs) > 0) {
-    return Math.round(Number(approxMs) / 1000)
+  if (target.approxDurationMs && !isNaN(Number(target.approxDurationMs)) && Number(target.approxDurationMs) > 0) {
+    return Math.round(Number(target.approxDurationMs) / 1000)
   }
 
   return 0
@@ -177,19 +187,28 @@ async function fetchDirectYoutubeMeta(url) {
  */
 export async function fetchYoutubeMetadata(url) {
   const videoId = extractVideoId(url)
+  if (!videoId) {
+    throw new Error('Invalid YouTube video URL. Could not extract video ID.')
+  }
+
+  // Always normalize URL to canonical single-video URL to prevent playlist extraction
+  const cleanUrl = `https://www.youtube.com/watch?v=${videoId}`
   const startTime = Date.now()
   const binaryPath = await getExecutablePath()
   const ytDlpVersion = await getYtDlpVersion(binaryPath)
-  const args = ['--dump-single-json', '--no-playlist', '--no-warnings', '--skip-download', url]
+  const args = ['--dump-single-json', '--no-playlist', '--no-warnings', '--skip-download', cleanUrl]
 
   console.log('[YouTubeService:Executing]', {
+    originalUrl: url,
+    normalizedUrl: cleanUrl,
+    videoId,
     binaryPath,
     ytDlpVersion,
     platform: process.platform,
     command: `${binaryPath} ${args.join(' ')}`
   })
 
-  // 1. Primary: Executing resolved yt-dlp binary
+  // 1. Primary: Executing resolved yt-dlp binary with normalized URL
   try {
     const { stdout, stderr } = await execFileAsync(binaryPath, args, {
       timeout: 15000,
@@ -208,16 +227,25 @@ export async function fetchYoutubeMetadata(url) {
     })
 
     const json = JSON.parse(stdout)
-    const duration = extractDurationFromObject(json)
-    const title = json.title || 'YouTube Video'
-    const thumbnail = json.thumbnail || (json.thumbnails && json.thumbnails.length > 0 ? json.thumbnails[json.thumbnails.length - 1].url : null)
+    console.log('[YouTubeService:ExtractorType]', json._type || 'video')
+
+    const duration = extractDurationFromObject(json, videoId)
+    let title = json.title
+    if (json._type === 'playlist' && json.entries && json.entries.length > 0) {
+      const entry = json.entries.find(e => e && e.id === videoId) || json.entries[0]
+      title = entry.title || title
+    }
+    title = title || 'YouTube Video'
+
+    let thumbnail = json.thumbnail || (json.thumbnails && json.thumbnails.length > 0 ? json.thumbnails[json.thumbnails.length - 1].url : null)
+    if (!thumbnail) thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
 
     if (duration > 0) {
       const result = { title, duration, thumbnail, videoId }
       console.log('[YouTubeService:Response]', result)
       return result
     } else {
-      console.warn('[YouTubeService:Warning] yt-dlp returned 0 duration from JSON. Falling back to web scraper...')
+      console.warn('[YouTubeService:Warning] yt-dlp returned 0 duration from JSON. Falling back to direct web scraper...')
     }
   } catch (err) {
     const execTimeMs = Date.now() - startTime
@@ -248,7 +276,7 @@ export async function fetchYoutubeMetadata(url) {
   // 2. Direct Web Scraper Fallback (Parses lengthSeconds from YouTube HTML)
   try {
     const scrapeStartTime = Date.now()
-    const scrapedMeta = await fetchDirectYoutubeMeta(url)
+    const scrapedMeta = await fetchDirectYoutubeMeta(cleanUrl)
     if (scrapedMeta && scrapedMeta.duration > 0) {
       const result = {
         title: scrapedMeta.title,
