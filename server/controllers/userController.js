@@ -54,13 +54,43 @@ export async function becomeInstructor(req, res, next) {
     if (user.role === 'instructor') throw new ApiError(400, 'Already an instructor')
     if (user.instructorRequestStatus === 'pending') throw new ApiError(400, 'Application already pending')
 
-    const { phone, department, expertise, motivation, linkedin, portfolio } = req.body
+    const {
+      phone,
+      country,
+      department,
+      qualification,
+      occupation,
+      organization,
+      experience,
+      expertise,
+      teachingMode,
+      languages,
+      bio,
+      motivation,
+      linkedin,
+      portfolio,
+      resume,
+    } = req.body
 
     const request = await InstructorRequest.create({
       user: user._id,
-      fullName: user.fullName,
-      email:    user.email,
-      phone, department, expertise, motivation, linkedin, portfolio,
+      fullName: req.body.fullName || user.fullName,
+      email:    req.body.email || user.email,
+      phone,
+      country: country || 'India',
+      department,
+      qualification,
+      occupation,
+      organization,
+      experience,
+      expertise,
+      teachingMode,
+      languages,
+      bio,
+      motivation,
+      linkedin,
+      portfolio,
+      resume,
     })
 
     await User.findByIdAndUpdate(user._id, { instructorRequestStatus: 'pending' })
