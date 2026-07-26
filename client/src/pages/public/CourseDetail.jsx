@@ -13,20 +13,6 @@ import Modal from '../../components/ui/Modal.jsx'
 import RatingStars from '../../components/ui/RatingStars.jsx'
 import { SkeletonLine } from '../../components/ui/Skeleton.jsx'
 import { coursesAPI } from '../../api/courses.js'
-
-function normalizeYouTubeUrl(url) {
-  if (!url || typeof url !== 'string') return url
-  try {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-    const match = url.match(regExp)
-    if (match && match[2].length === 11) {
-      return `https://www.youtube.com/watch?v=${match[2]}`
-    }
-  } catch {
-    // fallback
-  }
-  return url
-}
 import { usersAPI } from '../../api/users.js'
 import { progressAPI } from '../../api/progress.js'
 import useAuthStore from '../../store/authStore.js'
@@ -649,21 +635,11 @@ export default function CourseDetail() {
             <div className={freeLessons.length > 1 ? "md:col-span-7" : "w-full"}>
               <div className="relative w-full overflow-hidden rounded-xl bg-black" style={{ aspectRatio: '16/9' }}>
                 <ReactPlayer
-                  url={normalizeYouTubeUrl(previewLesson.videoUrl)}
+                  url={previewLesson.videoUrl}
                   width="100%"
                   height="100%"
                   controls
                   playing
-                  config={{
-                    youtube: {
-                      playerVars: {
-                        origin: typeof window !== 'undefined' ? window.location.origin : '',
-                        enablejsapi: 1,
-                        modestbranding: 1,
-                        rel: 0
-                      }
-                    }
-                  }}
                 />
               </div>
             </div>
