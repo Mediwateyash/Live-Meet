@@ -160,10 +160,10 @@ To build and obfuscate the client code for production:
 npm run build
 ```
 
-### 4. `yt-dlp` Video Duration Extraction Setup
-For automatic YouTube video duration extraction on the backend:
-- **Local Machine**: Ensure `yt-dlp` is installed and accessible in system PATH (`pip install yt-dlp` or `winget install yt-dlp`).
-- **Render Deployment**: Add `pip install yt-dlp` to your Render build command (e.g. `pip install yt-dlp && npm run build`).
+### 4. YouTube Data API v3 Setup
+For automatic YouTube video title, duration, and thumbnail extraction:
+- Set `YOUTUBE_API_KEY` in `server/.env` (and in your Render Environment Variables).
+- Obtain a free API key from the [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
 
 ---
 <p align="center">

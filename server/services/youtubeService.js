@@ -1,256 +1,108 @@
-import { execFile } from 'child_process'
-import { promisify } from 'util'
-import fs from 'fs'
-import path from 'path'
-import os from 'os'
-
-const execFileAsync = promisify(execFile)
-
-const BIN_DIR = path.resolve(process.cwd(), 'bin')
-const IS_WIN = process.platform === 'win32'
-const LOCAL_BIN_NAME = IS_WIN ? 'yt-dlp.exe' : 'yt-dlp'
-const LOCAL_BIN_PATH = path.join(BIN_DIR, LOCAL_BIN_NAME)
+/**
+ * YouTube Metadata Service using official YouTube Data API v3.
+ * Fetches video title, duration (in seconds), and thumbnail URL.
+ */
 
 /**
  * Extract YouTube video ID from standard YouTube URLs.
- * Supports: youtube.com/watch, youtu.be, youtube.com/shorts, youtube.com/embed
+ * Supports:
+ * - https://www.youtube.com/watch?v=VIDEO_ID
+ * - https://youtu.be/VIDEO_ID
+ * - https://www.youtube.com/watch?v=VIDEO_ID&list=...
+ * - https://www.youtube.com/shorts/VIDEO_ID
+ * - https://www.youtube.com/embed/VIDEO_ID
  */
 export function extractVideoId(url) {
-  if (!url) return null
+  if (!url || typeof url !== 'string') return null
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/)
   return match ? match[1] : null
 }
 
 /**
- * Resolve best yt-dlp binary path or auto-download standalone binary if missing.
+ * Parse ISO 8601 duration strings like "PT1H15M20S", "PT3M33S", "PT45S" into total seconds.
  */
-async function getExecutablePath() {
-  // 1. Check local bin directory
-  if (fs.existsSync(LOCAL_BIN_PATH)) return LOCAL_BIN_PATH
-
-  // 2. Check common Linux paths (Render, etc.)
-  const commonPaths = [
-    '/opt/render/.local/bin/yt-dlp',
-    path.join(os.homedir(), '.local', 'bin', 'yt-dlp'),
-    '/usr/local/bin/yt-dlp',
-    '/usr/bin/yt-dlp'
-  ]
-  for (const p of commonPaths) {
-    if (fs.existsSync(p)) return p
-  }
-
-  // 3. Check system PATH
-  try {
-    const whichCmd = IS_WIN ? 'where' : 'which'
-    const { stdout } = await execFileAsync(whichCmd, ['yt-dlp'])
-    const resolved = stdout.trim().split(/\r?\n/)[0]?.trim()
-    if (resolved && fs.existsSync(resolved)) return resolved
-  } catch {
-    // Not in PATH
-  }
-
-  // 4. Auto-download standalone binary
-  try {
-    console.log('[YouTubeService] yt-dlp not found anywhere. Auto-downloading standalone binary...')
-    if (!fs.existsSync(BIN_DIR)) fs.mkdirSync(BIN_DIR, { recursive: true })
-
-    const downloadUrl = IS_WIN
-      ? 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe'
-      : 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp'
-
-    const res = await fetch(downloadUrl)
-    if (res.ok) {
-      const buffer = Buffer.from(await res.arrayBuffer())
-      fs.writeFileSync(LOCAL_BIN_PATH, buffer)
-      if (!IS_WIN) fs.chmodSync(LOCAL_BIN_PATH, 0o755)
-      console.log('[YouTubeService] Standalone yt-dlp downloaded to:', LOCAL_BIN_PATH)
-      return LOCAL_BIN_PATH
-    } else {
-      console.error('[YouTubeService] Download failed with status:', res.status)
-    }
-  } catch (dlErr) {
-    console.error('[YouTubeService] Auto-download failed:', dlErr.message)
-  }
-
-  // 5. Last resort — hope it's on PATH
-  return 'yt-dlp'
+export function parseISO8601Duration(isoDuration) {
+  if (!isoDuration || typeof isoDuration !== 'string') return 0
+  const match = isoDuration.match(/^P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i)
+  if (!match) return 0
+  const days = parseInt(match[1] || '0', 10)
+  const hours = parseInt(match[2] || '0', 10)
+  const minutes = parseInt(match[3] || '0', 10)
+  const seconds = parseInt(match[4] || '0', 10)
+  return days * 86400 + hours * 3600 + minutes * 60 + seconds
 }
 
 /**
- * Extract YouTube metadata (title, duration in seconds, thumbnail) using yt-dlp.
- *
- * This is the ONLY exported function. It:
- * 1. Normalizes the URL to strip playlist params
- * 2. Runs yt-dlp with --extractor-args to bypass bot detection
- * 3. Falls back to direct YouTube HTML scraping if yt-dlp fails
- * 4. NEVER returns duration=0 silently
- * 5. ALWAYS surfaces the real error
+ * Fetch video metadata (title, duration in seconds, thumbnail) from YouTube Data API v3.
+ * @param {string} url - The YouTube video URL.
+ * @returns {Promise<{ title: string, duration: number, thumbnail: string, videoId: string }>}
  */
 export async function fetchYoutubeMetadata(url) {
+  const apiKey = process.env.YOUTUBE_API_KEY
+  if (!apiKey || apiKey.trim() === '' || apiKey.includes('your_youtube_data_api_v3_key')) {
+    throw new Error('YOUTUBE_API_KEY is not configured in server environment variables.')
+  }
+
   const videoId = extractVideoId(url)
   if (!videoId) {
-    throw new Error(`Cannot extract video ID from URL: ${url}`)
+    throw new Error(`Invalid YouTube URL format. Could not extract Video ID from: ${url}`)
   }
 
-  // ── Step 1: Normalize URL ──────────────────────────────────────────
-  const cleanUrl = `https://www.youtube.com/watch?v=${videoId}`
+  const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${encodeURIComponent(videoId)}&key=${encodeURIComponent(apiKey.trim())}`
 
-  // ── Step 2: Resolve binary ─────────────────────────────────────────
-  const binaryPath = await getExecutablePath()
-
-  // ── Step 3: Get version for logging ────────────────────────────────
-  let ytDlpVersion = 'unknown'
+  let response
   try {
-    const { stdout } = await execFileAsync(binaryPath, ['--version'])
-    ytDlpVersion = stdout.trim()
-  } catch {}
-
-  // ── Step 4: Build command ──────────────────────────────────────────
-  const args = [
-    '--dump-single-json',
-    '--no-playlist',
-    '--no-warnings',
-    '--skip-download',
-    '--extractor-args', 'youtube:player_client=android,ios,web',
-    cleanUrl
-  ]
-
-  const debugInfo = {
-    incomingUrl: url,
-    normalizedUrl: cleanUrl,
-    videoId,
-    binaryPath,
-    ytDlpVersion,
-    os: `${process.platform} ${process.arch}`,
-    command: [binaryPath, ...args].join(' ')
+    response = await fetch(apiUrl)
+  } catch (netErr) {
+    throw new Error(`Failed to connect to YouTube Data API: ${netErr.message}`)
   }
 
-  console.log('[YouTubeService:REQUEST]', JSON.stringify(debugInfo, null, 2))
+  if (!response.ok) {
+    const errorJson = await response.json().catch(() => null)
+    const reason = errorJson?.error?.errors?.[0]?.reason
+    const message = errorJson?.error?.message
 
-  // ── Step 5: Execute yt-dlp ─────────────────────────────────────────
-  const startTime = Date.now()
-  let ytdlpResult = null
-  let ytdlpError = null
-
-  try {
-    const { stdout, stderr } = await execFileAsync(binaryPath, args, {
-      timeout: 30000,
-      maxBuffer: 10 * 1024 * 1024
-    })
-
-    const execTimeMs = Date.now() - startTime
-
-    console.log('[YouTubeService:EXEC_OK]', {
-      exitCode: 0,
-      execTimeMs,
-      stdoutLength: stdout?.length || 0,
-      stderr: stderr || '(empty)'
-    })
-
-    // ── Step 6: Parse JSON ───────────────────────────────────────────
-    const json = JSON.parse(stdout)
-
-    const title = json.title || 'YouTube Video'
-    const duration = (typeof json.duration === 'number' && json.duration > 0)
-      ? Math.round(json.duration)
-      : 0
-    const thumbnail = json.thumbnail
-      || (json.thumbnails?.length ? json.thumbnails[json.thumbnails.length - 1].url : null)
-      || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-
-    console.log('[YouTubeService:PARSED]', {
-      _type: json._type || 'video',
-      title,
-      duration,
-      durationRaw: json.duration,
-      durationType: typeof json.duration,
-      thumbnail,
-      videoId
-    })
-
-    if (duration > 0) {
-      const result = { title, duration, thumbnail, videoId }
-      console.log('[YouTubeService:RESPONSE]', result)
-      return result
+    if (response.status === 400 || reason === 'keyInvalid') {
+      throw new Error('Invalid YouTube API key. Please verify your YOUTUBE_API_KEY configuration.')
     }
-
-    // duration was 0 in the JSON — this should never happen for a real video
-    ytdlpError = `yt-dlp returned duration=0 (raw value: ${json.duration})`
-
-  } catch (err) {
-    const execTimeMs = Date.now() - startTime
-    const stderrStr = String(err.stderr || '')
-    const stdoutStr = String(err.stdout || '')
-
-    console.error('[YouTubeService:EXEC_FAILED]', {
-      exitCode: err.code || err.status || null,
-      signal: err.signal || null,
-      execTimeMs,
-      errorMessage: err.message,
-      stderr: stderrStr || '(empty)',
-      stdout: stdoutStr || '(empty)'
-    })
-
-    // Extract the real yt-dlp error from stderr
-    ytdlpError = stderrStr.trim() || err.message
+    if (response.status === 403 || reason === 'quotaExceeded') {
+      throw new Error('YouTube API quota exceeded or request forbidden. Please try again later.')
+    }
+    throw new Error(message || `YouTube API request failed with status code ${response.status}.`)
   }
 
-  // ── Step 7: Fallback — direct YouTube HTML scrape ──────────────────
-  console.log('[YouTubeService:FALLBACK] yt-dlp failed, trying direct HTML scrape. Reason:', ytdlpError)
+  const data = await response.json()
 
-  try {
-    const response = await fetch(cleanUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9'
-      }
-    })
-
-    if (!response.ok) {
-      throw new Error(`YouTube returned HTTP ${response.status}`)
-    }
-
-    const html = await response.text()
-
-    // Extract duration
-    let duration = 0
-    const lengthMatch = html.match(/"lengthSeconds"\s*:\s*"(\d+)"/)
-    if (lengthMatch) {
-      duration = parseInt(lengthMatch[1], 10)
-    } else {
-      const approxMatch = html.match(/"approxDurationMs"\s*:\s*"(\d+)"/)
-      if (approxMatch) {
-        duration = Math.round(parseInt(approxMatch[1], 10) / 1000)
-      }
-    }
-
-    // Extract title
-    let title = 'YouTube Video'
-    const titleMatch = html.match(/<meta\s+name="title"\s+content="([^"]+)"/i)
-      || html.match(/<title>([^<]+)<\/title>/i)
-    if (titleMatch) {
-      title = titleMatch[1].replace(/ - YouTube$/, '').trim()
-    }
-
-    const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-
-    console.log('[YouTubeService:SCRAPE_RESULT]', { title, duration, thumbnail, videoId })
-
-    if (duration > 0) {
-      const result = { title, duration, thumbnail, videoId }
-      console.log('[YouTubeService:RESPONSE_VIA_SCRAPE]', result)
-      return result
-    }
-
-    // Scrape also returned 0 duration
-    throw new Error(`HTML scrape also returned duration=0. YouTube may be blocking this server's IP.`)
-
-  } catch (scrapeErr) {
-    console.error('[YouTubeService:SCRAPE_FAILED]', scrapeErr.message)
+  if (!data.items || data.items.length === 0) {
+    throw new Error(`Video not found or unavailable. The video may be private, deleted, or invalid.`)
   }
 
-  // ── Step 8: Both methods failed — throw REAL error ─────────────────
-  const errorMsg = `yt-dlp error: ${ytdlpError}`
-  console.error('[YouTubeService:FINAL_ERROR]', errorMsg)
-  throw new Error(errorMsg)
+  const item = data.items[0]
+  const snippet = item.snippet || {}
+  const contentDetails = item.contentDetails || {}
+
+  const title = snippet.title || 'YouTube Video'
+
+  // Extract highest resolution thumbnail available
+  const thumbnails = snippet.thumbnails || {}
+  const thumbnail = thumbnails.maxres?.url
+    || thumbnails.high?.url
+    || thumbnails.medium?.url
+    || thumbnails.default?.url
+    || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+
+  // Parse ISO 8601 duration string into seconds
+  const isoDuration = contentDetails.duration
+  const duration = parseISO8601Duration(isoDuration)
+
+  if (duration <= 0) {
+    throw new Error(`Could not determine a valid duration for video ID ${videoId}.`)
+  }
+
+  return {
+    title,
+    duration,
+    thumbnail,
+    videoId
+  }
 }

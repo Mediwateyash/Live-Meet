@@ -838,7 +838,7 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
     if (!url) return
     if (isYouTubeUrl(url) && url !== lesson.videoUrl) {
       try {
-        toast.loading('Fetching YouTube video metadata via yt-dlp...', { id: `yt-meta-${si}-${li}` })
+        toast.loading('Fetching YouTube video metadata...', { id: `yt-meta-${si}-${li}` })
         const { data } = await coursesAPI.getYoutubeMeta(url)
         
         // 1. Update Title (if empty or "New Lesson")
@@ -869,10 +869,10 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
       return
     }
     
-    // Automatically fetch metadata via yt-dlp if duration is not set yet
+    // Automatically fetch metadata via YouTube Data API if duration is not set yet
     if (!lesson.duration || url !== lesson.videoUrl) {
       try {
-        toast.loading('Fetching YouTube metadata via yt-dlp...', { id: `yt-meta-${si}-${li}` })
+        toast.loading('Fetching YouTube metadata...', { id: `yt-meta-${si}-${li}` })
         const { data } = await coursesAPI.getYoutubeMeta(url)
         const mins = Math.round(data.data.duration / 60)
         setDurationInput(mins > 0 ? mins.toString() : '0')
@@ -946,7 +946,7 @@ function LessonRow({ lesson, si, li, onUpdateLesson, onRemoveLesson }) {
             
             <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg shrink-0"
               style={{ border: '1px solid var(--border-default)', background: 'var(--bg-muted)', minWidth: '80px' }}
-              title="Detected duration in minutes (extracted automatically via yt-dlp)">
+              title="Detected duration in minutes (extracted automatically via YouTube API)">
               <input
                 type="number"
                 min="0"
