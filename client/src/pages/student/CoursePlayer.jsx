@@ -437,6 +437,16 @@ export default function CoursePlayer() {
                 width="100%"
                 height="100%"
                 controls
+                config={{
+                  youtube: {
+                    playerVars: {
+                      origin: typeof window !== 'undefined' ? window.location.origin : '',
+                      enablejsapi: 1,
+                      modestbranding: 1,
+                      rel: 0
+                    }
+                  }
+                }}
                 onDuration={(dur) => {
                    trackingRef.current.videoDuration = dur;
                 }}

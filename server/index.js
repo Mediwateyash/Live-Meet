@@ -116,7 +116,7 @@ app.use(helmet({
       workerSrc: ["'self'", 'blob:'],
     },
   },
-  frameguard: { action: 'deny' },
+  frameguard: { action: 'sameorigin' },
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   hsts: process.env.NODE_ENV === 'production' ? {
     maxAge: 31536000,      // 1 year

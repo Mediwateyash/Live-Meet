@@ -654,6 +654,16 @@ export default function CourseDetail() {
                   height="100%"
                   controls
                   playing
+                  config={{
+                    youtube: {
+                      playerVars: {
+                        origin: typeof window !== 'undefined' ? window.location.origin : '',
+                        enablejsapi: 1,
+                        modestbranding: 1,
+                        rel: 0
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>
