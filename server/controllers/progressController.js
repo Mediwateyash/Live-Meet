@@ -180,17 +180,20 @@ export async function syncVideoProgress(req, res, next) {
       if (incrementalWatchedSeconds > 0) {
         engagement.totalWatchedSeconds += incrementalWatchedSeconds;
         
-        const combinedIntervals = [...engagement.watchedIntervals, ...validIntervals];
+        const combinedIntervals = [
+          ...(engagement.watchedIntervals || []).map(i => ({ start: Number(i.start), end: Number(i.end) })),
+          ...validIntervals.map(i => ({ start: Number(i.start), end: Number(i.end) }))
+        ];
         combinedIntervals.sort((a, b) => a.start - b.start);
         
-        const merged = [combinedIntervals[0]];
+        const merged = [{ start: combinedIntervals[0].start, end: combinedIntervals[0].end }];
         for (let i = 1; i < combinedIntervals.length; i++) {
           const current = combinedIntervals[i];
           const lastMerged = merged[merged.length - 1];
           if (current.start <= lastMerged.end + 0.1) {
             lastMerged.end = Math.max(lastMerged.end, current.end);
           } else {
-            merged.push(current);
+            merged.push({ start: current.start, end: current.end });
           }
         }
         

@@ -163,11 +163,29 @@ export default function CoursePlayer() {
   };
 
   useEffect(() => {
+    const handleUnload = () => {
+      flushEngagement();
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        flushEngagement();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibility);
+
     const timer = setInterval(() => {
        flushEngagement();
     }, 15000);
+
     return () => {
        clearInterval(timer);
+       window.removeEventListener('beforeunload', handleUnload);
+       window.removeEventListener('pagehide', handleUnload);
+       document.removeEventListener('visibilitychange', handleVisibility);
        flushEngagement();
     };
   }, []);

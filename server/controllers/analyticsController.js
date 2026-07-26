@@ -5,6 +5,7 @@ import Course from '../models/Course.js';
 import Progress from '../models/Progress.js';
 import LiveLecture from '../models/LiveLecture.js';
 import VideoEngagement from '../models/VideoEngagement.js';
+import Enrollment from '../models/Enrollment.js';
 import CourseInsightCache from '../models/CourseInsightCache.js';
 import { generateCourseInsights } from '../services/aiService.js';
 import { generateDeterministicCourseInsights } from '../services/analyticsFallbackService.js';
@@ -88,16 +89,25 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
     if (!course) {
         throw new Error('Course not found');
     }
-    const enrolledStudentsSet = new Set(course.enrolledStudents.map(id => String(id)));
-    const totalEnrollments = enrolledStudentsSet.size;
-
     // 2. Fetch all required data in parallel
-    const [progressRecords, quizzes, allLectures, videoEngagements] = await Promise.all([
+    const [progressRecords, quizzes, allLectures, videoEngagements, enrollments] = await Promise.all([
         Progress.find({ course: courseId }).lean(),
         Quiz.find({ courseId }).select('_id mcqIds title').lean(),
         LiveLecture.find({ courseId }).select('title scheduledAt attendance').sort('scheduledAt').lean(),
-        VideoEngagement.find({ courseId }).populate('lessonId', 'title').lean()
+        VideoEngagement.find({ courseId }).populate('lessonId', 'title').lean(),
+        Enrollment.find({ course: courseId }).select('student').lean()
     ]);
+
+    // Consolidate enrolled students from Course.enrolledStudents, Progress, Enrollment, and VideoEngagement
+    const enrolledStudentsSet = new Set();
+    if (Array.isArray(course.enrolledStudents)) {
+        course.enrolledStudents.forEach(id => id && enrolledStudentsSet.add(String(id)));
+    }
+    progressRecords.forEach(p => p.student && enrolledStudentsSet.add(String(p.student)));
+    enrollments.forEach(e => e.student && enrolledStudentsSet.add(String(e.student)));
+    videoEngagements.forEach(ve => ve.studentId && enrolledStudentsSet.add(String(ve.studentId)));
+
+    const totalEnrollments = enrolledStudentsSet.size;
 
     // Apply Date Filters where Semantically Correct
     
