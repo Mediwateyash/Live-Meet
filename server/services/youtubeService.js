@@ -196,7 +196,15 @@ export async function fetchYoutubeMetadata(url) {
   const startTime = Date.now()
   const binaryPath = await getExecutablePath()
   const ytDlpVersion = await getYtDlpVersion(binaryPath)
-  const args = ['--dump-single-json', '--no-playlist', '--no-warnings', '--skip-download', cleanUrl]
+  const args = [
+    '--dump-single-json',
+    '--no-playlist',
+    '--no-warnings',
+    '--skip-download',
+    '--extractor-args',
+    'youtube:player_client=android,ios,web',
+    cleanUrl
+  ]
 
   console.log('[YouTubeService:Executing]', {
     originalUrl: url,
@@ -208,7 +216,7 @@ export async function fetchYoutubeMetadata(url) {
     command: `${binaryPath} ${args.join(' ')}`
   })
 
-  // 1. Primary: Executing resolved yt-dlp binary with normalized URL
+  // 1. Primary: Executing resolved yt-dlp binary with normalized URL & Android/iOS player_client
   try {
     const { stdout, stderr } = await execFileAsync(binaryPath, args, {
       timeout: 15000,
