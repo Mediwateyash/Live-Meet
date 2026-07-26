@@ -85,16 +85,25 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
     // If dateRange === 'all', startDate remains null
 
     // 1. Course Details & Total Enrollments
-    const course = await Course.findById(courseId).select('title enrolledStudents totalDuration').lean();
+    const course = await Course.findById(courseId).select('title enrolledStudents totalDuration curriculum').lean();
     if (!course) {
         throw new Error('Course not found');
     }
+    const lessonTitleMap = new Map();
+    if (course.curriculum && Array.isArray(course.curriculum)) {
+        course.curriculum.forEach(section => {
+            if (Array.isArray(section.lessons)) {
+                section.lessons.forEach(l => l._id && lessonTitleMap.set(String(l._id), l.title));
+            }
+        });
+    }
+
     // 2. Fetch all required data in parallel
     const [progressRecords, quizzes, allLectures, videoEngagements, enrollments] = await Promise.all([
         Progress.find({ course: courseId }).lean(),
         Quiz.find({ courseId }).select('_id mcqIds title').lean(),
         LiveLecture.find({ courseId }).select('title scheduledAt attendance').sort('scheduledAt').lean(),
-        VideoEngagement.find({ courseId }).populate('lessonId', 'title').lean(),
+        VideoEngagement.find({ courseId }).lean(),
         Enrollment.find({ course: courseId }).select('student').lean()
     ]);
 
@@ -288,10 +297,11 @@ export const calculateCourseAnalytics = async (courseId, dateRange = 'all') => {
         if (ve.isCompleted) completedVideoCount++;
         totalVideoSessions += (ve.sessionCount || 1);
 
-        const lid = ve.lessonId ? String(ve.lessonId._id) : 'unknown';
+        const lid = ve.lessonId ? String(ve.lessonId._id || ve.lessonId) : 'unknown';
+        const lessonTitle = lessonTitleMap.get(lid) || (ve.lessonId?.title) || 'Lesson Video';
         if (!lessonStats.has(lid)) {
             lessonStats.set(lid, {
-                lessonTitle: ve.lessonId ? ve.lessonId.title : 'Deleted Lesson',
+                lessonTitle,
                 totalWatchTime: 0, totalCompletion: 0, completedCount: 0, learners: new Set()
             });
         }

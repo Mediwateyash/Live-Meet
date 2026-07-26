@@ -635,7 +635,7 @@ export default function CourseDetail() {
             <div className={freeLessons.length > 1 ? "md:col-span-7" : "w-full"}>
               <div className="relative w-full overflow-hidden rounded-xl bg-black" style={{ aspectRatio: '16/9' }}>
                 <ReactPlayer
-                  src={previewLesson.videoUrl}
+                  url={previewLesson.videoUrl}
                   width="100%"
                   height="100%"
                   controls

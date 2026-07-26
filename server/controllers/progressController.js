@@ -209,6 +209,48 @@ export async function syncVideoProgress(req, res, next) {
       }
 
       await engagement.save();
+
+      // Automatically update/upsert student's Progress model for real-time progress & analytics tracking
+      let studentProgress = await Progress.findOne({ student: studentId, course: courseId });
+      if (!studentProgress) {
+        studentProgress = new Progress({
+          student: studentId,
+          course: courseId,
+          completedLessons: [],
+          percentComplete: 0
+        });
+      }
+
+      studentProgress.lastWatchedLesson = lessonId;
+      if (typeof lastPlaybackPosition === 'number') {
+        studentProgress.lastWatchedPosition = lastPlaybackPosition;
+      }
+
+      if (engagement.isCompleted) {
+        const alreadyCompleted = studentProgress.completedLessons.some(id => String(id) === String(lessonId));
+        if (!alreadyCompleted) {
+          studentProgress.completedLessons.push(lessonId);
+        }
+      }
+
+      // Compute total course lessons & updated percentComplete
+      const courseDoc = await Course.findById(courseId).select('curriculum').lean();
+      if (courseDoc && courseDoc.curriculum) {
+        let totalLessonsCount = 0;
+        for (const sec of courseDoc.curriculum) {
+          totalLessonsCount += (sec.lessons?.length || 0);
+        }
+        if (totalLessonsCount > 0) {
+          const completedCount = studentProgress.completedLessons.length;
+          studentProgress.percentComplete = Math.min(100, Math.round((completedCount / totalLessonsCount) * 100));
+          if (studentProgress.percentComplete >= 100 && !studentProgress.isCompleted) {
+            studentProgress.isCompleted = true;
+            studentProgress.completedAt = new Date();
+          }
+        }
+      }
+
+      await studentProgress.save();
       await VideoSyncBatch.findOneAndUpdate({ syncId }, { $set: { status: 'completed', completedAt: new Date() } });
 
       return res.json(new ApiResponse(200, {
