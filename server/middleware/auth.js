@@ -5,7 +5,11 @@ import { isTokenBlacklisted } from '../controllers/authController.js'
 
 export async function authMiddleware(req, res, next) {
   try {
-    const token = req.cookies?.accessToken
+    let token = req.cookies?.accessToken
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1]
+    }
+
     if (!token) throw new ApiError(401, 'No access token — please log in')
 
     // Reject tokens that have been explicitly revoked (e.g. on logout)

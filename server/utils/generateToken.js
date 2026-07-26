@@ -14,7 +14,7 @@ export function setTokenCookies(res, accessToken, refreshToken) {
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
     secure:   isProd,
-    sameSite: 'strict',
+    sameSite: isProd ? 'none' : 'lax',
     maxAge:   15 * 60 * 1000,
     path:     '/api',
   })
@@ -22,13 +22,14 @@ export function setTokenCookies(res, accessToken, refreshToken) {
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure:   isProd,
-    sameSite: 'strict',
+    sameSite: isProd ? 'none' : 'lax',
     maxAge:   1 * 24 * 60 * 60 * 1000, // 1 day
     path:     '/api/auth/refresh',
   })
 }
 
 export function clearTokenCookies(res) {
-  res.clearCookie('accessToken', { path: '/api' })
-  res.clearCookie('refreshToken', { path: '/api/auth/refresh' })
+  const isProd = process.env.NODE_ENV === 'production'
+  res.clearCookie('accessToken', { path: '/api', secure: isProd, sameSite: isProd ? 'none' : 'lax' })
+  res.clearCookie('refreshToken', { path: '/api/auth/refresh', secure: isProd, sameSite: isProd ? 'none' : 'lax' })
 }

@@ -71,9 +71,17 @@ if (process.env.NODE_ENV !== 'production') {
   allowedOrigins.push('http://localhost:5173')
 }
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true
+  if (allowedOrigins.includes(origin)) return true
+  if (origin.endsWith('.vercel.app')) return true
+  if (origin.endsWith('.onrender.com')) return true
+  return false
+}
+
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
@@ -81,7 +89,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-XSRF-TOKEN', 'x-xsrf-token'],
 }
 
 const io         = new Server(httpServer, {

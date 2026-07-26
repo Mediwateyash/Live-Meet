@@ -2,8 +2,10 @@ import axios from 'axios'
 import useAuthStore from '../store/authStore.js'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
   headers: { 'Content-Type': 'application/json' },
 })
 
