@@ -53,10 +53,10 @@ export async function becomeInstructor(req, res, next) {
     const user = req.user
     if (user.role === 'instructor') throw new ApiError(400, 'Already an instructor')
 
-    // Prevent duplicate applications: Check if an instructor request already exists for this user
-    const existingRequest = await InstructorRequest.findOne({ user: user._id })
-    if (existingRequest) {
-      throw new ApiError(409, 'You have already submitted an instructor application.')
+    // Find latest request for this user
+    const existingRequest = await InstructorRequest.findOne({ user: user._id }).sort({ createdAt: -1 })
+    if (existingRequest && (existingRequest.status === 'pending' || existingRequest.status === 'approved')) {
+      throw new ApiError(409, 'You already have an active or approved instructor application.')
     }
 
     const {
@@ -77,28 +77,58 @@ export async function becomeInstructor(req, res, next) {
       resume,
     } = req.body
 
-    const request = await InstructorRequest.create({
-      user: user._id,
-      fullName: req.body.fullName || user.fullName,
-      email:    req.body.email || user.email,
-      phone,
-      country: country || 'India',
-      department,
-      qualification,
-      occupation,
-      organization,
-      experience,
-      expertise,
-      teachingMode,
-      languages,
-      bio,
-      motivation,
-      linkedin,
-      portfolio,
-      resume,
-    })
+    let request
+    if (existingRequest && existingRequest.status === 'rejected') {
+      // Update existing rejected request to pending with new data for reapplication
+      existingRequest.fullName = req.body.fullName || user.fullName
+      existingRequest.email = req.body.email || user.email
+      existingRequest.phone = phone
+      existingRequest.country = country || 'India'
+      existingRequest.department = department
+      existingRequest.qualification = qualification
+      existingRequest.occupation = occupation
+      existingRequest.organization = organization
+      existingRequest.experience = experience
+      existingRequest.expertise = expertise
+      existingRequest.teachingMode = teachingMode
+      existingRequest.languages = languages
+      existingRequest.bio = bio
+      existingRequest.motivation = motivation
+      existingRequest.linkedin = linkedin
+      existingRequest.portfolio = portfolio
+      if (resume) existingRequest.resume = resume
+      existingRequest.status = 'pending'
+      existingRequest.rejectionReason = undefined
+      existingRequest.reviewedBy = undefined
+      existingRequest.reviewedAt = undefined
+      request = await existingRequest.save()
+    } else {
+      request = await InstructorRequest.create({
+        user: user._id,
+        fullName: req.body.fullName || user.fullName,
+        email:    req.body.email || user.email,
+        phone,
+        country: country || 'India',
+        department,
+        qualification,
+        occupation,
+        organization,
+        experience,
+        expertise,
+        teachingMode,
+        languages,
+        bio,
+        motivation,
+        linkedin,
+        portfolio,
+        resume,
+      })
+    }
 
-    await User.findByIdAndUpdate(user._id, { instructorRequestStatus: 'pending' })
+    await User.findByIdAndUpdate(user._id, {
+      instructorRequestStatus: 'pending',
+      instructorRejectionReason: undefined,
+    })
     res.status(201).json(new ApiResponse(201, request, 'Application submitted'))
   } catch (err) { next(err) }
 }

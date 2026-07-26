@@ -218,6 +218,26 @@ export default function BecomeInstructor() {
       .finally(() => setLoading(false))
   }, [])
 
+  // Prefill form values if previous application was rejected so the user can easily update and resubmit
+  useEffect(() => {
+    if (requestData && status === 'rejected') {
+      if (requestData.phone) setValue('phone', requestData.phone)
+      if (requestData.department) setValue('department', requestData.department)
+      if (requestData.qualification) setValue('qualification', requestData.qualification)
+      if (requestData.occupation) setValue('occupation', requestData.occupation)
+      if (requestData.organization) setValue('organization', requestData.organization)
+      if (requestData.experience) setValue('experience', requestData.experience)
+      if (requestData.expertise) setValue('topics', requestData.expertise)
+      if (requestData.teachingMode) setValue('teachingMode', requestData.teachingMode)
+      if (requestData.languages) setValue('languages', requestData.languages)
+      if (requestData.bio) setValue('bio', requestData.bio)
+      if (requestData.motivation) setValue('motivation', requestData.motivation)
+      if (requestData.linkedin) setValue('linkedin', requestData.linkedin)
+      if (requestData.portfolio) setValue('portfolio', requestData.portfolio)
+      if (requestData.resume) setValue('resume', requestData.resume)
+    }
+  }, [requestData, status, setValue])
+
   const onSubmit = async (values) => {
     try {
       const res = await usersAPI.becomeInstructor({
@@ -239,8 +259,7 @@ export default function BecomeInstructor() {
       toast.success('Instructor application submitted successfully!')
     } catch (err) {
       if (err.response?.status === 409) {
-        toast.error('You have already submitted an instructor application.')
-        // Refresh status
+        toast.error('You already have an active instructor application under review.')
         usersAPI.getRequestStatus().then(({ data }) => {
           if (data.data) {
             setRequestData(data.data)
@@ -253,12 +272,11 @@ export default function BecomeInstructor() {
     }
   }
 
-  // Determine if application exists (User should NEVER see the form if request exists)
-  const hasExistingApplication =
-    requestData !== null ||
+  // Determine if application exists and is currently pending or approved
+  // (If REJECTED, user IS ALLOWED to reapply, so form is shown with PreviousRejectionCard above)
+  const hasActiveOrApprovedApplication =
     status === 'pending' ||
     status === 'approved' ||
-    status === 'rejected' ||
     (user?.role === 'instructor' && user?.isApprovedInstructor)
 
   return (
@@ -298,26 +316,35 @@ export default function BecomeInstructor() {
           <div className="max-w-4xl mx-auto">
             {loading ? (
               <div className="skeleton h-[600px] rounded-2xl" />
-            ) : hasExistingApplication ? (
-              /* APPLICATION STATUS PORTAL (FORM IS COMPLETELY HIDDEN) */
+            ) : hasActiveOrApprovedApplication ? (
+              /* APPLICATION STATUS PORTAL (For Pending Review or Approved) */
               <ApplicationStatusPortal request={requestData} user={user} status={status} />
             ) : (
-              /* INSTRUCTOR APPLICATION FORM (SHOWN ONLY IF NO APPLICATION EXISTS) */
+              /* INSTRUCTOR APPLICATION FORM (With Previous Rejection Card if status === 'rejected') */
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-xl border border-slate-200/80 dark:border-slate-800"
               >
+                {/* Previous Rejection Information Card (Shown when status is 'rejected') */}
+                {status === 'rejected' && requestData && (
+                  <PreviousRejectionCard request={requestData} />
+                )}
+
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-6 mb-8 flex items-center justify-between">
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-                      Instructor Onboarding Application
+                      {status === 'rejected' ? 'Re-Apply for Instructor Role' : 'Instructor Onboarding Application'}
                     </h2>
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-                      Please fill out all required fields (*). All details are stored securely.
+                      {status === 'rejected'
+                        ? 'Review and update your information below before resubmitting your application.'
+                        : 'Please fill out all required fields (*). All details are stored securely.'}
                     </p>
                   </div>
-                  <Badge variant="purple" className="hidden sm:inline-flex px-3 py-1">Step 1 of 1</Badge>
+                  <Badge variant="purple" className="hidden sm:inline-flex px-3 py-1">
+                    {status === 'rejected' ? 'Re-Application' : 'Step 1 of 1'}
+                  </Badge>
                 </div>
 
                 <InstructorForm
@@ -337,6 +364,65 @@ export default function BecomeInstructor() {
         </div>
       </div>
     </PageLayout>
+  )
+}
+
+/* PREVIOUS REJECTION INFORMATION CARD COMPONENT */
+function PreviousRejectionCard({ request }) {
+  return (
+    <div className="mb-8 p-6 rounded-3xl bg-rose-50/90 dark:bg-rose-950/50 border-2 border-rose-200 dark:border-rose-800/80 shadow-md text-left space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-rose-200/70 dark:border-rose-800/60 pb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <AlertCircle size={22} />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-rose-950 dark:text-rose-200">
+              Previous Instructor Application
+            </h3>
+            <p className="text-xs text-rose-800 dark:text-rose-300">
+              Your last application was reviewed by our administrative team.
+            </p>
+          </div>
+        </div>
+        <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold bg-rose-600 text-white shadow-sm w-fit">
+          🔴 Rejected
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div className="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-rose-200/50 dark:border-rose-800/40">
+          <span className="text-slate-500 text-[10px] uppercase font-bold block">Status</span>
+          <span className="font-semibold text-rose-700 dark:text-rose-300 block mt-0.5">Rejected</span>
+        </div>
+        <div className="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-rose-200/50 dark:border-rose-800/40">
+          <span className="text-slate-500 text-[10px] uppercase font-bold block">Applied On</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5">{formatDate(request?.createdAt)}</span>
+        </div>
+        <div className="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-rose-200/50 dark:border-rose-800/40">
+          <span className="text-slate-500 text-[10px] uppercase font-bold block">Reviewed On</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5">{formatDate(request?.reviewedAt || request?.updatedAt)}</span>
+        </div>
+        <div className="p-2.5 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-rose-200/50 dark:border-rose-800/40">
+          <span className="text-slate-500 text-[10px] uppercase font-bold block">Department</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-200 block mt-0.5 truncate">{request?.department || 'N/A'}</span>
+        </div>
+      </div>
+
+      {request?.rejectionReason && (
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-rose-300 dark:border-rose-800 text-xs text-rose-900 dark:text-rose-200">
+          <span className="font-bold text-rose-700 dark:text-rose-400 block mb-0.5">Admin Feedback / Rejection Reason:</span>
+          <p className="leading-relaxed">{request.rejectionReason}</p>
+        </div>
+      )}
+
+      <div className="p-3.5 rounded-2xl bg-rose-100/80 dark:bg-rose-900/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-950 dark:text-rose-200 leading-relaxed flex items-start gap-2.5">
+        <Sparkles size={16} className="text-rose-600 shrink-0 mt-0.5" />
+        <span>
+          Your previous instructor application was reviewed but was not approved. You are welcome to submit a new application after reviewing and improving your information. Please ensure all details are accurate and complete before resubmitting.
+        </span>
+      </div>
+    </div>
   )
 }
 
@@ -405,7 +491,7 @@ function ApplicationStatusPortal({ request, user, status }) {
           {isApproved
             ? 'Congratulations! Your instructor application has been approved. You now have full instructor access to create, publish, and manage courses on Zenius AI.'
             : isRejected
-            ? 'Unfortunately, your instructor application was not approved at this time. You may contact support for additional information or wait until an administrator resets your application.'
+            ? 'Unfortunately, your instructor application was not approved at this time. You may contact support for additional information or submit an updated application.'
             : 'Thank you for applying to become an instructor on Zenius AI. Your application has been successfully received and is currently under review by our administrative team.'}
         </p>
 
@@ -955,7 +1041,7 @@ function InstructorForm({
           ) : (
             <>
               <CheckCircle2 size={19} />
-              <span>Submit Application</span>
+              <span>{status === 'rejected' ? 'Resubmit Instructor Application' : 'Submit Application'}</span>
             </>
           )}
         </Button>

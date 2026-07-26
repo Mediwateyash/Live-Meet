@@ -96,17 +96,21 @@ export async function rejectRequest(req, res, next) {
     request.reviewedAt      = new Date()
     await request.save()
 
-    await User.findByIdAndUpdate(request.user, {
-      instructorRequestStatus:   'rejected',
-      instructorRejectionReason: reason,
-    })
+    const userId = request.user?._id || request.user
+    if (userId) {
+      await User.findByIdAndUpdate(userId, {
+        instructorRequestStatus:   'rejected',
+        instructorRejectionReason: reason,
+      })
+    }
 
+    // Send email notification non-blockingly to prevent connection timeouts
     try {
       const { subject, html } = rejectionEmail(request.fullName, reason)
-      await sendEmail({ to: request.email, subject, html })
+      sendEmail({ to: request.email, subject, html }).catch(() => {})
     } catch (_) {}
 
-    res.json(new ApiResponse(200, null, 'Application rejected'))
+    res.json(new ApiResponse(200, request, 'Application rejected'))
   } catch (err) { next(err) }
 }
 
