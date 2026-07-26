@@ -121,7 +121,7 @@ export default function CoursePlayer() {
       state.pendingBatches.push({
         syncId,
         intervals: [state.currentInterval],
-        lastPlaybackPosition: playerRef.current?.getCurrentTime() || 0,
+        lastPlaybackPosition: playerRef.current?.currentTime || 0,
         videoDuration: state.videoDuration,
         isNewSession: state.isNewSession
       });
@@ -419,17 +419,20 @@ export default function CoursePlayer() {
             ) : currentLesson?.videoUrl ? (
               <ReactPlayer
                 ref={playerRef}
-                url={currentLesson.videoUrl}
+                src={currentLesson.videoUrl}
                 width="100%"
                 height="100%"
                 controls
-                onDuration={(dur) => {
-                   trackingRef.current.videoDuration = dur;
+                onDurationChange={(e) => {
+                   trackingRef.current.videoDuration = e.target.duration || 0;
                 }}
                 onPause={() => {
                    flushEngagement();
                 }}
-                onProgress={({ playedSeconds, played }) => {
+                onTimeUpdate={(e) => {
+                  const playedSeconds = e.target.currentTime || 0;
+                  const duration = e.target.duration || 1;
+                  const played = duration ? playedSeconds / duration : 0;
                   // Tracking logic
                   const state = trackingRef.current;
                   if (!state.currentInterval) {
@@ -445,7 +448,7 @@ export default function CoursePlayer() {
                       state.pendingBatches.push({
                         syncId,
                         intervals: [{ ...state.currentInterval }],
-                        lastPlaybackPosition: playerRef.current?.getCurrentTime() || 0,
+                        lastPlaybackPosition: e.target.currentTime || 0,
                         videoDuration: state.videoDuration,
                         isNewSession: state.isNewSession
                       });
