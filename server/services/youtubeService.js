@@ -14,22 +14,68 @@ const LOCAL_BIN_PATH = path.join(BIN_DIR, LOCAL_BIN_NAME)
 /**
  * Extract YouTube video ID from standard YouTube URLs.
  */
-function extractVideoId(url) {
+export function extractVideoId(url) {
   if (!url) return null
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/)
   return match ? match[1] : null
 }
 
 /**
- * Resolve the best yt-dlp binary path or auto-download standalone binary if missing.
+ * Parse duration strings like "03:33" or "01:02:15" into total seconds.
  */
-async function getExecutablePath() {
-  // 1. Check local project bin/ folder
-  if (fs.existsSync(LOCAL_BIN_PATH)) {
-    return LOCAL_BIN_PATH
+function parseDurationString(str) {
+  if (!str || typeof str !== 'string') return 0
+  const parts = str.trim().split(':').map(p => parseInt(p, 10))
+  if (parts.some(isNaN)) return 0
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
+  if (parts.length === 2) return parts[0] * 60 + parts[1]
+  if (parts.length === 1) return parts[0]
+  return 0
+}
+
+/**
+ * Robustly extract duration in seconds from any yt-dlp / YouTube JSON metadata structure.
+ */
+function extractDurationFromObject(obj) {
+  if (!obj) return 0
+
+  // 1. Direct numeric duration (in seconds)
+  if (typeof obj.duration === 'number' && !isNaN(obj.duration) && obj.duration > 0) {
+    return Math.round(obj.duration)
   }
 
-  // 2. Check common Linux/Render user bin paths
+  // 2. Stringified numeric duration
+  if (obj.duration && !isNaN(Number(obj.duration)) && Number(obj.duration) > 0) {
+    return Math.round(Number(obj.duration))
+  }
+
+  // 3. Formatted duration string (e.g. "03:33" or "1:15:40")
+  if (obj.duration_string) {
+    const parsed = parseDurationString(obj.duration_string)
+    if (parsed > 0) return parsed
+  }
+
+  // 4. lengthSeconds / length_seconds field
+  const lenSec = obj.lengthSeconds || obj.length_seconds || obj.videoDetails?.lengthSeconds
+  if (lenSec && !isNaN(Number(lenSec)) && Number(lenSec) > 0) {
+    return Math.round(Number(lenSec))
+  }
+
+  // 5. approxDurationMs field
+  const approxMs = obj.approxDurationMs || obj.approx_duration_ms
+  if (approxMs && !isNaN(Number(approxMs)) && Number(approxMs) > 0) {
+    return Math.round(Number(approxMs) / 1000)
+  }
+
+  return 0
+}
+
+/**
+ * Resolve best yt-dlp binary path or auto-download standalone binary if missing.
+ */
+async function getExecutablePath() {
+  if (fs.existsSync(LOCAL_BIN_PATH)) return LOCAL_BIN_PATH
+
   const commonPaths = [
     '/opt/render/.local/bin/yt-dlp',
     path.join(os.homedir(), '.local', 'bin', 'yt-dlp'),
@@ -38,29 +84,22 @@ async function getExecutablePath() {
   ]
 
   for (const p of commonPaths) {
-    if (fs.existsSync(p)) {
-      return p
-    }
+    if (fs.existsSync(p)) return p
   }
 
-  // 3. Check system PATH via which/where
   try {
     const whichCmd = IS_WIN ? 'where' : 'which'
     const { stdout } = await execFileAsync(whichCmd, ['yt-dlp'])
     const resolved = stdout.trim().split(/\r?\n/)[0]?.trim()
-    if (resolved && fs.existsSync(resolved)) {
-      return resolved
-    }
+    if (resolved && fs.existsSync(resolved)) return resolved
   } catch {
-    // Not found in system PATH
+    // Not in PATH
   }
 
-  // 4. Auto-download standalone yt-dlp binary if missing in system & local
+  // Auto-download standalone binary if missing
   try {
     console.log('[YouTubeService] yt-dlp binary not found. Auto-downloading standalone binary...')
-    if (!fs.existsSync(BIN_DIR)) {
-      fs.mkdirSync(BIN_DIR, { recursive: true })
-    }
+    if (!fs.existsSync(BIN_DIR)) fs.mkdirSync(BIN_DIR, { recursive: true })
 
     const downloadUrl = IS_WIN
       ? 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe'
@@ -70,12 +109,8 @@ async function getExecutablePath() {
     if (res.ok) {
       const buffer = Buffer.from(await res.arrayBuffer())
       fs.writeFileSync(LOCAL_BIN_PATH, buffer)
-
-      if (!IS_WIN) {
-        fs.chmodSync(LOCAL_BIN_PATH, 0o755)
-      }
-
-      console.log('[YouTubeService] Standalone yt-dlp binary ready at:', LOCAL_BIN_PATH)
+      if (!IS_WIN) fs.chmodSync(LOCAL_BIN_PATH, 0o755)
+      console.log('[YouTubeService] Standalone yt-dlp ready at:', LOCAL_BIN_PATH)
       return LOCAL_BIN_PATH
     }
   } catch (dlErr) {
@@ -83,6 +118,18 @@ async function getExecutablePath() {
   }
 
   return 'yt-dlp'
+}
+
+/**
+ * Print yt-dlp version.
+ */
+async function getYtDlpVersion(binaryPath) {
+  try {
+    const { stdout } = await execFileAsync(binaryPath, ['--version'])
+    return stdout.trim()
+  } catch {
+    return 'unknown'
+  }
 }
 
 /**
@@ -122,62 +169,69 @@ async function fetchDirectYoutubeMeta(url) {
 
   const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
 
-  return {
-    title,
-    duration,
-    thumbnail
-  }
+  return { title, duration, thumbnail }
 }
 
 /**
  * Extract YouTube metadata (title, duration in seconds, thumbnail) using yt-dlp.
- * @param {string} url - YouTube URL
- * @returns {Promise<{ title: string, duration: number, thumbnail: string }>}
  */
 export async function fetchYoutubeMetadata(url) {
+  const videoId = extractVideoId(url)
   const startTime = Date.now()
   const binaryPath = await getExecutablePath()
+  const ytDlpVersion = await getYtDlpVersion(binaryPath)
   const args = ['--dump-single-json', '--no-playlist', '--no-warnings', '--skip-download', url]
 
-  // Primary: Executing resolved yt-dlp binary
+  console.log('[YouTubeService:Executing]', {
+    binaryPath,
+    ytDlpVersion,
+    platform: process.platform,
+    command: `${binaryPath} ${args.join(' ')}`
+  })
+
+  // 1. Primary: Executing resolved yt-dlp binary
   try {
     const { stdout, stderr } = await execFileAsync(binaryPath, args, {
       timeout: 15000,
       maxBuffer: 10 * 1024 * 1024
     })
-    const execTime = Date.now() - startTime
+    const execTimeMs = Date.now() - startTime
 
-    console.log('[YouTubeService:Diagnostic:Success]', {
+    console.log('[YouTubeService:RawytDlpOutput]', stdout)
+    console.log('[YouTubeService:ExecutionDetails]', {
       command: `${binaryPath} ${args.join(' ')}`,
       resolvedPath: binaryPath,
-      execTimeMs: execTime,
-      platform: process.platform,
-      envPath: process.env.PATH,
+      ytDlpVersion,
+      execTimeMs,
       exitCode: 0,
-      stdoutSnippet: stdout ? stdout.substring(0, 200) + '...' : '',
       stderr: stderr || null
     })
 
     const json = JSON.parse(stdout)
-    const duration = Math.round(Number(json.duration) || 0)
+    const duration = extractDurationFromObject(json)
     const title = json.title || 'YouTube Video'
     const thumbnail = json.thumbnail || (json.thumbnails && json.thumbnails.length > 0 ? json.thumbnails[json.thumbnails.length - 1].url : null)
 
-    return { title, duration, thumbnail }
+    if (duration > 0) {
+      const result = { title, duration, thumbnail, videoId }
+      console.log('[YouTubeService:Response]', result)
+      return result
+    } else {
+      console.warn('[YouTubeService:Warning] yt-dlp returned 0 duration from JSON. Falling back to web scraper...')
+    }
   } catch (err) {
-    const execTime = Date.now() - startTime
+    const execTimeMs = Date.now() - startTime
     const stdoutStr = String(err.stdout || '')
     const stderrStr = String(err.stderr || err.message || '')
 
-    console.warn('[YouTubeService:Diagnostic:YtDlpError]', {
+    console.error('[YouTubeService:ytDlpExecutionFailed]', {
       command: `${binaryPath} ${args.join(' ')}`,
       resolvedPath: binaryPath,
-      execTimeMs: execTime,
-      platform: process.platform,
-      envPath: process.env.PATH,
+      ytDlpVersion,
+      execTimeMs,
       exitCode: err.code || null,
-      stdout: stdoutStr.substring(0, 300),
-      stderr: stderrStr.substring(0, 300),
+      stdout: stdoutStr,
+      stderr: stderrStr,
       errorMessage: err.message
     })
 
@@ -189,68 +243,29 @@ export async function fetchYoutubeMetadata(url) {
     ) {
       throw new Error('Video is private, deleted, age-restricted, or unavailable on YouTube.')
     }
-
-    // Fallback 1: Python module execution
-    try {
-      const pyStartTime = Date.now()
-      const pyCmd = IS_WIN ? 'python' : 'python3'
-      const pyArgs = ['-m', 'yt_dlp', '--dump-single-json', '--no-playlist', '--no-warnings', '--skip-download', url]
-      const { stdout: pyStdout, stderr: pyStderr } = await execFileAsync(pyCmd, pyArgs, {
-        timeout: 15000,
-        maxBuffer: 10 * 1024 * 1024
-      })
-
-      console.log('[YouTubeService:Diagnostic:PythonSuccess]', {
-        command: `${pyCmd} ${pyArgs.join(' ')}`,
-        execTimeMs: Date.now() - pyStartTime,
-        stderr: pyStderr || null
-      })
-
-      const json = JSON.parse(pyStdout)
-      const duration = Math.round(Number(json.duration) || 0)
-      const title = json.title || 'YouTube Video'
-      const thumbnail = json.thumbnail || (json.thumbnails && json.thumbnails.length > 0 ? json.thumbnails[json.thumbnails.length - 1].url : null)
-
-      return { title, duration, thumbnail }
-    } catch (pyErr) {
-      console.warn('[YouTubeService:Diagnostic:PythonError]', {
-        errorMessage: pyErr.message,
-        stderr: String(pyErr.stderr || pyErr.message || '').substring(0, 300)
-      })
-    }
-
-    // Fallback 2: Direct Web Scraper (Zero Binary Dependency)
-    try {
-      const scrapeStartTime = Date.now()
-      const scrapedMeta = await fetchDirectYoutubeMeta(url)
-      if (scrapedMeta && scrapedMeta.duration > 0) {
-        console.log('[YouTubeService:Diagnostic:ScrapeSuccess]', {
-          execTimeMs: Date.now() - scrapeStartTime,
-          title: scrapedMeta.title,
-          duration: scrapedMeta.duration
-        })
-        return scrapedMeta
-      }
-    } catch (scrapeErr) {
-      console.warn('[YouTubeService:Diagnostic:ScrapeError]', scrapeErr.message)
-    }
-
-    // Fallback 3: oEmbed API
-    try {
-      const oembedRes = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`)
-      if (oembedRes.ok) {
-        const oembedData = await oembedRes.json()
-        return {
-          title: oembedData.title || 'YouTube Video',
-          duration: 0,
-          thumbnail: oembedData.thumbnail_url || null,
-          warning: 'yt-dlp binary unavailable, used oEmbed fallback.'
-        }
-      }
-    } catch {
-      // oembed failed
-    }
-
-    throw new Error('Could not fetch YouTube video metadata. Please verify the URL is a valid public YouTube video.')
   }
+
+  // 2. Direct Web Scraper Fallback (Parses lengthSeconds from YouTube HTML)
+  try {
+    const scrapeStartTime = Date.now()
+    const scrapedMeta = await fetchDirectYoutubeMeta(url)
+    if (scrapedMeta && scrapedMeta.duration > 0) {
+      const result = {
+        title: scrapedMeta.title,
+        duration: scrapedMeta.duration,
+        thumbnail: scrapedMeta.thumbnail,
+        videoId
+      }
+      console.log('[YouTubeService:ScrapeSuccessResponse]', {
+        execTimeMs: Date.now() - scrapeStartTime,
+        ...result
+      })
+      return result
+    }
+  } catch (scrapeErr) {
+    console.error('[YouTubeService:ScrapeError]', scrapeErr.message)
+  }
+
+  // If duration is 0 or missing, throw explicit error (NEVER return duration = 0 silently)
+  throw new Error(`Failed to extract valid video duration for ${url}. Please verify the YouTube URL is a public video.`)
 }
