@@ -14,6 +14,20 @@ import CertificateTemplate from '../../components/certificate/CertificateTemplat
 import api from '../../api/axios.js'
 import { motion, AnimatePresence } from 'framer-motion'
 
+function normalizeYouTubeUrl(url) {
+  if (!url || typeof url !== 'string') return url
+  try {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+    const match = url.match(regExp)
+    if (match && match[2].length === 11) {
+      return `https://www.youtube.com/watch?v=${match[2]}`
+    }
+  } catch {
+    // fallback
+  }
+  return url
+}
+
 function isLinkResource(url) {
   if (!url) return false
   if (url.includes('cloudinary.com') || url.includes('s3.amazonaws.com') || url.includes('/upload/')) {
@@ -419,7 +433,7 @@ export default function CoursePlayer() {
             ) : currentLesson?.videoUrl ? (
               <ReactPlayer
                 ref={playerRef}
-                url={currentLesson.videoUrl}
+                url={normalizeYouTubeUrl(currentLesson.videoUrl)}
                 width="100%"
                 height="100%"
                 controls
