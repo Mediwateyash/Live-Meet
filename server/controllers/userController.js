@@ -52,7 +52,12 @@ export async function becomeInstructor(req, res, next) {
   try {
     const user = req.user
     if (user.role === 'instructor') throw new ApiError(400, 'Already an instructor')
-    if (user.instructorRequestStatus === 'pending') throw new ApiError(400, 'Application already pending')
+
+    // Prevent duplicate applications: Check if an instructor request already exists for this user
+    const existingRequest = await InstructorRequest.findOne({ user: user._id })
+    if (existingRequest) {
+      throw new ApiError(409, 'You have already submitted an instructor application.')
+    }
 
     const {
       phone,
@@ -103,7 +108,7 @@ export async function getRequestStatus(req, res, next) {
     const request = await InstructorRequest
       .findOne({ user: req.user._id })
       .sort({ createdAt: -1 })
-      .select('status createdAt reviewedAt')  // Redact admin remarks, reviewer ID, personal fields
+      .select('status fullName department experience createdAt reviewedAt rejectionReason')
     res.json(new ApiResponse(200, request))
   } catch (err) { next(err) }
 }

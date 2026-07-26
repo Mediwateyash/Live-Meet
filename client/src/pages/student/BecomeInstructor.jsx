@@ -22,14 +22,21 @@ import {
   Search,
   ChevronDown,
   CheckCircle2,
+  XCircle,
   DollarSign,
   Users,
   AlertCircle,
   FileCheck,
   Trash2,
   Sparkles,
-  Layers,
 } from 'lucide-react'
+import PageLayout from '../../components/layout/PageLayout.jsx'
+import Button from '../../components/ui/Button.jsx'
+import Badge from '../../components/ui/Badge.jsx'
+import TagInput from '../../components/ui/TagInput.jsx'
+import { usersAPI } from '../../api/users.js'
+import useAuthStore from '../../store/authStore.js'
+import toast from 'react-hot-toast'
 
 // Custom Brand Icons for LinkedIn & GitHub
 const LinkedInIcon = ({ size = 16, className = "text-purple-600" }) => (
@@ -43,13 +50,14 @@ const GitHubIcon = ({ size = 16, className = "text-purple-600" }) => (
     <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
   </svg>
 )
-import PageLayout from '../../components/layout/PageLayout.jsx'
-import Button from '../../components/ui/Button.jsx'
-import Badge from '../../components/ui/Badge.jsx'
-import TagInput from '../../components/ui/TagInput.jsx'
-import { usersAPI } from '../../api/users.js'
-import useAuthStore from '../../store/authStore.js'
-import toast from 'react-hot-toast'
+
+// Date Formatter Helper
+const formatDate = (dateStr) => {
+  if (!dateStr) return '26 July 2026'
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return '26 July 2026'
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+}
 
 // Form Validation Schema
 const schema = z.object({
@@ -161,8 +169,8 @@ export default function BecomeInstructor() {
   const { user, updateUser } = useAuthStore()
   const navigate = useNavigate()
   const [status, setStatus] = useState(null)
+  const [requestData, setRequestData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [submittedSuccess, setSubmittedSuccess] = useState(false)
 
   const {
     register,
@@ -197,27 +205,61 @@ export default function BecomeInstructor() {
   useEffect(() => {
     usersAPI
       .getRequestStatus()
-      .then(({ data }) => setStatus(data.data?.status || 'none'))
+      .then(({ data }) => {
+        const reqObj = data.data
+        if (reqObj) {
+          setRequestData(reqObj)
+          setStatus(reqObj.status)
+        } else {
+          setStatus('none')
+        }
+      })
       .catch(() => setStatus('none'))
       .finally(() => setLoading(false))
   }, [])
 
   const onSubmit = async (values) => {
     try {
-      await usersAPI.becomeInstructor({
+      const res = await usersAPI.becomeInstructor({
         ...values,
         expertise: values.topics,
         fullName: values.fullName,
         email: values.email,
       })
+      const createdRequest = res.data?.data || {
+        fullName: values.fullName,
+        department: values.department,
+        experience: values.experience,
+        createdAt: new Date().toISOString(),
+        status: 'pending',
+      }
+      setRequestData(createdRequest)
       setStatus('pending')
-      setSubmittedSuccess(true)
       updateUser({ instructorRequestStatus: 'pending' })
       toast.success('Instructor application submitted successfully!')
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Submission failed. Please try again.')
+      if (err.response?.status === 409) {
+        toast.error('You have already submitted an instructor application.')
+        // Refresh status
+        usersAPI.getRequestStatus().then(({ data }) => {
+          if (data.data) {
+            setRequestData(data.data)
+            setStatus(data.data.status)
+          }
+        })
+      } else {
+        toast.error(err.response?.data?.message || 'Submission failed. Please try again.')
+      }
     }
   }
+
+  // Determine if application exists (User should NEVER see the form if request exists)
+  const hasExistingApplication =
+    requestData !== null ||
+    status === 'pending' ||
+    status === 'approved' ||
+    status === 'rejected' ||
+    (user?.role === 'instructor' && user?.isApprovedInstructor)
 
   return (
     <PageLayout>
@@ -252,74 +294,20 @@ export default function BecomeInstructor() {
             </div>
           </div>
 
-          {/* Main Card Container */}
+          {/* Main Container */}
           <div className="max-w-4xl mx-auto">
             {loading ? (
               <div className="skeleton h-[600px] rounded-2xl" />
-            ) : (user?.role === 'instructor' && user?.isApprovedInstructor) || user?.role === 'admin' ? (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl text-center border border-purple-100 dark:border-slate-800"
-              >
-                <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg" style={{ background: '#EDE9FE' }}>
-                  <CheckCircle2 size={40} color="#7C3AED" />
-                </div>
-                <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-                  You're an Approved Instructor!
-                </h2>
-                <p className="text-sm max-w-md mx-auto mb-6 text-slate-600 dark:text-slate-400">
-                  You already have full instructor permissions on Zenius AI. You can create courses, conduct live sessions, and track student analytics.
-                </p>
-                <Button
-                  onClick={() => navigate(user?.role === 'admin' ? '/admin/dashboard' : '/instructor/dashboard')}
-                  className="px-8 py-3 rounded-xl font-semibold shadow-md transition-all hover:scale-[1.02]"
-                >
-                  Go to Instructor Dashboard
-                </Button>
-              </motion.div>
-            ) : status === 'pending' || submittedSuccess ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-12 shadow-xl text-center border border-purple-200 dark:border-slate-800 max-w-2xl mx-auto"
-              >
-                <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl" style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #9333EA 100%)' }}>
-                  <FileCheck size={38} color="#FFFFFF" />
-                </div>
-                <Badge variant="amber" className="mb-4 text-xs tracking-wider uppercase px-3 py-1">Application Pending Review</Badge>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-3" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-                  Application Submitted Successfully!
-                </h2>
-                <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed mb-8 max-w-lg mx-auto">
-                  Your instructor application has been submitted successfully! Our team will review your application and contact you soon via email.
-                </p>
-                <div className="p-4 rounded-2xl bg-purple-50 dark:bg-slate-800/80 border border-purple-100 dark:border-slate-700 text-xs text-purple-900 dark:text-purple-300 flex items-center gap-3 text-left mb-6">
-                  <AlertCircle size={20} className="shrink-0 text-purple-600" />
-                  <span>Applications are evaluated within 2–3 business days. You will receive notification on your registered email address ({user?.email}).</span>
-                </div>
-                <Button onClick={() => navigate('/dashboard')} variant="secondary" className="px-6 py-2.5 rounded-xl text-sm font-medium">
-                  Return to Dashboard
-                </Button>
-              </motion.div>
+            ) : hasExistingApplication ? (
+              /* APPLICATION STATUS PORTAL (FORM IS COMPLETELY HIDDEN) */
+              <ApplicationStatusPortal request={requestData} user={user} status={status} />
             ) : (
+              /* INSTRUCTOR APPLICATION FORM (SHOWN ONLY IF NO APPLICATION EXISTS) */
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-xl border border-slate-200/80 dark:border-slate-800"
               >
-                {status === 'rejected' && (
-                  <div className="mb-8 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-start gap-3">
-                    <AlertCircle size={20} className="text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-300">Previous Application Update</h4>
-                      <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                        Your previous instructor application was not approved. You are welcome to update your information and re-apply.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
                 <div className="border-b border-slate-100 dark:border-slate-800 pb-6 mb-8 flex items-center justify-between">
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
@@ -349,6 +337,268 @@ export default function BecomeInstructor() {
         </div>
       </div>
     </PageLayout>
+  )
+}
+
+/* PROFESSIONAL APPLICATION STATUS PORTAL COMPONENT */
+function ApplicationStatusPortal({ request, user, status }) {
+  const navigate = useNavigate()
+  const currentStatus = status || request?.status || 'pending'
+  const isApproved = currentStatus === 'approved' || (user?.role === 'instructor' && user?.isApprovedInstructor)
+  const isRejected = currentStatus === 'rejected'
+  const isPending = currentStatus === 'pending' || (!isApproved && !isRejected)
+
+  const formattedDate = formatDate(request?.createdAt)
+  const applicantName = request?.fullName || user?.fullName || 'Applicant'
+  const department = request?.department || 'Computer Science'
+  const experience = request?.experience || '1 Year'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-xl border border-slate-200/80 dark:border-slate-800 space-y-8"
+    >
+      {/* Header Banner & Status Icon */}
+      <div className="text-center max-w-xl mx-auto space-y-4">
+        <div className="flex justify-center">
+          {isApproved ? (
+            <div className="w-20 h-20 rounded-3xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+              <CheckCircle2 size={42} />
+            </div>
+          ) : isRejected ? (
+            <div className="w-20 h-20 rounded-3xl bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center shadow-lg shadow-rose-500/10">
+              <XCircle size={42} />
+            </div>
+          ) : (
+            <div className="w-20 h-20 rounded-3xl bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-300 flex items-center justify-center shadow-lg shadow-purple-500/10">
+              <FileCheck size={42} />
+            </div>
+          )}
+        </div>
+
+        <div>
+          {isApproved ? (
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+              🟢 Approved
+            </span>
+          ) : isRejected ? (
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+              🔴 Application Not Approved
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+              🟡 Pending Review
+            </span>
+          )}
+        </div>
+
+        <h2 className="text-2xl sm:text-3xl font-extrabold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+          {isApproved
+            ? 'Instructor Application Approved!'
+            : isRejected
+            ? 'Application Not Approved'
+            : 'Instructor Application Submitted Successfully'}
+        </h2>
+
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+          {isApproved
+            ? 'Congratulations! Your instructor application has been approved. You now have full instructor access to create, publish, and manage courses on Zenius AI.'
+            : isRejected
+            ? 'Unfortunately, your instructor application was not approved at this time. You may contact support for additional information or wait until an administrator resets your application.'
+            : 'Thank you for applying to become an instructor on Zenius AI. Your application has been successfully received and is currently under review by our administrative team.'}
+        </p>
+
+        {isRejected && request?.rejectionReason && (
+          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-300 text-left">
+            <span className="font-semibold">Feedback from admin:</span> {request.rejectionReason}
+          </div>
+        )}
+      </div>
+
+      {/* Application Summary Card */}
+      <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-700/80">
+        <h3 className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-4 flex items-center gap-2">
+          <FileText size={15} className="text-purple-600" />
+          <span>Application Summary</span>
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 text-left">
+          <div>
+            <span className="text-xs text-slate-400 font-medium block mb-0.5">Applicant</span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-white truncate block">{applicantName}</span>
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 font-medium block mb-0.5">Department</span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-white truncate block">{department}</span>
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 font-medium block mb-0.5">Teaching Experience</span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-white truncate block">{experience}</span>
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 font-medium block mb-0.5">Applied On</span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-white block">{formattedDate}</span>
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 font-medium block mb-0.5">Current Status</span>
+            <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
+              isApproved
+                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                : isRejected
+                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+            }`}>
+              {isApproved ? 'Approved' : isRejected ? 'Not Approved' : 'Pending Review'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Review Timeline */}
+      <div className="space-y-3">
+        <h3 className="text-xs uppercase tracking-wider font-bold text-slate-400 flex items-center gap-2">
+          <Clock size={15} className="text-purple-600" />
+          <span>Review Timeline</span>
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Step 1 */}
+          <div className="p-4 rounded-2xl border bg-white dark:bg-slate-800 border-purple-200 dark:border-purple-800 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 text-xs font-bold mt-0.5">
+              ✓
+            </div>
+            <div>
+              <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">✓ Completed</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">Application Submitted</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Form received by Zenius AI system</div>
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div className={`p-4 rounded-2xl border flex items-start gap-3 ${
+            isPending
+              ? 'bg-purple-50/50 dark:bg-purple-950/40 border-purple-500 shadow-sm ring-1 ring-purple-500/20'
+              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+          }`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold mt-0.5 ${
+              isPending
+                ? 'bg-purple-600 text-white animate-pulse'
+                : 'bg-emerald-500 text-white'
+            }`}>
+              {isPending ? '2' : '✓'}
+            </div>
+            <div>
+              <div className={`text-xs font-bold uppercase tracking-wide ${isPending ? 'text-purple-600 dark:text-purple-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                {isPending ? 'Current Step' : '✓ Completed'}
+              </div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">Under Review</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Admin evaluating qualifications</div>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className={`p-4 rounded-2xl border flex items-start gap-3 ${
+            isApproved
+              ? 'bg-emerald-50/50 dark:bg-emerald-950/40 border-emerald-500'
+              : isRejected
+              ? 'bg-rose-50/50 dark:bg-rose-950/40 border-rose-500'
+              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-70'
+          }`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold mt-0.5 ${
+              isApproved
+                ? 'bg-emerald-500 text-white'
+                : isRejected
+                ? 'bg-rose-500 text-white'
+                : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+            }`}>
+              {isApproved ? '✓' : isRejected ? '✕' : '3'}
+            </div>
+            <div>
+              <div className={`text-xs font-bold uppercase tracking-wide ${
+                isApproved
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : isRejected
+                  ? 'text-rose-600 dark:text-rose-400'
+                  : 'text-slate-400'
+              }`}>
+                {isApproved ? 'Approved' : isRejected ? 'Decision Made' : 'Pending'}
+              </div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">Approval Decision</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                {isApproved
+                  ? 'Account granted instructor access'
+                  : isRejected
+                  ? 'Application declined'
+                  : 'Final decision pending review'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Information Callout Card */}
+      <div className="p-4 rounded-2xl bg-purple-50/80 dark:bg-slate-800/80 border border-purple-100 dark:border-slate-700 flex items-start gap-3 text-left">
+        <AlertCircle size={20} className="text-purple-600 shrink-0 mt-0.5" />
+        <p className="text-xs sm:text-sm text-purple-950 dark:text-purple-200 leading-relaxed">
+          Our team carefully reviews every instructor application to ensure high-quality learning experiences for students. This process typically takes <span className="font-bold">2–5 business days</span>.
+        </p>
+      </div>
+
+      {/* What Happens Next Section */}
+      <div className="space-y-3 text-left bg-slate-50/60 dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-100 dark:border-slate-800">
+        <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <Sparkles size={16} className="text-purple-600" />
+          <span>What Happens Next?</span>
+        </h4>
+        <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0" />
+            <span>Our administrative team carefully reviews your profile details.</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0" />
+            <span>Your qualification, subject expertise, and teaching experience are evaluated.</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0" />
+            <span>You may be contacted via email if any additional verification is required.</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0" />
+            <span>Once approved, your account will automatically receive full Instructor privileges.</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0" />
+            <span>You will then be able to create, publish, and manage courses on Zenius AI.</span>
+          </li>
+        </ul>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-3">
+        {isApproved ? (
+          <Button
+            onClick={() => navigate(user?.role === 'admin' ? '/admin/dashboard' : '/instructor/dashboard')}
+            className="w-full sm:w-auto px-8 py-3 rounded-xl font-semibold shadow-md"
+          >
+            Go to Instructor Dashboard
+          </Button>
+        ) : (
+          <Button
+            onClick={() => navigate('/dashboard')}
+            className="w-full sm:w-auto px-8 py-3 rounded-xl font-semibold shadow-md"
+          >
+            Go to Dashboard
+          </Button>
+        )}
+        <Button
+          onClick={() => navigate('/browse')}
+          variant="secondary"
+          className="w-full sm:w-auto px-8 py-3 rounded-xl font-medium"
+        >
+          Browse Courses
+        </Button>
+      </div>
+    </motion.div>
   )
 }
 
@@ -410,7 +660,6 @@ function InstructorForm({
               }`}
               {...register('phone')}
               onChange={(e) => {
-                // Keep only numeric characters
                 const digits = e.target.value.replace(/\D/g, '')
                 setValue('phone', digits, { shouldValidate: true })
               }}
