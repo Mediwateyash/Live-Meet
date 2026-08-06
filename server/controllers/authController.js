@@ -60,21 +60,28 @@ export async function register(req, res, next) {
     await user.save({ validateBeforeSave: false })
 
     // Send email
-    await sendEmail({
-      to: email,
-      subject: 'Verify your email — Zenius AI',
-      html: `
-        <div style="font-family: Inter, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 32px; background: #F5F3FF; border-radius: 16px;">
-          <h2 style="color: #7C3AED; font-family: Outfit, sans-serif;">Welcome to Zenius AI!</h2>
-          <p style="color: #1E1B4B; line-height: 1.7;">Your email verification code is:</p>
-          <div style="background: #E0E7FF; padding: 16px; border-radius: 8px; text-align: center; margin: 24px 0;">
-            <strong style="color: #4338CA; font-size: 24px; letter-spacing: 4px;">${otp}</strong>
+    try {
+      await sendEmail({
+        to: email,
+        subject: 'Verify your email — Zenius AI',
+        html: `
+          <div style="font-family: Inter, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 32px; background: #F5F3FF; border-radius: 16px;">
+            <h2 style="color: #7C3AED; font-family: Outfit, sans-serif;">Welcome to Zenius AI!</h2>
+            <p style="color: #1E1B4B; line-height: 1.7;">Your email verification code is:</p>
+            <div style="background: #E0E7FF; padding: 16px; border-radius: 8px; text-align: center; margin: 24px 0;">
+              <strong style="color: #4338CA; font-size: 24px; letter-spacing: 4px;">${otp}</strong>
+            </div>
+            <p style="color:#64748B; line-height:1.7;">This code will expire in 10 minutes.</p>
+            <p style="margin-top: 24px; color: #64748B; font-size: 13px;">— The Zenius AI Team</p>
           </div>
-          <p style="color:#64748B; line-height:1.7;">This code will expire in 10 minutes.</p>
-          <p style="margin-top: 24px; color: #64748B; font-size: 13px;">— The Zenius AI Team</p>
-        </div>
-      `,
-    })
+        `,
+      })
+    } catch (emailError) {
+      // Clean up the user if email failed to send, so they aren't stuck in an unverified state
+      await User.findByIdAndDelete(user._id)
+      console.error('Email sending failed:', emailError)
+      throw new ApiError(500, 'Failed to send verification email. Please check the email server configuration.')
+    }
 
     res.status(201).json(new ApiResponse(201, { email: user.email }, 'Verification OTP sent to your email.'))
   } catch (err) { next(err) }

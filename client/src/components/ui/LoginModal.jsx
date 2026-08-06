@@ -116,7 +116,11 @@ function RegisterForm({ onSuccess, onClose, switchToLogin, switchToVerify }) {
       reset()
       switchToVerify(email)
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed')
+      const msg = err.response?.data?.message
+      toast.error(msg || 'Registration failed')
+      if (err.response?.status === 409 && msg?.includes('not verified')) {
+        switchToVerify(email)
+      }
     }
   }
 
