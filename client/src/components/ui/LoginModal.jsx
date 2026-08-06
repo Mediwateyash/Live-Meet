@@ -101,7 +101,7 @@ function LoginForm({ onSuccess, onClose, switchToRegister }) {
 }
 
 /* ── Register form ── */
-function RegisterForm({ onSuccess, onClose, switchToLogin }) {
+function RegisterForm({ onSuccess, onClose, switchToLogin, switchToVerify }) {
   const { setUser } = useAuthStore()
   const [showPwd, setShowPwd] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({
@@ -111,12 +111,10 @@ function RegisterForm({ onSuccess, onClose, switchToLogin }) {
 
   const onSubmit = async ({ fullName, email, password, role }) => {
     try {
-      const { data } = await authAPI.register({ fullName, email, password, role })
-      setUser(data.data)
-      toast.success('Account created! Welcome to Zenius AI 🎓')
+      await authAPI.register({ fullName, email, password, role })
+      toast.success('Verification code sent to your email.')
       reset()
-      onClose()
-      onSuccess?.()
+      switchToVerify(email)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed')
     }
@@ -185,6 +183,64 @@ function RegisterForm({ onSuccess, onClose, switchToLogin }) {
   )
 }
 
+/* ── Verify Email form ── */
+function VerifyEmailForm({ email, onSuccess, onClose, switchToLogin }) {
+  const { setUser } = useAuthStore()
+  const [otp, setOtp] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const onSubmit = async (e) => {
+    e.preventDefault()
+    if (otp.length !== 6) return toast.error('OTP must be 6 digits')
+    setIsSubmitting(true)
+    try {
+      const { data } = await authAPI.verifyEmail(email, otp)
+      setUser(data.data)
+      toast.success('Email verified! Welcome to Zenius AI 🎓')
+      onClose()
+      onSuccess?.()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Invalid or expired OTP')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleResend = async () => {
+    try {
+      await authAPI.resendVerification(email)
+      toast.success('A new OTP has been sent.')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to resend')
+    }
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <p style={{ fontSize:14, color:'var(--text-secondary)', textAlign:'center', marginBottom:16 }}>
+        We sent a 6-digit code to <strong>{email}</strong>. Enter it below to verify your account.
+      </p>
+      <Input
+        label="6-Digit OTP"
+        placeholder="123456"
+        value={otp}
+        onChange={(e) => setOtp(e.target.value)}
+        maxLength={6}
+        required
+      />
+      <Button type="submit" className="w-full" loading={isSubmitting}>Verify Email</Button>
+      <div style={{ display:'flex', justifyContent:'space-between', marginTop:8 }}>
+        <button type="button" onClick={handleResend} style={{ background:'none', border:'none', color:'#7C3AED', fontSize:13, cursor:'pointer', fontWeight:600 }}>
+          Resend Code
+        </button>
+        <button type="button" onClick={switchToLogin} style={{ background:'none', border:'none', color:'var(--text-muted)', fontSize:13, cursor:'pointer' }}>
+          Back to Login
+        </button>
+      </div>
+    </form>
+  )
+}
+
 /* ════════════════════════════════════════════
    LoginModal — glass overlay with Login / Register tabs
    Props:
@@ -196,15 +252,17 @@ function RegisterForm({ onSuccess, onClose, switchToLogin }) {
    ════════════════════════════════════════════ */
 export default function LoginModal({ isOpen, onClose, onSuccess, hint, defaultTab = 'login' }) {
   const [tab, setTab] = useState(defaultTab)
+  const [verifyEmail, setVerifyEmail] = useState('')
 
   // Sync tab to defaultTab whenever the modal opens
-  useEffect(() => { if (isOpen) setTab(defaultTab) }, [isOpen, defaultTab])
+  useEffect(() => { if (isOpen) { setTab(defaultTab); setVerifyEmail('') } }, [isOpen, defaultTab])
 
   const handleClose = () => { onClose() }
 
   const headings = {
     login:    { title: 'Welcome back',      sub: hint || 'Log in to continue your learning journey' },
     register: { title: 'Create your account', sub: hint || 'Join 50,000+ learners on Zenius AI' },
+    verify:   { title: 'Verify your email', sub: 'Just one last step' },
   }
 
   const modal = (
@@ -284,14 +342,24 @@ export default function LoginModal({ isOpen, onClose, onSuccess, hint, defaultTa
                 exit={{ opacity:0, x: tab==='login' ? 16 : -16 }}
                 transition={{ duration:0.18 }}
               >
-                {tab === 'login' ? (
+                {tab === 'login' && (
                   <LoginForm
                     onSuccess={onSuccess}
                     onClose={handleClose}
                     switchToRegister={() => setTab('register')}
                   />
-                ) : (
+                )}
+                {tab === 'register' && (
                   <RegisterForm
+                    onSuccess={onSuccess}
+                    onClose={handleClose}
+                    switchToLogin={() => setTab('login')}
+                    switchToVerify={(email) => { setVerifyEmail(email); setTab('verify') }}
+                  />
+                )}
+                {tab === 'verify' && (
+                  <VerifyEmailForm
+                    email={verifyEmail}
                     onSuccess={onSuccess}
                     onClose={handleClose}
                     switchToLogin={() => setTab('login')}

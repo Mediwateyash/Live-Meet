@@ -39,11 +39,71 @@ export async function register(req, res, next) {
     validatePassword(password)
 
     const exists = await User.findOne({ email })
-    if (exists) throw new ApiError(409, 'Account creation failed. Please try again or use a different email.')
+    if (exists) {
+      if (!exists.isEmailVerified) {
+        throw new ApiError(409, 'Account exists but email is not verified. Please verify your email or resend the code.')
+      }
+      throw new ApiError(409, 'Account creation failed. Please try again or use a different email.')
+    }
 
     if (role && !['student', 'instructor'].includes(role)) throw new ApiError(400, 'Invalid role')
 
     const user = await User.create({ fullName, email, password, role: role || 'student' })
+    
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const OTP_SECRET = process.env.JWT_SECRET + (process.env.JWT_REFRESH_SECRET || '')
+    const hashedOTP = crypto.createHmac('sha256', OTP_SECRET).update(otp).digest('hex')
+
+    user.emailVerificationOTP = hashedOTP
+    user.emailVerificationExpires = Date.now() + 10 * 60 * 1000 // 10 minutes
+    await user.save({ validateBeforeSave: false })
+
+    // Send email
+    await sendEmail({
+      to: email,
+      subject: 'Verify your email — Zenius AI',
+      html: `
+        <div style="font-family: Inter, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 32px; background: #F5F3FF; border-radius: 16px;">
+          <h2 style="color: #7C3AED; font-family: Outfit, sans-serif;">Welcome to Zenius AI!</h2>
+          <p style="color: #1E1B4B; line-height: 1.7;">Your email verification code is:</p>
+          <div style="background: #E0E7FF; padding: 16px; border-radius: 8px; text-align: center; margin: 24px 0;">
+            <strong style="color: #4338CA; font-size: 24px; letter-spacing: 4px;">${otp}</strong>
+          </div>
+          <p style="color:#64748B; line-height:1.7;">This code will expire in 10 minutes.</p>
+          <p style="margin-top: 24px; color: #64748B; font-size: 13px;">— The Zenius AI Team</p>
+        </div>
+      `,
+    })
+
+    res.status(201).json(new ApiResponse(201, { email: user.email }, 'Verification OTP sent to your email.'))
+  } catch (err) { next(err) }
+}
+
+export async function verifyEmail(req, res, next) {
+  try {
+    let { email, otp } = req.body
+    if (!email || !otp) throw new ApiError(400, 'Email and OTP required')
+
+    email = email.trim().toLowerCase()
+    otp = otp.trim()
+
+    const OTP_SECRET = process.env.JWT_SECRET + (process.env.JWT_REFRESH_SECRET || '')
+    const hashedOTP = crypto.createHmac('sha256', OTP_SECRET).update(otp).digest('hex')
+
+    const user = await User.findOne({
+      email,
+      emailVerificationOTP: hashedOTP,
+      emailVerificationExpires: { $gt: Date.now() },
+    })
+
+    if (!user) throw new ApiError(400, 'Invalid or expired OTP')
+
+    // Mark as verified
+    user.isEmailVerified = true
+    user.emailVerificationOTP = undefined
+    user.emailVerificationExpires = undefined
+
     const accessToken  = generateAccessToken(user._id, user.role)
     const refreshToken = generateRefreshToken(user._id)
 
@@ -53,7 +113,50 @@ export async function register(req, res, next) {
     setTokenCookies(res, accessToken, refreshToken)
 
     const { password: _, refreshToken: __, ...userData } = user.toObject()
-    res.status(201).json(new ApiResponse(201, userData, 'Registration successful'))
+    res.json(new ApiResponse(200, userData, 'Email verified successfully! You are now logged in.'))
+  } catch (err) { next(err) }
+}
+
+export async function resendVerification(req, res, next) {
+  try {
+    let { email } = req.body
+    if (!email) throw new ApiError(400, 'Email required')
+    
+    email = email.trim().toLowerCase()
+    const user = await User.findOne({ email })
+    
+    if (!user) {
+      return res.json(new ApiResponse(200, null, 'If the email exists, an OTP was sent.'))
+    }
+    if (user.isEmailVerified) {
+      throw new ApiError(400, 'Email is already verified.')
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const OTP_SECRET = process.env.JWT_SECRET + (process.env.JWT_REFRESH_SECRET || '')
+    const hashedOTP = crypto.createHmac('sha256', OTP_SECRET).update(otp).digest('hex')
+
+    user.emailVerificationOTP = hashedOTP
+    user.emailVerificationExpires = Date.now() + 10 * 60 * 1000
+    await user.save({ validateBeforeSave: false })
+
+    await sendEmail({
+      to: email,
+      subject: 'Verify your email — Zenius AI',
+      html: `
+        <div style="font-family: Inter, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 32px; background: #F5F3FF; border-radius: 16px;">
+          <h2 style="color: #7C3AED; font-family: Outfit, sans-serif;">Email Verification</h2>
+          <p style="color: #1E1B4B; line-height: 1.7;">Your new verification code is:</p>
+          <div style="background: #E0E7FF; padding: 16px; border-radius: 8px; text-align: center; margin: 24px 0;">
+            <strong style="color: #4338CA; font-size: 24px; letter-spacing: 4px;">${otp}</strong>
+          </div>
+          <p style="color:#64748B; line-height:1.7;">This code will expire in 10 minutes.</p>
+          <p style="margin-top: 24px; color: #64748B; font-size: 13px;">— The Zenius AI Team</p>
+        </div>
+      `,
+    })
+
+    res.json(new ApiResponse(200, { email: user.email }, 'Verification OTP resent.'))
   } catch (err) { next(err) }
 }
 
@@ -71,6 +174,10 @@ export async function login(req, res, next) {
     // Check account lockout status
     if (user.role !== 'admin' && user.lockUntil && user.lockUntil > Date.now()) {
       throw new ApiError(423, 'Account is temporarily locked. Please try again later.')
+    }
+
+    if (!user.isEmailVerified) {
+      throw new ApiError(403, 'Email not verified. Please verify your email first.')
     }
 
     const valid = await user.comparePassword(password)

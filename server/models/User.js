@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken:   { type: String, select: false },
   resetPasswordExpires: { type: Date, select: false },
 
+  isEmailVerified:          { type: Boolean, default: false },
+  emailVerificationOTP:     { type: String, select: false },
+  emailVerificationExpires: { type: Date, select: false },
+
   loginAttempts: { type: Number, default: 0 },
   lockUntil:     { type: Date },
   suspended:     { type: Boolean, default: false },
