@@ -111,10 +111,18 @@ function RegisterForm({ onSuccess, onClose, switchToLogin, switchToVerify }) {
 
   const onSubmit = async ({ fullName, email, password, role }) => {
     try {
-      await authAPI.register({ fullName, email, password, role })
-      toast.success('Verification code sent to your email.')
-      reset()
-      switchToVerify(email)
+      const res = await authAPI.register({ fullName, email, password, role })
+      
+      // If the backend returns the user directly (email verification is disabled)
+      if (res.data?.data?.user) {
+        toast.success('Registration successful')
+        await useAuthStore.getState().checkAuth()
+        onClose()
+      } else {
+        toast.success('Verification code sent to your email.')
+        reset()
+        switchToVerify(email)
+      }
     } catch (err) {
       const msg = err.response?.data?.message
       toast.error(msg || 'Registration failed')

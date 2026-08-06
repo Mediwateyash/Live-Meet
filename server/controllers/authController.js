@@ -50,6 +50,16 @@ export async function register(req, res, next) {
 
     const user = await User.create({ fullName, email, password, role: role || 'student' })
     
+    const requireVerification = process.env.REQUIRE_EMAIL_VERIFICATION === 'true'
+
+    if (!requireVerification) {
+      user.isEmailVerified = true
+      await user.save()
+      const { accessToken, refreshToken } = generateTokens(user)
+      setCookies(res, accessToken, refreshToken)
+      return res.status(201).json(new ApiResponse(201, { user: getSanitizedUser(user) }, 'User registered successfully'))
+    }
+
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const OTP_SECRET = process.env.JWT_SECRET + (process.env.JWT_REFRESH_SECRET || '')
@@ -183,7 +193,7 @@ export async function login(req, res, next) {
       throw new ApiError(423, 'Account is temporarily locked. Please try again later.')
     }
 
-    if (!user.isEmailVerified) {
+    if (process.env.REQUIRE_EMAIL_VERIFICATION === 'true' && !user.isEmailVerified) {
       throw new ApiError(403, 'Email not verified. Please verify your email first.')
     }
 
