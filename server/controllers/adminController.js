@@ -1,6 +1,7 @@
 import User               from '../models/User.js'
 import Course             from '../models/Course.js'
 import InstructorRequest  from '../models/InstructorRequest.js'
+import Setting            from '../models/Setting.js'
 import { ApiError }       from '../utils/ApiError.js'
 import { ApiResponse }    from '../utils/ApiResponse.js'
 import { sendEmail, approvalEmail, rejectionEmail } from '../config/nodemailer.js'
@@ -282,5 +283,30 @@ export async function adminUpdateCourse(req, res, next) {
     if (Array.isArray(curriculum)) course.curriculum = curriculum
     await course.save()
     res.json(new ApiResponse(200, course, 'Course updated'))
+  } catch (err) { next(err) }
+}
+
+export async function getSettings(req, res, next) {
+  try {
+    const settings = await Setting.find()
+    const settingsMap = settings.reduce((acc, curr) => {
+      acc[curr.key] = curr.value
+      return acc
+    }, {})
+    res.json(new ApiResponse(200, settingsMap))
+  } catch (err) { next(err) }
+}
+
+export async function updateSetting(req, res, next) {
+  try {
+    const { key, value } = req.body
+    if (!key) throw new ApiError(400, 'Key is required')
+    
+    await Setting.findOneAndUpdate(
+      { key },
+      { value },
+      { upsert: true, new: true }
+    )
+    res.json(new ApiResponse(200, { key, value }, 'Setting updated successfully'))
   } catch (err) { next(err) }
 }

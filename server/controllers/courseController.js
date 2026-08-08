@@ -3,6 +3,7 @@ import User       from '../models/User.js'
 import Review     from '../models/Review.js'
 import Progress   from '../models/Progress.js'
 import Enrollment from '../models/Enrollment.js'
+import Setting from '../models/Setting.js'
 import { ApiError }    from '../utils/ApiError.js'
 import { ApiResponse } from '../utils/ApiResponse.js'
 import { uploadBase64Image } from '../utils/cloudinaryUpload.js'
@@ -258,6 +259,14 @@ export async function enroll(req, res, next) {
   try {
     const course = await Course.findById(req.params.id)
     if (!course || course.status !== 'published') throw new ApiError(404, 'Course not found or not published')
+
+    if (course.price > 0 && !course.isFree && req.user.role !== 'admin') {
+      const paymentEnabledSetting = await Setting.findOne({ key: 'paymentGatewayEnabled' })
+      const isPaymentEnabled = paymentEnabledSetting ? paymentEnabledSetting.value : true
+      if (isPaymentEnabled) {
+        throw new ApiError(400, 'This is a paid course. Please purchase it via checkout.')
+      }
+    }
 
     // ── Atomic enroll: one round-trip, no race condition ─────────────────────
     // Condition: enrolledCourses array has < 50 items AND course not already in it

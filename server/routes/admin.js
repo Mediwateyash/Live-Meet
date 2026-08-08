@@ -4,6 +4,7 @@ import {
   getUsers, updateUserRole, updateUserStatus, deleteUser,
   getAllCourses, updateCourseApproval, deleteCourse,
   getInstructors, getInstructor, getInstructorCourses, adminCreateCourse, adminUpdateCourse,
+  getSettings, updateSetting
 } from '../controllers/adminController.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { requireRole }   from '../middleware/role.js'
@@ -31,5 +32,8 @@ router.get ('/instructors',                         getInstructors)
 router.get ('/instructors/:id',                     getInstructor)
 router.get ('/instructors/:id/courses',             getInstructorCourses)
 router.post('/instructors/:id/courses',             adminCreateCourse)
+
+router.get ('/settings',                            getSettings)
+router.put ('/settings',                            updateSetting)
 
 export default router

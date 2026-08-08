@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Users, BookOpen, GraduationCap, TrendingUp,
-  AlertCircle, ChevronRight, Shield, ClipboardList, Star, MessageSquare, ArrowUpRight, Activity
+  AlertCircle, ChevronRight, Shield, ClipboardList, Star, MessageSquare, ArrowUpRight, Activity, CreditCard
 } from 'lucide-react'
 
 import PageLayout from '../../components/layout/PageLayout.jsx'
@@ -16,13 +16,32 @@ export default function AdminDashboard() {
   const { user } = useAuthStore()
   const [stats,   setStats]   = useState(null)
   const [loading, setLoading] = useState(true)
+  const [paymentEnabled, setPaymentEnabled] = useState(true)
 
   useEffect(() => {
     adminAPI.dashboard()
       .then(({ data }) => setStats(data.data))
       .catch(() => {})
       .finally(() => setLoading(false))
+      
+    adminAPI.getSettings()
+      .then(({ data }) => {
+        if (data.data.paymentGatewayEnabled !== undefined) {
+          setPaymentEnabled(data.data.paymentGatewayEnabled)
+        }
+      })
+      .catch(() => {})
   }, [])
+
+  const togglePaymentGateway = async () => {
+    const newValue = !paymentEnabled
+    setPaymentEnabled(newValue)
+    try {
+      await adminAPI.updateSetting({ key: 'paymentGatewayEnabled', value: newValue })
+    } catch (err) {
+      setPaymentEnabled(!newValue)
+    }
+  }
 
   const statCards = [
     { label: 'Total Users',        value: stats?.totalUsers        || 0, icon: Users,         color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.12)', change: '+5% this week' },
@@ -199,6 +218,31 @@ export default function AdminDashboard() {
                   <ChevronRight size={16} color="var(--text-muted)" className="shrink-0 transition-transform group-hover:translate-x-1" />
                 </motion.button>
               ))}
+            </div>
+
+            <div className="mt-6 p-5 rounded-2xl flex items-center justify-between" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: paymentEnabled ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)' }}>
+                  <CreditCard size={20} color={paymentEnabled ? '#10B981' : '#EF4444'} />
+                </div>
+                <div>
+                  <p className="font-extrabold text-sm tracking-wide" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                    Payment Gateway
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    {paymentEnabled ? 'Live: Process payments via Razorpay.' : 'Disabled: Courses bypass payment automatically.'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={togglePaymentGateway}
+                className={`w-12 h-6 rounded-full p-1 transition-colors relative flex items-center ${paymentEnabled ? 'bg-green-500' : 'bg-red-500'}`}
+              >
+                <div
+                  className={`w-4 h-4 rounded-full bg-white transition-transform ${paymentEnabled ? 'translate-x-6' : 'translate-x-0'}`}
+                  style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                />
+              </button>
             </div>
 
           </div>

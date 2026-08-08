@@ -30,6 +30,7 @@ export async function authMiddleware(req, res, next) {
     req.user = user
     next()
   } catch (err) {
+    console.error('[AUTH ERROR]', err);
     if (err.name === 'TokenExpiredError') {
       return next(new ApiError(401, 'Token expired'))
     }

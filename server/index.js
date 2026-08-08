@@ -15,6 +15,7 @@ import authRoutes         from './routes/auth.js'
 import userRoutes         from './routes/user.js'
 import courseRoutes       from './routes/course.js'
 import progressRoutes     from './routes/progress.js'
+import paymentRoutes      from './routes/payment.js'
 import instructorRoutes   from './routes/instructor.js'
 import adminRoutes        from './routes/admin.js'
 import liveLectureRoutes  from './routes/liveLecture.js'
@@ -174,6 +175,7 @@ app.use('/api/instructor',    instructorRoutes)
 app.use('/api/admin',         adminRoutes)
 app.use('/api/live-lectures', liveLectureRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/payment',       paymentRoutes)
 app.use('/api/testimonials',  testimonialRoutes)
 app.use('/api/material',      materialRoutes)
 app.use('/api/mcq',           mcqRoutes)
@@ -616,3 +618,4 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000
 httpServer.listen(PORT, () => console.log(`🚀 Zenius AI server running on port ${PORT}`))
+// trigger

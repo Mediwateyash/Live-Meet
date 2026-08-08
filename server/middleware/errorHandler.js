@@ -1,6 +1,7 @@
 import { ApiError } from '../utils/ApiError.js'
 
 export const errorHandler = (err, req, res, next) => {
+  console.error('[RAW ERROR OBJECT]:', err);
   // Log full error internally for debugging
   console.error(`[ERROR] ${err.name}: ${err.message}\n`, err.stack || '')
 

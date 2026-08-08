@@ -15,6 +15,7 @@ import { SkeletonLine } from '../../components/ui/Skeleton.jsx'
 import { coursesAPI } from '../../api/courses.js'
 import { usersAPI } from '../../api/users.js'
 import { progressAPI } from '../../api/progress.js'
+import { paymentAPI } from '../../api/payment.js'
 import useAuthStore from '../../store/authStore.js'
 import useUIStore from '../../store/uiStore.js'
 import { formatPrice, formatDuration, formatDate } from '../../utils/formatters.js'
@@ -146,16 +147,87 @@ export default function CourseDetail() {
     }
   }
 
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true)
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
   const handleEnroll = async () => {
     if (!isAuthenticated) { openAuthModal('login', 'Log in to enroll in this course'); return }
     setEnrolling(true)
     try {
-      await coursesAPI.enroll(course._id)
-      const freshEnrolled = useAuthStore.getState().user?.enrolledCourses || []
-      updateUser({ enrolledCourses: [...freshEnrolled, course._id] })
-      setEnrolledModal(true)
+      if (course.price > 0 && !course.isFree) {
+        const res = await loadRazorpayScript()
+        if (!res) {
+          toast.error('Razorpay SDK failed to load. Are you offline?')
+          setEnrolling(false)
+          return
+        }
+        
+        const { data } = await paymentAPI.createOrder(course._id)
+        if (data.data?.bypassPayment) {
+          // Payment gateway is disabled, fallback to free enrollment
+          await coursesAPI.enroll(course._id)
+          const freshEnrolled = useAuthStore.getState().user?.enrolledCourses || []
+          updateUser({ enrolledCourses: [...freshEnrolled, course._id] })
+          setEnrolledModal(true)
+          setEnrolling(false)
+          return
+        }
+
+        const order = data.data
+
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: order.currency,
+          name: 'Zenius AI',
+          description: `Enroll in ${course.title}`,
+          order_id: order.orderId,
+          handler: async function (response) {
+            try {
+              toast.loading('Verifying payment...', { id: 'payment' })
+              await paymentAPI.verifyPayment({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              })
+              toast.success('Payment successful!', { id: 'payment' })
+              const freshEnrolled = useAuthStore.getState().user?.enrolledCourses || []
+              updateUser({ enrolledCourses: [...freshEnrolled, course._id] })
+              setEnrolledModal(true)
+            } catch (err) {
+              toast.error(err.response?.data?.message || 'Payment verification failed', { id: 'payment' })
+            }
+          },
+          prefill: {
+            name: user?.fullName,
+            email: user?.email,
+          },
+          theme: {
+            color: '#7C3AED',
+          },
+        }
+
+        const rzp = new window.Razorpay(options)
+        rzp.on('payment.failed', function (response) {
+          toast.error(response.error.description || 'Payment failed')
+        })
+        rzp.open()
+      } else {
+        await coursesAPI.enroll(course._id)
+        const freshEnrolled = useAuthStore.getState().user?.enrolledCourses || []
+        updateUser({ enrolledCourses: [...freshEnrolled, course._id] })
+        setEnrolledModal(true)
+      }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Could not enroll')
+      toast.error(err.response?.data?.message || 'Could not initiate enrollment')
     } finally {
       setEnrolling(false)
     }
@@ -546,9 +618,11 @@ export default function CourseDetail() {
               <img src={course.thumbnail} alt={course.title} className="w-full" style={{ aspectRatio: '16/9', objectFit: 'cover' }} />
             )}
             <div className="p-6">
-              <div className="text-3xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-                {formatPrice(course.price)}
-              </div>
+              {!isEnrolled && (
+                <div className="text-3xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                  {formatPrice(course.price)}
+                </div>
+              )}
               {isEnrolled ? (
                 <>
                   <div className="mt-4 mb-4">
