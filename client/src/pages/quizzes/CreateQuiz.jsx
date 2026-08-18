@@ -153,13 +153,24 @@ const CreateQuiz = () => {
     const [courses, setCourses] = useState([]);
     const [selectedCourseId, setSelectedCourseId] = useState(urlCourseId || '');
 
+    useEffect(() => {
+        api.get('/instructor/courses')
+            .then(res => {
+                const list = res.data.data || [];
+                setCourses(list);
+                // If urlCourseId is set, lock/preselect it. Otherwise if there is only 1 course, auto select it.
+                if (urlCourseId && list.some(c => c._id === urlCourseId)) {
+                    setSelectedCourseId(urlCourseId);
+                } else if (list.length === 1 && !selectedCourseId) {
+                    setSelectedCourseId(list[0]._id);
+                }
+            })
+            .catch(console.error);
+    }, [urlCourseId]);
+
     // Inline Editing State
     const [editingMcqId, setEditingMcqId] = useState(null);
     const [editFormData, setEditFormData] = useState({});
-
-    useEffect(() => {
-        api.get('/instructor/courses').then(res => setCourses(res.data.data || [])).catch(console.error);
-    }, []);
 
     const handlePrepareQuiz = async (material) => {
         try {

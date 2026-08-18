@@ -147,8 +147,13 @@ export const generateMCQs = async ({ text = null, fileBuffer = null, mimeType = 
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-            // As of March 2026, gemini-2.5-flash is optimized for this
-            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            // As of 2026, gemini-2.5-flash natively supports responseMimeType json
+            const model = genAI.getGenerativeModel({ 
+                model: 'gemini-2.5-flash',
+                generationConfig: {
+                    responseMimeType: "application/json"
+                }
+            });
             
             let contents = [];
             if (isMultimodal) {
@@ -174,7 +179,6 @@ export const generateMCQs = async ({ text = null, fileBuffer = null, mimeType = 
             const responseText = result.response.text();
 
             let jsonStr = responseText.trim();
-            // Cleaning markdown if AI ignores instructions
             if (jsonStr.includes('```')) {
                 jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
             }
@@ -182,11 +186,8 @@ export const generateMCQs = async ({ text = null, fileBuffer = null, mimeType = 
             const parsedMCQs = JSON.parse(jsonStr);
             let validMCQs = validateAndCleanMCQs(parsedMCQs);
             
-            // Fix count strictly
             if (validMCQs.length > numQuestions) {
                 validMCQs = validMCQs.slice(0, numQuestions);
-            } else if (validMCQs.length < numQuestions) {
-                throw new Error(`Generated only ${validMCQs.length} valid MCQs, expected ${numQuestions}. Retrying...`);
             }
             
             return validMCQs;
