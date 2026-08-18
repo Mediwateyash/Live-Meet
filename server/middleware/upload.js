@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    const filetypes = /pdf|doc|docx|ppt|pptx|txt/;
+    const filetypes = /pdf|doc|docx|ppt|pptx|txt|jpg|jpeg|png/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     
     const allowedMimeTypes = [
@@ -34,7 +34,10 @@ const fileFilter = (req, file, cb) => {
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-powerpoint',
         'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        'text/plain'
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/jpg'
     ];
     const mimetypeValid = allowedMimeTypes.includes(file.mimetype) || filetypes.test(file.mimetype);
 

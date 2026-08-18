@@ -9,6 +9,14 @@ export function validateFileMagicBytes(filePath) {
 
     const hex = buffer.toString('hex').toUpperCase();
 
+    // JPEG: starts with FF D8 FF (FFD8FF)
+    if (hex.startsWith('FFD8FF')) {
+      return 'jpeg';
+    }
+    // PNG: starts with 89 50 4E 47 0D 0A 1A 0A (89504E47)
+    if (hex.startsWith('89504E47')) {
+      return 'png';
+    }
     // PDF: starts with %PDF (25 50 44 46)
     if (hex.startsWith('25504446')) {
       return 'pdf';

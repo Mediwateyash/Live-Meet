@@ -17,6 +17,9 @@ const getMimeType = (ext) => {
         case '.pdf': return 'application/pdf';
         case '.pptx': return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
         case '.docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        case '.jpg':
+        case '.jpeg': return 'image/jpeg';
+        case '.png': return 'image/png';
         default: return null;
     }
 };

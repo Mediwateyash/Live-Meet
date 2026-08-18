@@ -265,7 +265,7 @@ const CreateQuiz = () => {
                         </h3>
                         
                         <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-                            Supported formats: PDF, DOCX, PPTX, TXT. Max size: 10MB.
+                            Supported formats: PDF, DOCX, PPTX, TXT, JPG, PNG. Max size: 10MB.
                         </div>
 
                         <div className="flex flex-col gap-4">
@@ -273,7 +273,7 @@ const CreateQuiz = () => {
                                 <input
                                     type="file"
                                     onChange={handleFileChange}
-                                    accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
+                                    accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png"
                                     className="w-full text-sm text-gray-500 dark:text-gray-400
                                         file:mr-4 file:py-2.5 file:px-4
                                         file:rounded-md file:border-0

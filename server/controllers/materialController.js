@@ -20,6 +20,8 @@ export const uploadMaterial = async (req, res) => {
         else if ((ext === '.docx' || ext === '.pptx') && detected === 'zip') isValid = true;
         else if ((ext === '.doc' || ext === '.ppt') && detected === 'ole') isValid = true;
         else if (ext === '.txt' && detected === 'txt') isValid = true;
+        else if ((ext === '.jpg' || ext === '.jpeg') && detected === 'jpeg') isValid = true;
+        else if (ext === '.png' && detected === 'png') isValid = true;
 
         if (!isValid) {
             try { fs.unlinkSync(req.file.path); } catch (e) {}
