@@ -54,10 +54,14 @@ export async function register(req, res, next) {
 
     if (!requireVerification) {
       user.isEmailVerified = true
-      await user.save()
-      const { accessToken, refreshToken } = generateTokens(user)
-      setCookies(res, accessToken, refreshToken)
-      return res.status(201).json(new ApiResponse(201, { user: getSanitizedUser(user) }, 'User registered successfully'))
+      const refreshToken = generateRefreshToken(user._id)
+      user.refreshToken = refreshToken
+      await user.save({ validateBeforeSave: false })
+
+      const accessToken = generateAccessToken(user._id, user.role)
+      setTokenCookies(res, accessToken, refreshToken)
+      const { password: _, refreshToken: __, ...userData } = user.toObject()
+      return res.status(201).json(new ApiResponse(201, { user: userData }, 'User registered successfully'))
     }
 
     // Generate 6-digit OTP

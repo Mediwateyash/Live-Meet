@@ -18,6 +18,37 @@ const mcqSchema = Joi.array().items(
 
 const MAX_RETRIES = 3;
 
+const cleanQuestionText = (questionText) => {
+    if (!questionText) return questionText;
+    let text = questionText.trim();
+
+    // Regex patterns for common LLM meta prefixes
+    const metaPrefixes = [
+        /^(according to (the|this|provided|given|above|module|document|text|content|material|slide|lesson|section|passage)(s)?(\s+content|\s+text|\s+material|\s+document|\s+file)?,\s*)/i,
+        /^(based on (the|this|provided|given|above|module|document|text|content|material|slide|lesson|section|passage)(s)?(\s+content|\s+text|\s+material|\s+document|\s+file)?,\s*)/i,
+        /^(as (defined|stated|mentioned|described|explained|discussed|noted) in (the|this|provided|given|above|module|document|text|content|material|slide|lesson|section|passage)(s)?,\s*)/i,
+        /^(in (the|this|provided|given|above|module|document|text|content|material|slide|lesson|section|passage)(s)?,\s*)/i,
+        /^(per (the|this|provided|given|above|module|document|text|content|material|slide|lesson|section|passage)(s)?,\s*)/i,
+        /^(from the (provided|given|above) (content|text|material|document|module|slide|passage),\s*)/i,
+    ];
+
+    for (const pattern of metaPrefixes) {
+        text = text.replace(pattern, '');
+    }
+
+    // Handle trailing meta phrases (e.g., ", as defined in the module?")
+    text = text.replace(/(,\s*as (defined|stated|mentioned|described|explained|discussed|noted) in the (module|text|content|document|material|lesson)\??)$/i, '?');
+    text = text.replace(/(,\s*according to the (module|text|content|document|material|lesson)\??)$/i, '?');
+    text = text.replace(/(,\s*based on the (module|text|content|document|material|lesson)\??)$/i, '?');
+
+    // Capitalize first character
+    if (text.length > 0) {
+        text = text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    return text;
+};
+
 const validateAndCleanMCQs = (mcqs) => {
     // 1. Basic Joi Validation
     const { error, value } = mcqSchema.validate(mcqs, { stripUnknown: true });
@@ -33,6 +64,7 @@ const validateAndCleanMCQs = (mcqs) => {
     const seenQuestions = new Set();
 
     for (const mcq of value) {
+        mcq.question = cleanQuestionText(mcq.question);
         if (seenQuestions.has(mcq.question.toLowerCase())) continue; // Deduplicate
 
         const uniqueOptions = new Set(mcq.options);
@@ -60,7 +92,7 @@ export const generateMCQs = async ({ text = null, fileBuffer = null, mimeType = 
     const isMultimodal = fileBuffer && mimeType;
     
     let prompt = `
-    You are an expert educator. Generate EXACTLY ${numQuestions} high-quality Multiple Choice Questions (MCQs) based STRICTLY on the content provided.`;
+    You are an expert educator creating high-quality exam questions. Generate EXACTLY ${numQuestions} Multiple Choice Questions (MCQs) based strictly on the knowledge contained within the provided content.`;
 
     if (startPage && endPage) {
         prompt += `\n\nCRITICAL PAGE RANGE RESTRICTION:
@@ -79,13 +111,20 @@ export const generateMCQs = async ({ text = null, fileBuffer = null, mimeType = 
     prompt += `
     
     CRITICAL RULES:
-    1. EXTRACT FROM CONCEPTS: Only generate questions based on the actual educational/subject content within the allowed pages.
-    2. IGNORE METADATA: Do not generate questions about filenames, file extensions (e.g., .pptx, .pdf), slide numbers, or formatting elements.
-    3. CONTEXT AWARENESS: Prioritize slide titles, headings, and key definitions.
-    4. TOPIC-WISE: Group questions by the logical topics found in the material.
-    5. TAGGING: For each question, provide a 'topic' (e.g., "Project Lifecycle") and a 'difficulty' (easy/medium/hard).
-    6. STRUCTURE: 4 options per question. The 'correctAnswer' MUST match one of the options exactly.
-    7. OUTPUT: Return ONLY a valid JSON array. No markdown, no backticks, no explanatory text outside the JSON.
+    1. DIRECT & PROFESSIONAL QUESTION WRITING: Ask direct, natural, formal exam questions (e.g. "What is a Brand?" or "Which of the following best describes branding?").
+       STRICT PROHIBITION: NEVER use meta-referential phrases in questions such as:
+       - "According to the provided content / text / module / document"
+       - "As defined in the module / text"
+       - "Based on the provided material"
+       - "In the text / document"
+       Make all questions sound like standard, self-contained standard exam questions.
+    2. EXTRACT FROM CONCEPTS: Only generate questions based on the actual educational/subject content within the allowed pages.
+    3. IGNORE METADATA: Do not generate questions about filenames, file extensions (e.g., .pptx, .pdf), slide numbers, or formatting elements.
+    4. CONTEXT AWARENESS: Prioritize slide titles, headings, and key definitions.
+    5. TOPIC-WISE: Group questions by the logical topics found in the material.
+    6. TAGGING: For each question, provide a 'topic' (e.g., "Project Lifecycle") and a 'difficulty' (easy/medium/hard).
+    7. STRUCTURE: 4 options per question. The 'correctAnswer' MUST match one of the options exactly.
+    8. OUTPUT: Return ONLY a valid JSON array. No markdown, no backticks, no explanatory text outside the JSON.
     
     Structure:
     [
@@ -180,6 +219,7 @@ const validateAndCleanWH = (whs) => {
     const seenQuestions = new Set();
     
     for (const item of value) {
+        item.question = cleanQuestionText(item.question);
         if (seenQuestions.has(item.question.toLowerCase())) continue;
         seenQuestions.add(item.question.toLowerCase());
         cleaned.push(item);
@@ -212,11 +252,12 @@ export const generateWHQuestions = async ({ text = null, fileBuffer = null, mime
     prompt += `
     
     CRITICAL RULES:
-    1. EXTRACT FROM CONCEPTS: Only generate questions based on the actual educational/subject content within the allowed pages.
-    2. WH QUESTIONS ONLY: Each question MUST start with What, Why, When, Where, Who, or How, or clearly ask for an explanation.
-    3. SHORT ANSWERS: The 'answer' field MUST be extremely concise, limited to 1 or 2 lines maximum. Do NOT write paragraphs.
-    4. TOPIC-WISE: Provide a 'topic' (e.g., "Photosynthesis") for each question.
-    5. OUTPUT: Return ONLY a valid JSON array. No markdown, no backticks, no explanatory text outside the JSON.
+    1. DIRECT QUESTION WRITING: NEVER use meta-referential phrases like "According to the provided text", "As defined in the module", "Based on the content", etc. Ask direct standalone questions.
+    2. EXTRACT FROM CONCEPTS: Only generate questions based on the actual educational/subject content within the allowed pages.
+    3. WH QUESTIONS ONLY: Each question MUST start with What, Why, When, Where, Who, or How, or clearly ask for an explanation.
+    4. SHORT ANSWERS: The 'answer' field MUST be extremely concise, limited to 1 or 2 lines maximum. Do NOT write paragraphs.
+    5. TOPIC-WISE: Provide a 'topic' (e.g., "Photosynthesis") for each question.
+    6. OUTPUT: Return ONLY a valid JSON array. No markdown, no backticks, no explanatory text outside the JSON.
     
     Structure:
     [
