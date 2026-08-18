@@ -43,14 +43,15 @@ const CreateQuiz = () => {
 
     const fetchMaterials = useCallback(async () => {
         try {
-            const res = await api.get('/material');
+            const url = urlCourseId ? `/material?courseId=${urlCourseId}` : '/material';
+            const res = await api.get(url);
             setMaterials(res.data);
         } catch (error) {
             console.error("Failed to fetch materials", error);
         } finally {
             setLoadingMaterials(false);
         }
-    }, []);
+    }, [urlCourseId]);
 
     useEffect(() => {
         fetchMaterials();
@@ -117,6 +118,7 @@ const CreateQuiz = () => {
         formData.append('mcqCount', mcqCount);
         formData.append('generateWH', generateWH);
         formData.append('whCount', whCount);
+        if (selectedCourseId || urlCourseId) formData.append('courseId', selectedCourseId || urlCourseId);
         if (chapterName) formData.append('chapterName', chapterName);
         if (startPage) formData.append('startPage', startPage);
         if (endPage) formData.append('endPage', endPage);

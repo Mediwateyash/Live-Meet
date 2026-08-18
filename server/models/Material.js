@@ -26,6 +26,10 @@ const materialSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    courseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course'
+    },
     status: {
         type: String,
         enum: ['pending', 'processing', 'completed', 'failed'],

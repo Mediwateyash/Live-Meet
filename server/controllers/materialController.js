@@ -54,6 +54,8 @@ export const uploadMaterial = async (req, res) => {
             return res.status(400).json({ message: 'End page must be greater than or equal to start page.' });
         }
 
+        let courseId = req.body.courseId || null;
+
         const safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
         const material = await Material.create({
             fileName: safeName,
@@ -62,6 +64,7 @@ export const uploadMaterial = async (req, res) => {
             startPage: startPage,
             endPage: endPage,
             uploadedBy: req.user._id,
+            courseId: courseId,
             status: 'pending' // Initial status
         });
 
@@ -83,11 +86,14 @@ export const uploadMaterial = async (req, res) => {
 export const getMaterials = async (req, res) => {
     try {
         let query = {};
+        if (req.query.courseId) {
+            query.courseId = req.query.courseId;
+        }
         if (req.user.role === 'student') {
             // Students can see all successfully processed materials
-            query = { status: 'completed' };
+            query.status = 'completed';
         } else if (req.user.role === 'instructor') {
-            query = { uploadedBy: req.user._id };
+            query.uploadedBy = req.user._id;
         }
         const materials = await Material.find(query).sort({ createdAt: -1 }).populate('uploadedBy', 'fullName');
         res.json(materials);
