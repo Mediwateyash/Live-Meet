@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 import 'dotenv/config'
+import dns from 'dns'
+dns.setServers(['8.8.8.8', '8.8.4.4'])
 import User from '../models/User.js'
 import Course from '../models/Course.js'
 import InstructorRequest from '../models/InstructorRequest.js'
