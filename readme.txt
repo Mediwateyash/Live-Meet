@@ -1,36 +1,50 @@
 ================================================================================
                     ZENIUS AI — LIVE-MEET PLATFORM
-                     Windows Setup & Run Guide
+                      Windows Quick Setup Guide
 ================================================================================
 
-PREREQUISITES:
-1. Node.js (v18 or higher) -> https://nodejs.org/
+ABOUT THE PROJECT:
+Zenius AI (Live-Meet) is a real-time virtual classroom & e-learning platform
+featuring WebRTC live rooms, interactive whiteboards, and AI-powered quizzes.
+
+PREREQUISITE:
+- Node.js (v18 or higher) -> Download from https://nodejs.org/
 
 --------------------------------------------------------------------------------
 STEP-BY-STEP INSTRUCTIONS:
 --------------------------------------------------------------------------------
 
-STEP 1: EXTRACT THE ZIP
+STEP 1: EXTRACT THE ZIP FILE
+Description: Unpack the project files to any folder on your computer.
 1. Right-click the zip file -> Select "Extract All...".
-2. Open the extracted folder in VS Code or PowerShell / Command Prompt.
+2. Open the extracted folder in VS Code, Terminal, or PowerShell.
+
 
 STEP 2: INSTALL DEPENDENCIES
-Open terminal in the project root folder and run:
+Description: Installs all required libraries for the root, frontend, and backend.
+Open PowerShell / Command Prompt in the project root folder and run:
+
    npm install
    cd client && npm install
    cd ..\server && npm install
    cd ..
 
+
 STEP 3: SEED DEMO DATA (OPTIONAL / RECOMMENDED)
-To create demo courses and test accounts, run:
+Description: Populates the database with sample courses, students, and instructors.
+Run this command from the project root folder:
+
    npm run seed --prefix server
 
+
 STEP 4: START THE APPLICATION
-From the project root folder, run:
+Description: Launches both frontend and backend servers simultaneously.
+Run this command from the project root folder:
+
    npm run dev
 
-- Frontend: http://localhost:5173
-- Backend:  http://localhost:5000
+- Frontend URL: http://localhost:5173
+- Backend API:  http://localhost:5000
 
 Open your browser and visit: http://localhost:5173
 
