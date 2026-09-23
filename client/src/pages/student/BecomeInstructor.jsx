@@ -289,11 +289,11 @@ export default function BecomeInstructor() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3"
               style={{ background: 'var(--z-purple-100, #EDE9FE)', color: '#7C3AED' }}>
               <Sparkles size={14} />
-              <span>Zenius AI Instructor Network</span>
+              <span>SMIT Faculty &amp; Instructor Network</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3"
               style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary, #0F172A)' }}>
-              Teach on Zenius AI
+              Teach at Sandeep More Institute of Technology
             </h1>
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
               Join our community of expert educators. Empower students globally with interactive courses, live sessions, and AI tools.
@@ -489,10 +489,10 @@ function ApplicationStatusPortal({ request, user, status }) {
 
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
           {isApproved
-            ? 'Congratulations! Your instructor application has been approved. You now have full instructor access to create, publish, and manage courses on Zenius AI.'
+            ? 'Congratulations! Your instructor application has been approved. You now have full instructor access to create, publish, and manage courses on Sandeep More Institute of Technology (SMIT).'
             : isRejected
             ? 'Unfortunately, your instructor application was not approved at this time. You may contact support for additional information or submit an updated application.'
-            : 'Thank you for applying to become an instructor on Zenius AI. Your application has been successfully received and is currently under review by our administrative team.'}
+            : 'Thank you for applying to become an instructor at Sandeep More Institute of Technology (SMIT). Your application has been successfully received and is currently under review by our administrative team.'}
         </p>
 
         {isRejected && request?.rejectionReason && (
@@ -555,7 +555,7 @@ function ApplicationStatusPortal({ request, user, status }) {
             <div>
               <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">✓ Completed</div>
               <div className="text-sm font-semibold text-slate-900 dark:text-white mt-0.5">Application Submitted</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Form received by Zenius AI system</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Form received by SMIT portal</div>
             </div>
           </div>
 
@@ -654,7 +654,7 @@ function ApplicationStatusPortal({ request, user, status }) {
           </li>
           <li className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0" />
-            <span>You will then be able to create, publish, and manage courses on Zenius AI.</span>
+            <span>You will then be able to create, publish, and manage courses on SMIT.</span>
           </li>
         </ul>
       </div>
@@ -954,14 +954,14 @@ function InstructorForm({
           </FormField>
 
           {/* Why do you want to teach? */}
-          <FormField label="Why do you want to teach on Zenius AI?" required icon={Sparkles} error={errors.motivation?.message}>
+          <FormField label="Why do you want to teach at SMIT?" required icon={Sparkles} error={errors.motivation?.message}>
             <div className="relative">
               <textarea
                 id="motivation"
                 rows={4}
                 minLength={100}
                 maxLength={1000}
-                placeholder="Explain your motivation for joining Zenius AI, how you can help students, and what value you will bring to the platform."
+                placeholder="Explain your motivation for joining Sandeep More Institute of Technology (SMIT), how you can help students, and what value you will bring to the platform."
                 className={`w-full p-3.5 text-sm rounded-xl border transition-all outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-white resize-none ${
                   errors.motivation ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 dark:border-slate-700 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/40'
                 }`}
@@ -1046,7 +1046,7 @@ function InstructorForm({
           )}
         </Button>
         <p className="text-center text-xs text-slate-400 mt-3">
-          By submitting, you agree to Zenius AI Instructor Terms of Service and Privacy Policy.
+          By submitting, you agree to SMIT Instructor Terms of Service and Privacy Policy.
         </p>
       </div>
     </form>

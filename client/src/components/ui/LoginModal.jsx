@@ -10,6 +10,7 @@ import { authAPI } from '../../api/auth.js'
 import useAuthStore from '../../store/authStore.js'
 import Button from './Button.jsx'
 import Input from './Input.jsx'
+import BrandLogo from '../common/BrandLogo.jsx'
 import toast from 'react-hot-toast'
 
 const loginSchema = z.object({
@@ -208,7 +209,7 @@ function VerifyEmailForm({ email, onSuccess, onClose, switchToLogin }) {
     try {
       const { data } = await authAPI.verifyEmail(email, otp)
       setUser(data.data)
-      toast.success('Email verified! Welcome to Zenius AI 🎓')
+      toast.success('Email verified! Welcome to SMIT 🎓')
       onClose()
       onSuccess?.()
     } catch (err) {
@@ -273,7 +274,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess, hint, defaultTa
 
   const headings = {
     login:    { title: 'Welcome back',      sub: hint || 'Log in to continue your learning journey' },
-    register: { title: 'Create your account', sub: hint || 'Join 50,000+ learners on Zenius AI' },
+    register: { title: 'Create your account', sub: hint || 'Join thousands of learners at SMIT' },
     verify:   { title: 'Verify your email', sub: 'Just one last step' },
   }
 
@@ -331,13 +332,8 @@ export default function LoginModal({ isOpen, onClose, onSuccess, hint, defaultTa
             {/* Logo */}
             <div style={{ textAlign:'center', marginBottom:20 }}>
               <div style={{ display:'inline-flex', alignItems:'center', gap:8, marginBottom:14 }}>
-                <div style={{ width:36, height:36, borderRadius:11, background:'#7C3AED', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <GraduationCap size={19} color="white"/>
-                </div>
-                <span style={{ fontSize:17, fontWeight:800, fontFamily:'Outfit,sans-serif', color:'var(--text-primary)' }}>Zenius AI</span>
+                <BrandLogo size="md" showText={true} />
               </div>
-
-
 
               <h2 style={{ fontSize:20, fontWeight:700, fontFamily:'Outfit,sans-serif', color:'var(--text-primary)', marginBottom:4 }}>
                 {headings[tab].title}

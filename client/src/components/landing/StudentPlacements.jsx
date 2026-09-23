@@ -20,7 +20,7 @@ export default function StudentPlacements() {
     <section className="py-20 bg-slate-50 dark:bg-[var(--bg-surface)] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-[var(--text-primary)] mb-2">Our Students Work At</h2>
-        <p className="text-slate-500 dark:text-[var(--text-muted)]">Top companies worldwide hire Zenius AI graduates</p>
+        <p className="text-slate-500 dark:text-[var(--text-muted)]">Top companies hire SMIT graduates</p>
       </div>
 
       <div className="relative">

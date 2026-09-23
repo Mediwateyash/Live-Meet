@@ -48,8 +48,8 @@ export default function WhyChooseUs() {
           className={`${darkMode ? 'bg-[var(--bg-surface)] border-[var(--border-default)]' : 'bg-slate-50 border-slate-100'} rounded-[2.5rem] p-8 md:p-12 lg:p-16 border`}
         >
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-[var(--text-primary)] mb-4">Why Choose Zenius AI?</h2>
-            <p className="text-slate-600 dark:text-[var(--text-secondary)] text-lg">We provide the best learning experience with modern tools, AI guidance, and expert-crafted content.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-[var(--text-primary)] mb-4">Why Choose Sandeep More Institute of Technology?</h2>
+            <p className="text-slate-600 dark:text-[var(--text-secondary)] text-lg">We provide an exceptional learning experience with modern tools, AI guidance, and expert-crafted academic & industry content.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

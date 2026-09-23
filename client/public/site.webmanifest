@@ -1,7 +1,7 @@
 {
-  "name": "Zenius AI",
-  "short_name": "Zenius AI",
-  "description": "Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes.",
+  "name": "Sandeep More Institute of Technology",
+  "short_name": "SMIT",
+  "description": "Sandeep More Institute of Technology (SMIT) is a state-of-the-art AI-powered LMS & virtual classroom platform offering smart quiz generation, live classes, and custom study notes.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0D0D1A",
@@ -13,6 +13,11 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }

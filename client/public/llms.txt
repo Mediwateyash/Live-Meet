@@ -1,10 +1,10 @@
-# Zenius AI — AI-Powered E-Learning Platform
+# Sandeep More Institute of Technology (SMIT) — AI-Powered LMS Platform
 
-> Zenius AI is a virtual classroom platform with WebRTC live rooms, collaborative whiteboards, and Gemini AI study tools.
+> Sandeep More Institute of Technology (SMIT) is a virtual classroom platform with WebRTC live rooms, collaborative whiteboards, and AI study tools.
 
 ## Core Pages
-- [Home](https://live-meet.onrender.com/): Zenius AI landing page and feature highlights.
-- [Browse Courses](https://live-meet.onrender.com/browse): Catalog of interactive courses across technology, business, and design.
+- [Home](https://live-meet.onrender.com/): SMIT landing page and feature highlights.
+- [Browse Courses](https://live-meet.onrender.com/browse): Catalog of interactive courses across technology, business, and engineering.
 
 ## API Documentation
 - [Auth API](https://live-meet.onrender.com/api/auth/me): Authentication endpoints and session status.

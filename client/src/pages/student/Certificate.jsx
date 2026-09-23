@@ -65,7 +65,7 @@ export default function Certificate() {
       })
       const a = document.createElement('a')
       a.href = canvas.toDataURL('image/png')
-      a.download = `zenius-certificate-${courseId}.png`
+      a.download = `smit-certificate-${courseId}.png`
       a.click()
     } catch (error) {
       console.error('Error generating certificate:', error)
@@ -227,10 +227,13 @@ export default function Certificate() {
             textAlign: 'center',
           }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#7C3AED' }}>
-                <GraduationCap size={18} color="white" />
-              </div>
-              <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 16, color: '#1E1B4B', letterSpacing: '0.1em' }}>ZENIUS AI</span>
+              <img
+                src="/logo.png"
+                alt="SMIT Logo"
+                style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'contain' }}
+                onError={(e) => { e.currentTarget.src = '/favicon.svg' }}
+              />
+              <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 15, color: '#1E1B4B', letterSpacing: '0.08em' }}>SANDEEP MORE INSTITUTE OF TECHNOLOGY</span>
             </div>
           </div>
 
@@ -347,7 +350,7 @@ export default function Certificate() {
             display: 'block'
           }}>
             <div style={{ width: '100%', textAlign: 'center', display: 'block' }}>Issue Date: {formatDate(issueDate)}</div>
-            <div style={{ marginTop: 2, width: '100%', textAlign: 'center', display: 'block' }}>Certificate ID: ZENO-{courseId?.slice(-6).toUpperCase()}</div>
+            <div style={{ marginTop: 2, width: '100%', textAlign: 'center', display: 'block' }}>Certificate ID: SMIT-{courseId?.slice(-6).toUpperCase()}</div>
           </div>
 
           {/* Signature 2 - Issued By */}
@@ -370,7 +373,7 @@ export default function Certificate() {
               width: '100%',
               display: 'block'
             }}>
-              Zenius AI
+              Sandeep More Institute of Technology
             </div>
             <div style={{ 
               height: '1px', 

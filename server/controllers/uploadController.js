@@ -26,7 +26,7 @@ export const uploadResource = async (req, res) => {
 
         const result = await cloudinary.uploader.upload(req.file.path, {
             resource_type: 'raw', // Must be raw for PDFs to open correctly in browser
-            folder: 'zenius/resources'
+            folder: 'smit/resources'
         });
 
         // Clean up the local file

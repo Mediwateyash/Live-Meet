@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { ChevronRight, Printer, ArrowUp } from 'lucide-react'
 
 /**
- * LegalLayout — shared wrapper for all Zenius AI legal pages.
+ * LegalLayout — shared wrapper for all Sandeep More Institute of Technology (SMIT) legal pages.
  *
  * Props:
  *   title        string   — page h1 and document title
@@ -30,7 +30,7 @@ export default function LegalLayout({
 
   useEffect(() => {
     // Title
-    document.title = `${title} | Zenius AI`
+    document.title = `${title} | Sandeep More Institute of Technology (SMIT)`
 
     // Meta description
     let metaDesc = document.querySelector('meta[name="description"]')
@@ -59,17 +59,17 @@ export default function LegalLayout({
         '@context': 'https://schema.org',
         '@type': 'Organization',
         '@id': `${BASE_URL}/#organization`,
-        name: 'Zenius AI',
+        name: 'Sandeep More Institute of Technology',
         url: BASE_URL,
-        logo: `${BASE_URL}/favicon.svg`,
+        logo: `${BASE_URL}/logo.png`,
         description:
-          'Zenius AI is an AI-powered Learning Management System offering smart quiz generation, live classes, notes, and certificates.',
+          'Sandeep More Institute of Technology (SMIT) is an AI-powered Learning Management System offering smart quiz generation, live classes, notes, and certificates.',
       },
       {
         '@context': 'https://schema.org',
         '@type': 'WebPage',
         '@id': `${canonicalUrl}#webpage`,
-        name: `${title} | Zenius AI`,
+        name: `${title} | Sandeep More Institute of Technology`,
         description,
         url: canonicalUrl,
         isPartOf: { '@id': `${BASE_URL}/#website` },

@@ -246,7 +246,7 @@ export default function CourseAnalytics() {
                         <Star size={20} className="fill-current" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Zenius AI Course Analysis</h2>
+                        <h2 className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>SMIT AI Course Analysis</h2>
                         <p className="text-sm opacity-80" style={{ color: 'var(--text-muted)' }}>Intelligent interpretation of course health and performance metrics</p>
                     </div>
                 </div>

@@ -353,8 +353,8 @@ if (process.env.NODE_ENV === 'production') {
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
 
       // Default values
-      let title = 'Zenius AI — Learn Without Limits'
-      let description = 'Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes.'
+      let title = 'Sandeep More Institute of Technology (SMIT) — Learn Without Limits'
+      let description = 'Sandeep More Institute of Technology (SMIT) is a state-of-the-art LMS platform offering smart quiz generation, live classes, and custom study notes.'
       let image = `${baseUrl}/og-image.png`
       let statusCode = 200
       let schemas = []
@@ -364,10 +364,11 @@ if (process.env.NODE_ENV === 'production') {
         "@context": "https://schema.org",
         "@type": "Organization",
         "@id": `${baseUrl}/#organization`,
-        "name": "Zenius AI",
+        "name": "Sandeep More Institute of Technology",
+        "alternateName": "SMIT",
         "url": baseUrl,
         "logo": `${baseUrl}/favicon.svg`,
-        "description": "Zenius AI is a state-of-the-art AI-powered LMS platform offering smart quiz generation, live classes, and custom study notes."
+        "description": "Sandeep More Institute of Technology (SMIT) is a state-of-the-art LMS platform offering smart quiz generation, live classes, and custom study notes."
       })
 
       // Check route pattern for Course detail page: /course/:slug
@@ -376,7 +377,7 @@ if (process.env.NODE_ENV === 'production') {
         const slug = courseMatch[1]
         const course = await Course.findOne({ slug }).populate('instructor', 'fullName')
         if (course) {
-          title = `${course.title} | Zenius AI`
+          title = `${course.title} | SMIT`
           description = course.subtitle || (course.description ? course.description.slice(0, 155).replace(/\s+/g, ' ').trim() + '...' : '')
           if (course.thumbnail) {
             image = course.thumbnail.startsWith('http') ? course.thumbnail : `${baseUrl}${course.thumbnail.startsWith('/') ? '' : '/'}${course.thumbnail}`
@@ -391,7 +392,7 @@ if (process.env.NODE_ENV === 'production') {
             "description": course.description ? course.description.slice(0, 250) : '',
             "provider": {
               "@type": "Organization",
-              "name": "Zenius AI",
+              "name": "Sandeep More Institute of Technology",
               "sameAs": baseUrl
             },
             "author": course.instructor && course.instructor.fullName ? {
@@ -399,7 +400,7 @@ if (process.env.NODE_ENV === 'production') {
               "name": course.instructor.fullName
             } : {
               "@type": "Organization",
-              "name": "Zenius AI"
+              "name": "Sandeep More Institute of Technology"
             },
             "image": image,
             "offers": {
@@ -437,12 +438,12 @@ if (process.env.NODE_ENV === 'production') {
         } else {
           // SEO-friendly 404 Status Code response!
           statusCode = 404
-          title = 'Course Not Found | Zenius AI'
-          description = 'The requested course does not exist on Zenius AI.'
+          title = 'Course Not Found | SMIT'
+          description = 'The requested course does not exist on Sandeep More Institute of Technology (SMIT).'
         }
       } else if (req.path === '/browse') {
-        title = 'Browse Courses | Zenius AI'
-        description = 'Explore professional AI-powered learning courses on Zenius AI.'
+        title = 'Browse Courses | SMIT'
+        description = 'Explore professional courses and technical programs at Sandeep More Institute of Technology (SMIT).'
 
         // Breadcrumb Schema: Home > Browse Courses
         schemas.push({
@@ -469,7 +470,8 @@ if (process.env.NODE_ENV === 'production') {
           "@context": "https://schema.org",
           "@type": "WebSite",
           "@id": `${baseUrl}/#website`,
-          "name": "Zenius AI",
+          "name": "Sandeep More Institute of Technology",
+          "alternateName": "SMIT",
           "url": baseUrl,
           "potentialAction": {
             "@type": "SearchAction",
@@ -488,10 +490,10 @@ if (process.env.NODE_ENV === 'production') {
           "mainEntity": [
             {
               "@type": "Question",
-              "name": "What is Zenius AI and who can use it?",
+              "name": "What is Sandeep More Institute of Technology (SMIT) and who can use it?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Zenius AI is an advanced, AI-powered Learning Management System (LMS) designed for both students and instructors. Students can enroll in interactive courses, take generated quizzes, and attend live lectures, while educators can manage curriculums, host live sessions, and review student progress."
+                "text": "Sandeep More Institute of Technology (SMIT) is an advanced Learning Management System (LMS) designed for both students and instructors. Students can enroll in interactive courses, take quizzes, and attend live lectures, while educators can manage curriculums, host live sessions, and review student progress."
               }
             },
             {
@@ -499,7 +501,7 @@ if (process.env.NODE_ENV === 'production') {
               "name": "How does the AI MCQ and Test Generator work?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Zenius AI features a built-in AI MCQ Generator. Instructors can select course materials or specify custom topics, and our AI automatically analyzes the context to generate multiple-choice questions, making exam creation fast and efficient."
+                "text": "SMIT features a built-in AI MCQ Generator. Instructors can select course materials or specify custom topics, and our AI automatically analyzes the context to generate multiple-choice questions, making exam creation fast and efficient."
               }
             },
             {
@@ -507,15 +509,15 @@ if (process.env.NODE_ENV === 'production') {
               "name": "Can students interact with instructors during Live Lectures?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Yes! Zenius AI provides a custom virtual classroom experience. Students can join scheduled live streams, access real-time video/audio controls, interact with peers and instructors via the chat dock, and view attendance metrics."
+                "text": "Yes! SMIT provides a custom virtual classroom experience. Students can join scheduled live streams, access real-time video/audio controls, interact with peers and instructors via the chat dock, and view attendance metrics."
               }
             },
             {
               "@type": "Question",
-              "name": "How do certificates work on Zenius AI?",
+              "name": "How do certificates work on SMIT?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Once a student successfully completes all modules of a course and passes the required course quizzes, Zenius AI automatically generates a personalized, downloadable certificate of completion that can be shared with employers."
+                "text": "Once a student successfully completes all modules of a course and passes the required course quizzes, SMIT automatically generates a personalized, downloadable certificate of completion that can be shared with employers."
               }
             },
             {
@@ -617,5 +619,5 @@ if (process.env.NODE_ENV === 'production') {
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000
-httpServer.listen(PORT, () => console.log(`🚀 Zenius AI server running on port ${PORT}`))
+httpServer.listen(PORT, () => console.log(`🚀 SMIT server running on port ${PORT}`))
 // trigger

@@ -1,4 +1,4 @@
-# Zenius AI — Learn Without Limits 🎥🎓
+# Sandeep More Institute of Technology (SMIT) — Learn Without Limits 🎥🎓
 
 <div align="center">
 
@@ -15,7 +15,7 @@
   ![Cloudinary](https://img.shields.io/badge/CLOUDINARY-MEDIA-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
 
   <p align="center">
-    Zenius AI is a premium, real-time e-learning and virtual classroom platform designed to deliver outstanding education experiences. Built with a robust MERN (MongoDB, Express, React, Node.js) architecture, it connects Students, Instructors, and Admins via tailormade control panels, real-time WebRTC audio/video streaming, cooperative whiteboard tools, and dynamic Google Gemini AI-driven study tools.
+    Sandeep More Institute of Technology (SMIT) is a premium, real-time e-learning and virtual classroom platform designed to deliver outstanding education experiences. Built with a robust MERN (MongoDB, Express, React, Node.js) architecture, it connects Students, Instructors, and Admins via tailormade control panels, real-time WebRTC audio/video streaming, cooperative whiteboard tools, and dynamic Google Gemini AI-driven study tools.
   </p>
 
   🔗 **Production Live Site**: [https://live-meet.onrender.com/](https://live-meet.onrender.com/)
@@ -107,7 +107,7 @@ NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 
 # ── Database ──
-MONGO_URI=mongodb://localhost:27017/zenius-ai
+MONGO_URI=mongodb://localhost:27017/smit-lms
 
 # ── JWT Secrets ──
 JWT_ACCESS_SECRET=your_32_character_access_secret_phrase

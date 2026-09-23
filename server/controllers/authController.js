@@ -77,16 +77,16 @@ export async function register(req, res, next) {
     try {
       await sendEmail({
         to: email,
-        subject: 'Verify your email — Zenius AI',
+        subject: 'Verify your email — Sandeep More Institute of Technology (SMIT)',
         html: `
           <div style="font-family: Inter, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 32px; background: #F5F3FF; border-radius: 16px;">
-            <h2 style="color: #7C3AED; font-family: Outfit, sans-serif;">Welcome to Zenius AI!</h2>
+            <h2 style="color: #7C3AED; font-family: Outfit, sans-serif;">Welcome to SMIT!</h2>
             <p style="color: #1E1B4B; line-height: 1.7;">Your email verification code is:</p>
             <div style="background: #E0E7FF; padding: 16px; border-radius: 8px; text-align: center; margin: 24px 0;">
               <strong style="color: #4338CA; font-size: 24px; letter-spacing: 4px;">${otp}</strong>
             </div>
             <p style="color:#64748B; line-height:1.7;">This code will expire in 10 minutes.</p>
-            <p style="margin-top: 24px; color: #64748B; font-size: 13px;">— The Zenius AI Team</p>
+            <p style="margin-top: 24px; color: #64748B; font-size: 13px;">— Sandeep More Institute of Technology</p>
           </div>
         `,
       })
@@ -163,7 +163,7 @@ export async function resendVerification(req, res, next) {
 
     await sendEmail({
       to: email,
-      subject: 'Verify your email — Zenius AI',
+      subject: 'Verify your email — Sandeep More Institute of Technology (SMIT)',
       html: `
         <div style="font-family: Inter, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 32px; background: #F5F3FF; border-radius: 16px;">
           <h2 style="color: #7C3AED; font-family: Outfit, sans-serif;">Email Verification</h2>
@@ -172,7 +172,7 @@ export async function resendVerification(req, res, next) {
             <strong style="color: #4338CA; font-size: 24px; letter-spacing: 4px;">${otp}</strong>
           </div>
           <p style="color:#64748B; line-height:1.7;">This code will expire in 10 minutes.</p>
-          <p style="margin-top: 24px; color: #64748B; font-size: 13px;">— The Zenius AI Team</p>
+          <p style="margin-top: 24px; color: #64748B; font-size: 13px;">— Sandeep More Institute of Technology</p>
         </div>
       `,
     })
@@ -306,12 +306,13 @@ export async function forgotPassword(req, res, next) {
     const resetURL = `${process.env.CLIENT_URL}/reset-password#token=${token}`
     await sendEmail({
       to: email,
-      subject: 'Password Reset — Zenius AI',
+      subject: 'Password Reset — Sandeep More Institute of Technology (SMIT)',
       html: `
-<p>You requested a password reset.</p>
+<p>You requested a password reset for your SMIT account.</p>
 <p>Click the link below to reset your password (valid for 1 hour):</p>
-<p><a href="${resetURL}" style="color:#1a73e8;font-size:16px;">Reset Your Password</a></p>
+<p><a href="${resetURL}" style="color:#7C3AED;font-weight:600;font-size:16px;">Reset Your Password</a></p>
 <p>If you didn't request this, you can safely ignore this email.</p>
+<p style="margin-top:20px;color:#64748B;font-size:13px;">— Sandeep More Institute of Technology</p>
 `,
     })
 

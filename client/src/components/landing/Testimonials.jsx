@@ -9,7 +9,7 @@ export default function Testimonials() {
   const [testimonials, setTestimonials] = useState([
     {
       _id: 'default-1',
-      content: "Zenius AI completely transformed how I learn. The AI Tutor is like having a personal mentor available 24/7. I went from zero to full-stack developer in 6 months.",
+      content: "SMIT completely transformed how I learn. The AI Tutor is like having a personal mentor available 24/7. I went from zero to full-stack developer in 6 months.",
       author: "Sarah Jenkins",
       role: "Software Engineer at Google",
       avatar: "S",

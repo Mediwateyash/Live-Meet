@@ -63,7 +63,7 @@ export default function Browse() {
       {/* ── outer container: 1700px, 32px side padding ── */}
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8" style={{ maxWidth: '1700px' }}>
         <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>
-          Browse Online Learning Courses | Zenius AI
+          Browse Online Learning Courses | Sandeep More Institute of Technology (SMIT)
         </h1>
 
         {/* Mobile filter bar */}

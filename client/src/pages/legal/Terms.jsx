@@ -24,7 +24,7 @@ export default function Terms() {
   return (
     <LegalLayout
       title="Terms & Conditions"
-      description="Zenius AI Terms and Conditions — the legal agreement governing your use of our AI-powered learning platform, live lectures, quizzes, and certificates."
+      description="Sandeep More Institute of Technology (SMIT) Terms and Conditions — the legal agreement governing your use of our learning platform, live lectures, quizzes, and certificates."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -32,15 +32,14 @@ export default function Terms() {
     >
       <LegalSection id="acceptance" title="Acceptance of Terms">
         <p>
-          These Terms & Conditions ("<strong>Terms</strong>") constitute a legally binding agreement between you
-          ("<strong>User</strong>") and Zenius AI ("<strong>we</strong>", "<strong>our</strong>", "<strong>us</strong>")
-          governing your access to and use of the Zenius AI platform at{' '}
+          These Terms &amp; Conditions ("<strong>Terms</strong>") constitute a legally binding agreement between you
+          ("<strong>User</strong>") and Sandeep More Institute of Technology ("<strong>we</strong>", "<strong>our</strong>", "<strong>us</strong>")
+          governing your access to and use of the Sandeep More Institute of Technology platform at{' '}
           <a href="https://live-meet.onrender.com" style={{ color: '#7C3AED' }}>https://live-meet.onrender.com</a>{' '}
           (the "<strong>Platform</strong>").
         </p>
         <LegalTodo>
-          Insert the registered legal entity name (e.g., "Zenius AI Technologies Private Limited, CIN: UXXXXXXMH2026PTC000000,
-          registered at [address]") here.
+          Insert the registered legal entity details (e.g., "Sandeep More Institute of Technology, registered at [address]") here.
         </LegalTodo>
         <p>
           By registering an account, enrolling in a course, or otherwise using the Platform, you confirm that you have read,
@@ -52,7 +51,7 @@ export default function Terms() {
       </LegalSection>
 
       <LegalSection id="platform-overview" title="Platform Overview">
-        <p>Zenius AI is an AI-powered Learning Management System (LMS) that provides:</p>
+        <p>Sandeep More Institute of Technology (SMIT) is an AI-powered Learning Management System (LMS) that provides:</p>
         <LegalList items={[
           'Video-based courses organised into sections and lessons',
           'Live lectures — both external meeting link type and built-in WebRTC live room',
@@ -88,7 +87,7 @@ export default function Terms() {
         <LegalSubSection title="3.3 Instructor Application">
           <p>
             To become an instructor, you must submit an application from within your account. Applications are reviewed by
-            Zenius AI administrators. Approval is at our sole discretion. We may reject or revoke instructor status without
+            Sandeep More Institute of Technology administrators. Approval is at our sole discretion. We may reject or revoke instructor status without
             specifying a reason.
           </p>
         </LegalSubSection>
@@ -120,14 +119,14 @@ export default function Terms() {
           'Respond to legitimate student queries in good faith',
           'Accurately describe your courses — titles, descriptions, and thumbnails must represent actual content',
           'Not use the AI MCQ generator to produce deceptive, harmful, or discriminatory assessments',
-          'Accept that Zenius AI may review and remove any content that violates these Terms',
+          'Accept that SMIT may review and remove any content that violates these Terms',
         ]} />
       </LegalSection>
 
       <LegalSection id="courses-enrollment" title="Courses & Enrollment">
         <LegalSubSection title="6.1 Free and Paid Courses">
           <p>
-            Courses on Zenius AI may be free (price = ₹0) or priced in Indian Rupees (INR). Course pricing is set by
+            Courses on SMIT may be free (price = ₹0) or priced in Indian Rupees (INR). Course pricing is set by
             instructors and is subject to change.
           </p>
           <LegalTodo>
@@ -145,7 +144,7 @@ export default function Terms() {
 
         <LegalSubSection title="6.3 Course Availability">
           <p>
-            Zenius AI does not guarantee that any particular course will remain available indefinitely. Instructors may
+            Sandeep More Institute of Technology does not guarantee that any particular course will remain available indefinitely. Instructors may
             archive courses or we may remove content that violates our policies.
           </p>
         </LegalSubSection>
@@ -169,7 +168,7 @@ export default function Terms() {
 
         <LegalSubSection title="7.3 Recording">
           <p>
-            Zenius AI does not automatically record built-in live room sessions. Instructors or students must not
+            SMIT does not automatically record built-in live room sessions. Instructors or students must not
             record live sessions without the explicit consent of all participants.
           </p>
         </LegalSubSection>
@@ -192,11 +191,11 @@ export default function Terms() {
 
         <LegalSubSection title="8.3 Certificates">
           <p>
-            Completion certificates are generated by Zenius AI upon completing all lessons and passing any required final exam
+            Completion certificates are generated by Sandeep More Institute of Technology upon completing all lessons and passing any required final exam
             for a course. Certificates are digitally generated and may be downloaded in PDF format.
           </p>
           <LegalInfo>
-            Zenius AI certificates are platform-issued credentials. They are not equivalent to government-recognised qualifications
+            SMIT certificates are platform-issued credentials. They are not equivalent to government-recognised qualifications
             or university degrees and should not be represented as such.
           </LegalInfo>
         </LegalSubSection>
@@ -211,22 +210,22 @@ export default function Terms() {
           'AI-generated questions may contain errors, inaccuracies, or biases and should be reviewed by the instructor before publishing',
           'Instructors are responsible for the quality and accuracy of quizzes published on the Platform, even if generated by AI',
           'Uploading copyrighted material for AI processing without rights to do so may constitute infringement',
-          'Zenius AI does not guarantee the accuracy, completeness, or fitness of AI-generated content for any particular purpose',
+          'SMIT does not guarantee the accuracy, completeness, or fitness of AI-generated content for any particular purpose',
         ]} />
       </LegalSection>
 
       <LegalSection id="intellectual-property" title="Intellectual Property">
         <LegalSubSection title="10.1 Platform IP">
           <p>
-            The Zenius AI name, logo, platform design, codebase, and all related marks are the intellectual property of
-            Zenius AI. You may not copy, reproduce, or create derivative works of these elements without written permission.
+            The Sandeep More Institute of Technology name, logo, platform design, codebase, and all related marks are the intellectual property of
+            Sandeep More Institute of Technology. You may not copy, reproduce, or create derivative works of these elements without written permission.
           </p>
         </LegalSubSection>
 
         <LegalSubSection title="10.2 Course Content">
           <p>
             Instructors retain ownership of the original course content they create and upload. By publishing content on
-            Zenius AI, instructors grant Zenius AI a non-exclusive, royalty-free licence to host, display, and deliver
+            SMIT, instructors grant Sandeep More Institute of Technology a non-exclusive, royalty-free licence to host, display, and deliver
             that content to enrolled students through the Platform.
           </p>
         </LegalSubSection>
@@ -234,7 +233,7 @@ export default function Terms() {
         <LegalSubSection title="10.3 User-Generated Content">
           <p>
             Reviews, support ticket messages, and other user-generated content remain the property of their authors. By
-            submitting such content, you grant Zenius AI a licence to use it to operate and improve the Platform.
+            submitting such content, you grant Sandeep More Institute of Technology a licence to use it to operate and improve the Platform.
           </p>
         </LegalSubSection>
 
@@ -249,7 +248,7 @@ export default function Terms() {
           'Scraping or automated bulk downloading of course content',
           'Reverse-engineering the Platform\'s codebase or APIs',
           'Posting content that is defamatory, obscene, hateful, or discriminatory',
-          'Impersonating other users, instructors, or Zenius AI staff',
+          'Impersonating other users, instructors, or SMIT staff',
           'Sending unsolicited messages or spam to other users',
           'Attempting to manipulate course ratings or reviews fraudulently',
           'Using the Platform for any illegal purpose',
@@ -260,7 +259,7 @@ export default function Terms() {
 
       <LegalSection id="account-suspension" title="Account Suspension & Termination">
         <p>
-          Zenius AI reserves the right to suspend or permanently terminate any account, at our sole discretion, with or
+          Sandeep More Institute of Technology reserves the right to suspend or permanently terminate any account, at our sole discretion, with or
           without prior notice, for:
         </p>
         <LegalList items={[
@@ -286,14 +285,14 @@ export default function Terms() {
 
         <LegalSubSection title="13.2 Educational Disclaimer">
           <p>
-            Course content on Zenius AI is for educational purposes only. It does not constitute professional advice
+            Course content on SMIT is for educational purposes only. It does not constitute professional advice
             (legal, medical, financial, or otherwise). Always consult a qualified professional for specific advice.
           </p>
         </LegalSubSection>
 
         <LegalSubSection title="13.3 Limitation of Liability">
           <p>
-            To the maximum extent permitted by applicable law, Zenius AI shall not be liable for any indirect, incidental,
+            To the maximum extent permitted by applicable law, Sandeep More Institute of Technology shall not be liable for any indirect, incidental,
             special, consequential, or punitive damages arising out of your use of or inability to use the Platform.
           </p>
           <LegalTodo>

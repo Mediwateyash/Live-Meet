@@ -164,7 +164,7 @@ export async function createCourse(req, res, next) {
     const { title, subtitle, description, category, level, language, tags, whatYouLearn, requirements, curriculum, thumbnail, price, isFree, status } = req.body
     if (!title || !category) throw new ApiError(400, 'Title and category required')
 
-    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'smit/thumbnails')
 
     const courseData = {
       title, subtitle, description, category, language,
@@ -198,7 +198,7 @@ export async function updateCourse(req, res, next) {
     const { level, price, isFree, tags, whatYouLearn, requirements, curriculum, finalExam, thumbnail, ...rest } = req.body
     const finalCurriculum = Array.isArray(curriculum) ? curriculum : course.curriculum
 
-    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'smit/thumbnails')
 
     // Recalculate totals (pre('save') doesn't run on findByIdAndUpdate)
     let totalDuration = 0, totalLessons = 0

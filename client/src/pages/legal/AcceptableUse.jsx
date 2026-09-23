@@ -19,7 +19,7 @@ export default function AcceptableUse() {
   return (
     <LegalLayout
       title="Acceptable Use Policy"
-      description="Zenius AI Acceptable Use Policy — rules governing how you may use the platform, upload content, take quizzes, join live lectures, and access APIs."
+      description="Sandeep More Institute of Technology (SMIT) Acceptable Use Policy — rules governing how you may use the platform, upload content, take quizzes, join live lectures, and access APIs."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -28,7 +28,7 @@ export default function AcceptableUse() {
       <LegalSection id="purpose" title="Purpose & Scope">
         <p>
           This Acceptable Use Policy ("<strong>AUP</strong>") defines the standards of conduct expected from all users
-          — students, instructors, and any other person accessing Zenius AI at{' '}
+          — students, instructors, and any other person accessing Sandeep More Institute of Technology at{' '}
           <a href="https://live-meet.onrender.com" style={{ color: '#7C3AED' }}>https://live-meet.onrender.com</a>.
         </p>
         <p style={{ marginTop: 10 }}>
@@ -38,7 +38,7 @@ export default function AcceptableUse() {
       </LegalSection>
 
       <LegalSection id="account-use" title="Acceptable Account Use">
-        <p>You may use your Zenius AI account to:</p>
+        <p>You may use your SMIT account to:</p>
         <LegalList items={[
           'Enrol in and complete courses for your personal, non-commercial learning',
           'Submit support tickets for legitimate platform issues',
@@ -75,7 +75,7 @@ export default function AcceptableUse() {
       </LegalSection>
 
       <LegalSection id="course-creation" title="Course Creation Rules">
-        <p>Approved instructors creating courses on Zenius AI must:</p>
+        <p>Approved instructors creating courses on SMIT must:</p>
         <LegalList items={[
           'Only use video content they own or have explicit licence to distribute',
           'Only upload PDF materials they own or have rights to use for AI processing',
@@ -126,18 +126,18 @@ export default function AcceptableUse() {
         <LegalSubSection title="8.2 External Meeting Links">
           <p>
             Instructors sharing external meeting links (e.g., Google Meet, Zoom) are responsible for managing conduct
-            within that external meeting. Zenius AI is not responsible for events occurring on third-party platforms.
+            within that external meeting. SMIT is not responsible for events occurring on third-party platforms.
           </p>
         </LegalSubSection>
       </LegalSection>
 
       <LegalSection id="api-access" title="API & Automated Access">
-        <p>You must not access the Zenius AI API in ways not intended or authorised by the Platform:</p>
+        <p>You must not access the SMIT API in ways not intended or authorised by the Platform:</p>
         <LegalList items={[
           'Do not scrape course content, user data, or any Platform data using automated tools',
           'Do not reverse-engineer or attempt to reproduce the API for commercial use',
           'Do not bypass rate limiting mechanisms via proxy rotation, IP spoofing, or distributed requests',
-          'Do not conduct penetration testing, fuzzing, or vulnerability scanning without written permission from Zenius AI',
+          'Do not conduct penetration testing, fuzzing, or vulnerability scanning without written permission from Sandeep More Institute of Technology',
           'Do not inject malicious payloads into API requests',
         ]} />
         <p style={{ marginTop: 10 }}>
@@ -173,7 +173,7 @@ export default function AcceptableUse() {
       </LegalSection>
 
       <LegalSection id="enforcement" title="Enforcement">
-        <p>Violations of this AUP may result in any of the following actions, at Zenius AI's sole discretion:</p>
+        <p>Violations of this AUP may result in any of the following actions, at Sandeep More Institute of Technology's sole discretion:</p>
         <LegalList items={[
           'Warning notification sent to the user',
           'Removal of the offending content or course',
@@ -183,7 +183,7 @@ export default function AcceptableUse() {
           'Legal action for damages caused by the violation',
         ]} />
         <p style={{ marginTop: 10 }}>
-          Zenius AI reserves the right to take immediate action without prior notice for serious violations.
+          Sandeep More Institute of Technology reserves the right to take immediate action without prior notice for serious violations.
         </p>
       </LegalSection>
 

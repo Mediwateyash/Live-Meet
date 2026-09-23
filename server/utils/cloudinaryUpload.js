@@ -8,7 +8,7 @@ import cloudinary from '../config/cloudinary.js';
  * @param {string} folder The folder to store the image in Cloudinary
  * @returns {Promise<string>} The Cloudinary secure URL, or the original string on failure/skip
  */
-export async function uploadBase64Image(base64Str, folder = 'zenius/thumbnails') {
+export async function uploadBase64Image(base64Str, folder = 'smit/thumbnails') {
   if (base64Str && typeof base64Str === 'string' && base64Str.startsWith('data:image/')) {
     try {
       const result = await cloudinary.uploader.upload(base64Str, {

@@ -101,7 +101,7 @@ export default function StudentDashboard() {
               </div>
               <div>
                 <span className="text-xs uppercase font-bold tracking-wider text-emerald-300 block">🟢 Instructor Privileges Active</span>
-                <h3 className="text-base font-bold text-white mt-0.5">You are an Approved Instructor on Zenius AI!</h3>
+                <h3 className="text-base font-bold text-white mt-0.5">You are an Approved Instructor at SMIT!</h3>
                 <p className="text-xs text-purple-200 mt-0.5">Build courses, manage live classes, and empower students worldwide.</p>
               </div>
             </div>

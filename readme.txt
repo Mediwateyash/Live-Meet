@@ -1,10 +1,10 @@
 ================================================================================
-                    ZENIUS AI — LIVE-MEET PLATFORM
+                    SMIT — SANDEEP MORE INSTITUTE OF TECHNOLOGY
                       Windows Quick Setup Guide
 ================================================================================
 
 ABOUT THE PROJECT:
-Zenius AI (Live-Meet) is a real-time virtual classroom & e-learning platform
+Sandeep More Institute of Technology (SMIT) is a virtual classroom & LMS platform
 featuring WebRTC live rooms, interactive whiteboards, and AI-powered quizzes.
 
 PREREQUISITE:
@@ -38,10 +38,23 @@ Run this command from the project root folder:
 
 
 STEP 4: START THE APPLICATION
-Description: Launches both frontend and backend servers simultaneously.
-Run this command from the project root folder:
+Description: You can start the app using either Method 1 or Method 2 below:
 
+--- METHOD 1: Single Command from Root (Recommended) ---
+Run directly in the project root folder:
    npm run dev
+
+   (This automatically starts both Backend and Frontend together!)
+
+--- METHOD 2: Using Two Separate Terminals ---
+Terminal 1 (Backend):
+   cd server
+   npm run dev
+
+Terminal 2 (Frontend):
+   cd client
+   npm run dev
+
 
 - Frontend URL: http://localhost:5173
 - Backend API:  http://localhost:5000
@@ -53,8 +66,8 @@ DEMO LOGIN CREDENTIALS:
 --------------------------------------------------------------------------------
 ROLE          | EMAIL                 | PASSWORD
 --------------+-----------------------+-----------------
-Admin         | admin@zenius.ai       | Admin@2026
+Admin         | admin@smit.edu        | Admin@2026
 Instructor    | yash@gmail.com        | Instructor@2026
-Student       | student1@zenius.ai    | Student@2026
+Student       | student1@smit.edu     | Student@2026
 
 ================================================================================

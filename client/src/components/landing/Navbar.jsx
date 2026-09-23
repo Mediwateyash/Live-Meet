@@ -28,9 +28,21 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
-            <span className="text-2xl font-bold text-brand-700 tracking-tight">zenius</span>
-            <span className="bg-brand-600 text-white text-xs font-bold px-2 py-1 rounded-md">AI</span>
+          <div className="flex-shrink-0 flex items-center gap-2.5 cursor-pointer">
+            <img
+              src="/logo.png"
+              alt="SMIT Logo"
+              className="w-9 h-9 rounded-xl object-contain shadow-sm shrink-0"
+              onError={(e) => { e.currentTarget.src = '/favicon.svg' }}
+            />
+            <div className="flex flex-col leading-none">
+              <span className="text-xl font-bold text-brand-700 dark:text-brand-400 tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                SMIT
+              </span>
+              <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">
+                Sandeep More Institute
+              </span>
+            </div>
           </div>
 
           {/* Desktop Nav */}

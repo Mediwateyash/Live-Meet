@@ -18,7 +18,7 @@ export default function CommunityGuidelines() {
   return (
     <LegalLayout
       title="Community Guidelines"
-      description="Zenius AI Community Guidelines — the standards of behaviour expected in live lectures, course reviews, support tickets, and all platform interactions."
+      description="Sandeep More Institute of Technology (SMIT) Community Guidelines — the standards of behaviour expected in live lectures, course reviews, support tickets, and all platform interactions."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -26,7 +26,7 @@ export default function CommunityGuidelines() {
     >
       <LegalSection id="our-values" title="Our Values">
         <p>
-          Zenius AI is an educational community built around curiosity, growth, and mutual respect. We serve students
+          Sandeep More Institute of Technology is an educational community built around curiosity, growth, and mutual respect. We serve students
           across skill levels — from complete beginners to experienced professionals — and instructors who invest their
           knowledge in others.
         </p>
@@ -75,7 +75,7 @@ export default function CommunityGuidelines() {
       </LegalSection>
 
       <LegalSection id="course-content" title="Course Content Standards">
-        <p>Instructors publishing content on Zenius AI must ensure their courses:</p>
+        <p>Instructors publishing content on SMIT must ensure their courses:</p>
         <LegalList items={[
           'Are accurate and reflect current knowledge in the subject area',
           'Have a clearly defined learning objective stated in the course description',
@@ -120,7 +120,7 @@ export default function CommunityGuidelines() {
         </LegalSubSection>
 
         <LegalInfo>
-          Zenius AI records attendance (join/leave timestamps and duration) for all live sessions.
+          SMIT records attendance (join/leave timestamps and duration) for all live sessions.
           This data is visible to the course instructor and platform administrators.
         </LegalInfo>
       </LegalSection>
@@ -158,7 +158,7 @@ export default function CommunityGuidelines() {
 
       <LegalSection id="quiz-conduct" title="Quiz Conduct">
         <p>
-          Quizzes on Zenius AI are designed to assess genuine learning. All quiz attempts must be:
+          Quizzes on SMIT are designed to assess genuine learning. All quiz attempts must be:
         </p>
         <LegalList items={[
           'Completed independently without assistance from others',
@@ -173,7 +173,7 @@ export default function CommunityGuidelines() {
 
       <LegalSection id="instructor-standards" title="Instructor Standards">
         <p>
-          Instructors on Zenius AI are expected to uphold a high standard of professionalism because students trust
+          Instructors on SMIT are expected to uphold a high standard of professionalism because students trust
           them as educators. Beyond the technical requirements in our{' '}
           <a href="/acceptable-use" style={{ color: '#7C3AED' }}>Acceptable Use Policy</a>, instructors should:
         </p>

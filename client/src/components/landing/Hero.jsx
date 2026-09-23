@@ -46,8 +46,9 @@ export default function Hero() {
               <span>AI-Powered Learning</span>
             </motion.div>
             
-            <motion.h1 variants={itemVariants} className="text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-[var(--text-primary)] mb-6 leading-tight">
-              Learn Smarter, <br/> Achieve More with <br/> <span className="text-gradient">Zenius AI</span>
+            <motion.h1 variants={itemVariants} className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-[var(--text-primary)] mb-6 leading-tight">
+              Learn Smarter, <br/> Achieve More with <br/> <span className="text-gradient">SMIT</span>
+              <span className="block text-xl sm:text-2xl font-semibold text-slate-600 dark:text-slate-300 mt-2">Sandeep More Institute of Technology</span>
             </motion.h1>
             
             <motion.p variants={itemVariants} className="text-lg text-slate-600 dark:text-[var(--text-secondary)] mb-8 max-w-lg leading-relaxed">

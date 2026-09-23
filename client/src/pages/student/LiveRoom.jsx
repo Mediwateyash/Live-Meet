@@ -906,10 +906,13 @@ export default function LiveRoom() {
       }}>
         <div style={{ display:'flex', alignItems:'center', gap:12, minWidth:0 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#7C3AED' }}>
-              <GraduationCap size={18} color="white" />
-            </div>
-            <span style={{ color:'#fff', fontWeight:800, fontSize:17, letterSpacing:'-0.3px', fontFamily: 'Outfit, sans-serif' }}>Zenius AI</span>
+            <img
+              src="/logo.png"
+              alt="SMIT Logo"
+              style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'contain' }}
+              onError={(e) => { e.currentTarget.src = '/favicon.svg' }}
+            />
+            <span style={{ color:'#fff', fontWeight:800, fontSize:17, letterSpacing:'-0.3px', fontFamily: 'Outfit, sans-serif' }}>SMIT</span>
           </div>
           {!isMobile && (
             <span style={{ color:'#71717A', fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:280 }}>

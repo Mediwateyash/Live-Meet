@@ -9,20 +9,20 @@ export default function FAQ() {
 
   const faqs = [
     {
-      question: "What is Zenius AI and who can use it?",
-      answer: "Zenius AI is an advanced, AI-powered Learning Management System (LMS) designed for both students and instructors. Students can enroll in interactive courses, take generated quizzes, and attend live lectures, while educators can manage curriculums, host live sessions, and review student progress."
+      question: "What is Sandeep More Institute of Technology (SMIT) and who can use it?",
+      answer: "Sandeep More Institute of Technology (SMIT) is an advanced, AI-powered Learning Management System (LMS) designed for both students and instructors. Students can enroll in interactive courses, take generated quizzes, and attend live lectures, while educators can manage curriculums, host live sessions, and review student progress."
     },
     {
       question: "How does the AI MCQ and Test Generator work?",
-      answer: "Zenius AI features a built-in AI MCQ Generator. Instructors can select course materials or specify custom topics, and our AI automatically analyzes the context to generate multiple-choice questions, making exam creation fast and efficient."
+      answer: "SMIT features a built-in AI MCQ Generator. Instructors can select course materials or specify custom topics, and our AI automatically analyzes the context to generate multiple-choice questions, making exam creation fast and efficient."
     },
     {
       question: "Can students interact with instructors during Live Lectures?",
-      answer: "Yes! Zenius AI provides a custom virtual classroom experience. Students can join scheduled live streams, access real-time video/audio controls, interact with peers and instructors via the chat dock, and view attendance metrics."
+      answer: "Yes! SMIT provides a custom virtual classroom experience. Students can join scheduled live streams, access real-time video/audio controls, interact with peers and instructors via the chat dock, and view attendance metrics."
     },
     {
-      question: "How do certificates work on Zenius AI?",
-      answer: "Once a student successfully completes all modules of a course and passes the required course quizzes, Zenius AI automatically generates a personalized, downloadable certificate of completion that can be shared with employers."
+      question: "How do certificates work on SMIT?",
+      answer: "Once a student successfully completes all modules of a course and passes the required course quizzes, Sandeep More Institute of Technology automatically generates an official, downloadable certificate of completion that can be shared with employers."
     },
     {
       question: "How can I submit feedback or report a bug to the administrator?",

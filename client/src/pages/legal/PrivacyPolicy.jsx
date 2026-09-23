@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
   return (
     <LegalLayout
       title="Privacy Policy"
-      description="Zenius AI Privacy Policy — learn what data we collect, how we use it, and your rights as a user of our AI-powered learning platform."
+      description="Sandeep More Institute of Technology (SMIT) Privacy Policy — learn what data we collect, how we use it, and your rights as a user of our learning platform."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -27,14 +27,13 @@ export default function PrivacyPolicy() {
     >
       <LegalSection id="overview" title="Overview">
         <p>
-          Zenius AI ("<strong>we</strong>", "<strong>our</strong>", "<strong>us</strong>") operates the online learning platform
+          Sandeep More Institute of Technology ("<strong>we</strong>", "<strong>our</strong>", "<strong>us</strong>") operates the online learning platform
           available at <a href="https://live-meet.onrender.com" style={{ color: '#7C3AED' }}>https://live-meet.onrender.com</a>{' '}
           (the "<strong>Platform</strong>"). This Privacy Policy explains what personal information we collect,
           why we collect it, how it is stored, and what your rights are with respect to that information.
         </p>
         <LegalTodo>
-          Replace "Zenius AI" above with the registered legal entity name (e.g., "Zenius AI Technologies Private Limited")
-          and add the registered office address.
+          Add the registered office address and contact details for Sandeep More Institute of Technology.
         </LegalTodo>
         <p>
           By creating an account or using the Platform, you acknowledge that you have read and understood this Privacy Policy.
@@ -86,7 +85,7 @@ export default function PrivacyPolicy() {
           ]} />
           <p style={{ marginTop: 8 }}>
             <strong>Built-in Live Room (WebRTC):</strong> Audio and video streams in the built-in live room are transmitted
-            peer-to-peer via WebRTC and are <strong>not recorded or stored</strong> by Zenius AI unless explicitly stated otherwise.
+            peer-to-peer via WebRTC and are <strong>not recorded or stored</strong> by SMIT unless explicitly stated otherwise.
           </p>
         </LegalSubSection>
 
@@ -198,7 +197,7 @@ export default function PrivacyPolicy() {
 
         <LegalTodo>
           If a payment gateway (e.g., Razorpay, Stripe) is integrated in the future, add a section here describing what
-          financial data is shared with the payment processor. Do not store card details on Zenius AI servers.
+          financial data is shared with the payment processor. Do not store card details on SMIT servers.
         </LegalTodo>
       </LegalSection>
 
@@ -239,7 +238,7 @@ export default function PrivacyPolicy() {
 
       <LegalSection id="children" title="Children's Privacy">
         <p>
-          Zenius AI is not directed at children under the age of <strong>13 years</strong>. We do not knowingly collect
+          Sandeep More Institute of Technology is not directed at children under the age of <strong>13 years</strong>. We do not knowingly collect
           personal information from children under 13. If you are a parent or guardian and believe your child has provided
           personal data to us, please contact us immediately and we will delete the data.
         </p>
@@ -283,16 +282,16 @@ export default function PrivacyPolicy() {
         </LegalTodo>
         <LegalSubSection title="Contact Us">
           <LegalList items={[
-            'Email: TODO — support@zenius.ai (replace with actual address)',
+            'Email: support@smit.edu.in',
             'Platform: Use the "Contact Us" feature in your account dashboard to submit a support ticket',
           ]} />
         </LegalSubSection>
         <LegalSubSection title="Grievance Officer">
           <LegalList items={[
-            'Name: TODO — [Grievance Officer Full Name]',
-            'Designation: TODO — [e.g., Chief Privacy Officer]',
-            'Email: TODO — [grievance@zenius.ai]',
-            'Address: TODO — [Registered Office Address, City, State, PIN, India]',
+            'Name: Grievance Officer, Sandeep More Institute of Technology',
+            'Designation: Compliance & Data Protection Officer',
+            'Email: grievance@smit.edu.in',
+            'Address: Sandeep More Institute of Technology Campus, Maharashtra, India',
             'Response time: Within 30 days of receipt of complaint',
           ]} />
         </LegalSubSection>

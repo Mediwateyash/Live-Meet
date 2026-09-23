@@ -187,7 +187,7 @@ export default function CourseDetail() {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
           amount: order.amount,
           currency: order.currency,
-          name: 'Zenius AI',
+          name: 'Sandeep More Institute of Technology',
           description: `Enroll in ${course.title}`,
           order_id: order.orderId,
           handler: async function (response) {
@@ -543,7 +543,7 @@ export default function CourseDetail() {
                           ))}
                         </div>
                         <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                          {course.instructor.bio || "Certified educator on Zenius AI specializing in building real-world practical course curricula."}
+                          {course.instructor.bio || "Certified educator at Sandeep More Institute of Technology (SMIT) specializing in building practical course curricula."}
                         </p>
                       </div>
                     </div>

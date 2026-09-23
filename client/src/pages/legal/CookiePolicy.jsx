@@ -15,7 +15,7 @@ export default function CookiePolicy() {
   return (
     <LegalLayout
       title="Cookie Policy"
-      description="Zenius AI Cookie Policy — learn exactly which cookies we set, why, and how to manage them on your device."
+      description="Sandeep More Institute of Technology (SMIT) Cookie Policy — learn exactly which cookies we set, why, and how to manage them on your device."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -28,7 +28,7 @@ export default function CookiePolicy() {
           close your browser) or "persistent cookies" (remain for a set period or until manually deleted).
         </p>
         <p style={{ marginTop: 10 }}>
-          This Cookie Policy applies to the Zenius AI platform at{' '}
+          This Cookie Policy applies to the Sandeep More Institute of Technology platform at{' '}
           <a href="https://live-meet.onrender.com" style={{ color: '#7C3AED' }}>https://live-meet.onrender.com</a>.
           It should be read alongside our <a href="/privacy-policy" style={{ color: '#7C3AED' }}>Privacy Policy</a>.
         </p>
@@ -36,7 +36,7 @@ export default function CookiePolicy() {
 
       <LegalSection id="cookies-we-use" title="Cookies We Use">
         <LegalInfo>
-          Zenius AI sets only a small number of essential cookies. We do not use advertising, tracking, or analytics
+          SMIT sets only a small number of essential cookies. We do not use advertising, tracking, or analytics
           cookies of any kind.
         </LegalInfo>
 
@@ -45,7 +45,7 @@ export default function CookiePolicy() {
             'Purpose: Authenticates your identity for API requests after login',
             'Type: HttpOnly, Secure (not accessible to JavaScript)',
             'Duration: 15 minutes — automatically refreshed by the refreshToken cookie',
-            'Set by: Zenius AI server on login, registration, or token refresh',
+            'Set by: SMIT server on login, registration, or token refresh',
             'Removable: Yes — deleted when you log out or when the 15-minute TTL expires',
           ]} />
         </LegalSubSection>
@@ -55,7 +55,7 @@ export default function CookiePolicy() {
             'Purpose: Silently refreshes your accessToken without requiring you to log in again',
             'Type: HttpOnly, Secure (not accessible to JavaScript)',
             'Duration: Longer-lived than the access token; exact duration configurable in server environment',
-            'Set by: Zenius AI server on login or registration',
+            'Set by: SMIT server on login or registration',
             'Removable: Yes — deleted when you log out; also invalidated server-side on logout',
           ]} />
           <LegalInfo>
@@ -69,7 +69,7 @@ export default function CookiePolicy() {
             'Purpose: Protects against Cross-Site Request Forgery (CSRF) attacks on state-changing actions',
             'Type: Not HttpOnly (intentionally readable by JavaScript for CSRF header submission)',
             'Duration: Session cookie — deleted when the browser is closed',
-            'Set by: Zenius AI server CSRF middleware',
+            'Set by: SMIT server CSRF middleware',
           ]} />
         </LegalSubSection>
 
@@ -130,7 +130,7 @@ export default function CookiePolicy() {
         <LegalSubSection title="4.1 YouTube">
           <p>
             Some course lessons embed YouTube videos. When you interact with a YouTube embed, YouTube may set cookies on
-            your device according to Google's own policies. These cookies are outside Zenius AI's control. See{' '}
+            your device according to Google's own policies. These cookies are outside SMIT's control. See{' '}
             <a href="https://policies.google.com/privacy" style={{ color: '#7C3AED' }} target="_blank" rel="noreferrer">
               Google's Privacy Policy
             </a>{' '}
@@ -149,7 +149,7 @@ export default function CookiePolicy() {
         </LegalSubSection>
 
         <LegalInfo>
-          Zenius AI does not use Google Analytics, Facebook Pixel, advertising networks, or any third-party marketing cookies.
+          SMIT does not use Google Analytics, Facebook Pixel, advertising networks, or any third-party marketing cookies.
         </LegalInfo>
       </LegalSection>
 
@@ -165,11 +165,11 @@ export default function CookiePolicy() {
           'Microsoft Edge — Settings → Cookies and site permissions → Cookies and site data',
         ]} />
         <LegalInfo>
-          ⚠️ Blocking the accessToken or refreshToken cookies will prevent you from logging into Zenius AI,
+          ⚠️ Blocking the accessToken or refreshToken cookies will prevent you from logging into SMIT,
           as these are essential for authentication.
         </LegalInfo>
         <p style={{ marginTop: 12 }}>
-          You can delete all Zenius AI cookies by logging out of the Platform, which clears both authentication cookies
+          You can delete all SMIT cookies by logging out of the Platform, which clears both authentication cookies
           from your browser.
         </p>
       </LegalSection>

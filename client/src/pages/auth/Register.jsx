@@ -35,7 +35,7 @@ export default function Register() {
     try {
       const { data } = await authAPI.register({ fullName, email, password })
       setUser(data.data)
-      toast.success('Account created! Welcome to Zenius AI 🎓')
+      toast.success('Account created! Welcome to Sandeep More Institute of Technology 🎓')
       navigate('/dashboard')
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed')
@@ -51,16 +51,22 @@ export default function Register() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#7C3AED' }}>
-              <GraduationCap size={22} color="white" />
+          <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">
+            <img
+              src="/logo.png"
+              alt="SMIT Logo"
+              className="w-10 h-10 rounded-xl object-contain shadow-sm shrink-0 transition-transform group-hover:scale-105"
+              onError={(e) => { e.currentTarget.src = '/favicon.svg' }}
+            />
+            <div className="flex flex-col text-left leading-none">
+              <span className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>SMIT</span>
+              <span className="text-[9px] font-semibold text-purple-600 dark:text-purple-400">Sandeep More Institute</span>
             </div>
-            <span className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Zenius AI</span>
           </Link>
           <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Create your account
           </h1>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Join 50,000+ learners on Zenius AI</p>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Join 50,000+ learners at Sandeep More Institute of Technology</p>
         </div>
 
         <div className="bg-white rounded-2xl p-8 shadow-glass" style={{ border: '1px solid var(--border-purple)' }}>

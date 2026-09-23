@@ -33,7 +33,7 @@ const useUIStore = create(
       },
     }),
     {
-      name: 'zenius-ui',
+      name: 'smit-ui',
       partialize: (s) => ({ darkMode: s.darkMode }), // authModal intentionally excluded
     }
   )

@@ -19,7 +19,7 @@ export default function Copyright() {
   return (
     <LegalLayout
       title="Copyright & Intellectual Property"
-      description="Zenius AI Copyright and Intellectual Property Policy — who owns course content, AI-generated MCQs, certificates, and user-uploaded materials on the platform."
+      description="Sandeep More Institute of Technology (SMIT) Copyright and Intellectual Property Policy — who owns course content, AI-generated MCQs, certificates, and user-uploaded materials on the platform."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -27,7 +27,7 @@ export default function Copyright() {
     >
       <LegalSection id="overview" title="Overview">
         <p>
-          This Copyright & Intellectual Property Policy explains the ownership of all content on the Zenius AI
+          This Copyright &amp; Intellectual Property Policy explains the ownership of all content on the Sandeep More Institute of Technology
           platform at <a href="https://live-meet.onrender.com" style={{ color: '#7C3AED' }}>https://live-meet.onrender.com</a>,
           including platform code, course videos, AI-generated quiz questions, study notes, and user-generated content.
         </p>
@@ -41,10 +41,10 @@ export default function Copyright() {
       </LegalSection>
 
       <LegalSection id="platform-ip" title="Platform Intellectual Property">
-        <p>The following are the exclusive intellectual property of Zenius AI:</p>
+        <p>The following are the exclusive intellectual property of Sandeep More Institute of Technology:</p>
         <LegalList items={[
-          'The "Zenius AI" name and wordmark',
-          'The Zenius AI logo and visual identity (graduation cap icon, purple colour scheme)',
+          'The "Sandeep More Institute of Technology" name, "SMIT" mark, and wordmark',
+          'The SMIT logo and visual identity (shield emblem, graduation cap, royal purple color scheme)',
           'The Platform codebase — both server-side (Node.js/Express) and client-side (React)',
           'The Platform\'s unique user interface design, layout, and visual components',
           'The Platform\'s AI MCQ generation workflow and processing pipeline',
@@ -56,7 +56,7 @@ export default function Copyright() {
         <LegalSubSection title="1.1 Restricted Use">
           <p>
             You may not copy, reproduce, modify, distribute, publish, display, or create derivative works from any
-            of the above without explicit written permission from Zenius AI.
+            of the above without explicit written permission from Sandeep More Institute of Technology.
           </p>
         </LegalSubSection>
       </LegalSection>
@@ -64,7 +64,7 @@ export default function Copyright() {
       <LegalSection id="course-content" title="Course Content & Instructor IP">
         <LegalSubSection title="2.1 Instructor Ownership">
           <p>
-            Instructors who create and publish courses on Zenius AI retain all intellectual property rights in
+            Instructors who create and publish courses on SMIT retain all intellectual property rights in
             their original course content, including:
           </p>
           <LegalList items={[
@@ -76,9 +76,9 @@ export default function Copyright() {
           ]} />
         </LegalSubSection>
 
-        <LegalSubSection title="2.2 Licence to Zenius AI">
+        <LegalSubSection title="2.2 Licence to SMIT">
           <p>
-            By publishing a course on Zenius AI, instructors grant Zenius AI a <strong>non-exclusive, worldwide,
+            By publishing a course on SMIT, instructors grant Sandeep More Institute of Technology a <strong>non-exclusive, worldwide,
             royalty-free licence</strong> to:
           </p>
           <LegalList items={[
@@ -88,7 +88,7 @@ export default function Copyright() {
             'Create platform previews and promotional materials for the course',
           ]} />
           <p style={{ marginTop: 10 }}>
-            This licence is limited to Platform operation and does not grant Zenius AI the right to sell or
+            This licence is limited to Platform operation and does not grant Sandeep More Institute of Technology the right to sell or
             license the instructor's content to third parties.
           </p>
         </LegalSubSection>
@@ -111,13 +111,13 @@ export default function Copyright() {
         <LegalSubSection title="3.1 Reviews">
           <p>
             Course reviews and ratings submitted by students are authored by the student. By submitting a review,
-            the student grants Zenius AI a licence to display and moderate that review on the Platform.
+            the student grants SMIT a licence to display and moderate that review on the Platform.
           </p>
         </LegalSubSection>
 
         <LegalSubSection title="3.2 Support Tickets">
           <p>
-            Content submitted in support tickets (messages and replies) may be retained by Zenius AI for
+            Content submitted in support tickets (messages and replies) may be retained by SMIT for
             administrative, audit, and quality assurance purposes. The submitting user retains ownership.
           </p>
         </LegalSubSection>
@@ -125,20 +125,20 @@ export default function Copyright() {
         <LegalSubSection title="3.3 Profile Data">
           <p>
             User-uploaded profile photos and bio content remain the property of the user. By uploading, users
-            grant Zenius AI a licence to display this content to other Platform users.
+            grant SMIT a licence to display this content to other Platform users.
           </p>
         </LegalSubSection>
       </LegalSection>
 
       <LegalSection id="ai-generated" title="AI-Generated Content">
         <p>
-          The Zenius AI platform features an AI MCQ Generator that creates multiple-choice questions from
+          The SMIT platform features an AI MCQ Generator that creates multiple-choice questions from
           instructor-uploaded course materials (PDFs, documents). Regarding ownership of AI-generated content:
         </p>
         <LegalList items={[
           'The AI-generated MCQ questions are generated by the Platform\'s AI system using the instructor\'s uploaded material as input',
           'Instructors may use, edit, and publish AI-generated MCQs within the Platform under these Terms',
-          'Zenius AI retains the right to the AI generation process, model, and infrastructure',
+          'SMIT retains the right to the AI generation process, model, and infrastructure',
           'The ownership of AI-generated output as a standalone work is subject to evolving Indian and international law — no absolute claim is asserted by either party at this time',
         ]} />
         <LegalTodo>
@@ -149,9 +149,9 @@ export default function Copyright() {
 
       <LegalSection id="certificates" title="Certificates">
         <p>
-          Completion certificates generated by Zenius AI upon course completion are designed and produced by
-          Zenius AI. The certificate design, template, and platform branding remain the intellectual property
-          of Zenius AI.
+          Completion certificates generated by SMIT upon course completion are designed and produced by
+          Sandeep More Institute of Technology. The certificate design, template, and platform branding remain the intellectual property
+          of Sandeep More Institute of Technology.
         </p>
         <p style={{ marginTop: 10 }}>
           Earners (students) receive a personal, non-transferable right to display their certificate for
@@ -175,7 +175,7 @@ export default function Copyright() {
           <p>
             Course lessons may embed YouTube videos. Such videos remain the intellectual property of their
             respective creators and are subject to YouTube's Terms of Service and applicable copyright laws.
-            Zenius AI does not claim ownership of YouTube-hosted content.
+            SMIT does not claim ownership of YouTube-hosted content.
           </p>
         </LegalSubSection>
 
@@ -188,7 +188,7 @@ export default function Copyright() {
 
         <LegalSubSection title="7.3 Open Source Libraries">
           <p>
-            Zenius AI's codebase uses open source libraries including React, Node.js, Express, Mongoose,
+            SMIT's codebase uses open source libraries including React, Node.js, Express, Mongoose,
             Framer Motion, Lucide React, and others. These are used under their respective open source licences
             (MIT, Apache 2.0, etc.).
           </p>
@@ -197,23 +197,23 @@ export default function Copyright() {
 
       <LegalSection id="dmca" title="Copyright Infringement & Takedown">
         <p>
-          If you believe that content on Zenius AI infringes your copyright, please submit a takedown notice
+          If you believe that content on SMIT infringes your copyright, please submit a takedown notice
           containing the following:
         </p>
         <LegalList items={[
           'Your full name and contact information (email, phone)',
           'A description of the copyrighted work you claim has been infringed',
-          'The specific URL or course page on Zenius AI where the infringing content appears',
+          'The specific URL or course page on SMIT where the infringing content appears',
           'A statement that you have a good faith belief that the use is not authorised by the copyright owner',
           'A statement that the information in your notice is accurate and that you are the copyright owner or authorised to act on behalf of the owner',
           'Your electronic or physical signature',
         ]} />
         <LegalTodo>
-          Add the dedicated copyright/DMCA contact email address here (e.g., copyright@zenius.ai).
+          Add the dedicated copyright contact email address (e.g., copyright@smit.edu.in).
         </LegalTodo>
 
         <LegalInfo>
-          Upon receiving a valid takedown notice, Zenius AI will review the claim and, if valid, remove the
+          Upon receiving a valid takedown notice, Sandeep More Institute of Technology will review the claim and, if valid, remove the
           infringing content within a reasonable period. Repeat infringers may have their accounts terminated.
         </LegalInfo>
 
@@ -229,16 +229,16 @@ export default function Copyright() {
 
       <LegalSection id="trademarks" title="Trademarks">
         <p>
-          "Zenius AI" and associated logos are pending or registered trademarks of the Platform operator.
+          "Sandeep More Institute of Technology", "SMIT", and associated logos are trademarks of the Platform operator.
         </p>
         <LegalTodo>
           Confirm trademark registration status and add the registration number if applicable.
         </LegalTodo>
         <p style={{ marginTop: 10 }}>
-          You must not use the Zenius AI name or logo without written permission, including in:
+          You must not use the Sandeep More Institute of Technology or SMIT name or logo without written permission, including in:
         </p>
         <LegalList items={[
-          'Promotional materials implying endorsement by Zenius AI',
+          'Promotional materials implying endorsement by SMIT',
           'Domain names or social media handles that could cause confusion',
           'Course materials or content on other platforms',
           'Any commercial product or service',
@@ -247,7 +247,7 @@ export default function Copyright() {
 
       <LegalSection id="open-source" title="Open Source">
         <p>
-          Portions of the Zenius AI platform may be made available as open source software under appropriate
+          Portions of the SMIT platform may be made available as open source software under appropriate
           licences.
         </p>
         <LegalTodo>
@@ -258,7 +258,7 @@ export default function Copyright() {
 
       <LegalSection id="contact" title="Copyright Contact">
         <LegalTodo>
-          Add a dedicated copyright/DMCA email address here (e.g., copyright@zenius.ai or legal@zenius.ai).
+          Dedicated contact email: copyright@smit.edu.in.
         </LegalTodo>
         <p>
           For copyright-related queries or to submit a takedown notice, contact our Grievance Officer via the{' '}

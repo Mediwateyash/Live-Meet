@@ -4,11 +4,11 @@ import User from '../models/User.js'
 export async function seedCybersecurityCourseIfMissing() {
   try {
     // 0. Ensure default admin exists
-    let adminUser = await User.findOne({ email: 'admin@zenius.ai' })
+    let adminUser = await User.findOne({ email: { $in: ['admin@smit.edu', 'admin@zenius.ai'] } })
     if (!adminUser) {
       adminUser = await User.create({
-        fullName: 'Zenius Admin',
-        email:    'admin@zenius.ai',
+        fullName: 'SMIT Admin',
+        email:    'admin@smit.edu',
         password: 'Admin@2026',
         role:     'admin',
       })

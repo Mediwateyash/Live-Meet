@@ -9,12 +9,24 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
           
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <span className="text-2xl font-bold text-white tracking-tight">zenius</span>
-              <span className="bg-brand-600 text-white text-xs font-bold px-2 py-1 rounded-md">AI</span>
+            <div className="flex items-center gap-2.5 mb-6">
+              <img
+                src="/logo.png"
+                alt="SMIT Logo"
+                className="w-9 h-9 rounded-xl object-contain shadow-sm shrink-0"
+                onError={(e) => { e.currentTarget.src = '/favicon.svg' }}
+              />
+              <div className="flex flex-col leading-none">
+                <span className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                  SMIT
+                </span>
+                <span className="text-[10px] font-semibold text-slate-400">
+                  Sandeep More Institute of Technology
+                </span>
+              </div>
             </div>
             <p className="text-slate-400 mb-6 max-w-sm">
-              Empowering the next generation of tech professionals with AI-driven, personalized learning experiences.
+              Empowering the next generation of tech professionals with AI-driven, personalized learning experiences at Sandeep More Institute of Technology.
             </p>
             <div className="flex gap-4">
               <a
@@ -81,7 +93,7 @@ export default function Footer() {
 
         <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-slate-500 text-sm">
-            © {new Date().getFullYear()} Zenius AI. All rights reserved.
+            © {new Date().getFullYear()} Sandeep More Institute of Technology (SMIT). All rights reserved.
           </p>
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <span>Made with</span>

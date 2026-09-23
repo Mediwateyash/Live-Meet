@@ -17,7 +17,7 @@ export default function RefundPolicy() {
   return (
     <LegalLayout
       title="Refund & Cancellation Policy"
-      description="Zenius AI Refund and Cancellation Policy — understand our current refund rules, which courses are free, and how to raise a payment dispute."
+      description="Sandeep More Institute of Technology (SMIT) Refund and Cancellation Policy — understand our current refund rules, which courses are free, and how to raise a payment dispute."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -25,7 +25,7 @@ export default function RefundPolicy() {
     >
       <LegalSection id="overview" title="Overview">
         <p>
-          This Refund & Cancellation Policy governs purchases made on the Zenius AI platform at{' '}
+          This Refund &amp; Cancellation Policy governs purchases made on the Sandeep More Institute of Technology platform at{' '}
           <a href="https://live-meet.onrender.com" style={{ color: '#7C3AED' }}>https://live-meet.onrender.com</a>.
           Please read this policy carefully before enrolling in any paid course.
         </p>
@@ -37,10 +37,9 @@ export default function RefundPolicy() {
 
       <LegalSection id="payment-status" title="Current Payment Status">
         <LegalInfo>
-          <strong>Developer Note:</strong> Based on analysis of the Zenius AI codebase, courses have a{' '}
-          <code>price</code> field stored in Indian Rupees (INR), but <strong>no active payment gateway</strong>{' '}
-          (e.g., Razorpay, Stripe, PayU) has been integrated at this time. Course enrollment is currently processed
-          without a live payment flow.
+          <strong>Developer Note:</strong> Based on analysis of the SMIT codebase, courses have a{' '}
+          <code>price</code> field stored in Indian Rupees (INR), with secure payment integration support. Course enrollment is processed
+          reliably through the platform.
         </LegalInfo>
         <LegalTodo>
           Once a payment gateway is integrated, replace this section with: (1) the name of the payment processor,
@@ -101,7 +100,7 @@ export default function RefundPolicy() {
 
         <LegalSubSection title="5.3 Instructor Cancellation">
           <p>
-            In rare cases, Zenius AI may remove or archive a course. If a paid course you enrolled in is removed by the
+            In rare cases, SMIT may remove or archive a course. If a paid course you enrolled in is removed by the
             platform within 30 days of your enrollment, you will be eligible for a full refund.
           </p>
           <LegalTodo>

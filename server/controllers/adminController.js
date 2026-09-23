@@ -243,7 +243,7 @@ export async function adminCreateCourse(req, res, next) {
     const instructor = await User.findById(req.params.id)
     if (!instructor) throw new ApiError(404, 'Instructor not found')
     const { title, subtitle, description, category, language, status, level, price, isFree, tags, whatYouLearn, requirements, curriculum, thumbnail } = req.body
-    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'smit/thumbnails')
     const course = await Course.create({
       title, subtitle, description, category, language, status,
       instructor: req.params.id,
@@ -265,7 +265,7 @@ export async function adminUpdateCourse(req, res, next) {
     const course = await Course.findById(req.params.id)
     if (!course) throw new ApiError(404, 'Course not found')
     const { title, subtitle, description, category, language, status, level, price, isFree, tags, whatYouLearn, requirements, curriculum, thumbnail } = req.body
-    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'zenius/thumbnails')
+    const uploadedThumbnail = await uploadBase64Image(thumbnail, 'smit/thumbnails')
     
     if (title !== undefined) course.title = title
     if (subtitle !== undefined) course.subtitle = subtitle

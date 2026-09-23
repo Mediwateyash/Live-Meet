@@ -14,7 +14,7 @@ const useAuthStore = create(
         set((state) => ({ user: state.user ? { ...state.user, ...updates } : null })),
     }),
     {
-      name: 'zenius-auth',
+      name: 'smit-auth',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )

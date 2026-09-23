@@ -55,11 +55,17 @@ export default function Login() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#7C3AED' }}>
-              <GraduationCap size={22} color="white" />
+          <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">
+            <img
+              src="/logo.png"
+              alt="SMIT Logo"
+              className="w-10 h-10 rounded-xl object-contain shadow-sm shrink-0 transition-transform group-hover:scale-105"
+              onError={(e) => { e.currentTarget.src = '/favicon.svg' }}
+            />
+            <div className="flex flex-col text-left leading-none">
+              <span className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>SMIT</span>
+              <span className="text-[9px] font-semibold text-purple-600 dark:text-purple-400">Sandeep More Institute</span>
             </div>
-            <span className="text-xl font-bold" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>Zenius AI</span>
           </Link>
           <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
             Welcome back

@@ -183,8 +183,8 @@ async function seed() {
 
     // Create admin
     const admin = await User.create({
-      fullName: 'Zenius Admin',
-      email:    'admin@zenius.ai',
+      fullName: 'SMIT Admin',
+      email:    'admin@smit.edu',
       password: 'Admin@2026',
       role:     'admin',
     })
@@ -218,7 +218,7 @@ async function seed() {
     // Create 5 students
     const students = await Promise.all(
       Array.from({ length: 5 }, (_, i) =>
-        User.create({ fullName: `Student ${i + 1}`, email: `student${i + 1}@zenius.ai`, password: 'Student@2026', role: 'student' })
+        User.create({ fullName: `Student ${i + 1}`, email: `student${i + 1}@smit.edu`, password: 'Student@2026', role: 'student' })
       )
     )
     console.log('✅ Students created')
@@ -275,10 +275,10 @@ async function seed() {
     console.log('✅ Reviews created')
 
     console.log('\n🎉 Seed complete!')
-    console.log('Admin:      admin@zenius.ai / Admin@2026')
+    console.log('Admin:      admin@smit.edu / Admin@2026')
     console.log('Instructor Yash:   yash@gmail.com / Instructor@2026')
     console.log('Instructor Aniket: aniketkakad@gmail.com / Instructor@2026')
-    console.log('Student:    student1@zenius.ai / Student@2026')
+    console.log('Student:    student1@smit.edu / Student@2026')
     process.exit(0)
   } catch (err) {
     console.error('❌ Seed failed:', err)

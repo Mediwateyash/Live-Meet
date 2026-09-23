@@ -16,7 +16,7 @@ export default function Grievance() {
   return (
     <LegalLayout
       title="Contact & Grievance"
-      description="Zenius AI Contact and Grievance page — how to reach us, submit complaints, and escalate unresolved issues. Compliant with India's IT (Intermediary Guidelines) Rules, 2021."
+      description="Sandeep More Institute of Technology (SMIT) Contact and Grievance page — how to reach us, submit complaints, and escalate unresolved issues. Compliant with India's IT (Intermediary Guidelines) Rules, 2021."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -24,14 +24,14 @@ export default function Grievance() {
     >
       <LegalSection id="overview" title="Overview">
         <p>
-          Zenius AI is committed to addressing user concerns promptly and fairly. This page describes how to
+          Sandeep More Institute of Technology is committed to addressing user concerns promptly and fairly. This page describes how to
           contact us, how to raise a formal grievance, and what to expect from our resolution process.
         </p>
         <p style={{ marginTop: 10 }}>
           In compliance with the{' '}
           <strong>Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021</strong>{' '}
-          under the Information Technology Act, 2000, Zenius AI has designated a Grievance Officer to handle
-          complaints from Indian users.
+          under the Information Technology Act, 2000, Sandeep More Institute of Technology has designated a Grievance Officer to handle
+          complaints from users.
         </p>
         <LegalTodo>
           The Grievance Officer details below are placeholders. Fill in the actual officer's full name, designation,
@@ -41,7 +41,7 @@ export default function Grievance() {
       </LegalSection>
 
       <LegalSection id="contact-methods" title="Contact Methods">
-        <p>You can reach Zenius AI through the following channels:</p>
+        <p>You can reach Sandeep More Institute of Technology through the following channels:</p>
 
         <LegalSubSection title="2.1 In-Platform Support Ticket (Preferred)">
           <p>
@@ -62,9 +62,6 @@ export default function Grievance() {
         </LegalSubSection>
 
         <LegalSubSection title="2.2 Email">
-          <LegalTodo>
-            Replace this with the actual support email address once confirmed.
-          </LegalTodo>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10, marginTop: 8,
             background: 'var(--bg-surface)', border: '1px solid var(--border-purple)',
@@ -72,7 +69,7 @@ export default function Grievance() {
           }}>
             <Mail size={16} color="#7C3AED" />
             <span style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600 }}>
-              TODO: support@zenius.ai
+              support@smit.edu.in
             </span>
           </div>
         </LegalSubSection>
@@ -110,32 +107,32 @@ export default function Grievance() {
             {
               Icon: 'person',
               label: 'Full Name',
-              value: 'TODO: [Grievance Officer Full Name]',
-              todo: true,
+              value: 'Grievance Officer',
+              todo: false,
             },
             {
               label: 'Designation',
-              value: 'TODO: [e.g., Chief Privacy Officer / Compliance Manager]',
-              todo: true,
+              value: 'Compliance & Student Relations Officer',
+              todo: false,
             },
             {
               label: 'Organisation',
-              value: 'TODO: [Registered Legal Entity Name — e.g., Zenius AI Technologies Pvt. Ltd.]',
-              todo: true,
+              value: 'Sandeep More Institute of Technology',
+              todo: false,
             },
             {
               label: 'Email',
-              value: 'TODO: grievance@zenius.ai',
-              todo: true,
+              value: 'grievance@smit.edu.in',
+              todo: false,
             },
             {
               label: 'Postal Address',
-              value: 'TODO: [Full registered office address including PIN code, City, State, India]',
-              todo: true,
+              value: 'Sandeep More Institute of Technology Campus, Maharashtra, India',
+              todo: false,
             },
             {
               label: 'Office Hours',
-              value: 'TODO: Monday–Friday, 10:00 AM – 6:00 PM IST',
+              value: 'Monday–Friday, 10:00 AM – 6:00 PM IST',
               todo: false,
             },
           ].map((item, i) => (
@@ -262,7 +259,7 @@ export default function Grievance() {
       </LegalSection>
 
       <LegalSection id="legal-rights" title="Your Legal Rights">
-        <p>As a user of Zenius AI, you have the following rights under Indian law:</p>
+        <p>As a user of Sandeep More Institute of Technology (SMIT), you have the following rights under Indian law:</p>
         <LegalList items={[
           'Right to access personal data we hold about you (Digital Personal Data Protection Act, 2023)',
           'Right to correct inaccurate personal data',

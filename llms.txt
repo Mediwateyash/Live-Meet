@@ -1,6 +1,6 @@
-# Zenius AI Codebase & Architecture Specification
+# Sandeep More Institute of Technology (SMIT) Codebase & Architecture Specification
 
-Zenius AI is a premium, real-time e-learning and virtual classroom platform built on a modern MERN stack. It incorporates WebRTC audio/video rooms, cooperative whiteboards, and Google Gemini AI features for generating study quizzes.
+Sandeep More Institute of Technology (SMIT) is a premium, real-time e-learning and virtual classroom platform built on a modern MERN stack. It incorporates WebRTC audio/video rooms, cooperative whiteboards, and Google Gemini AI features for generating study quizzes.
 
 ## Tech Stack Summary
 

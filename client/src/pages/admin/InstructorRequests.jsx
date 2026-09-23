@@ -459,7 +459,7 @@ export default function AdminRequests() {
               <div className="space-y-2">
                 <h4 className="text-xs uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300 flex items-center gap-2">
                   <Sparkles size={15} className="text-purple-600" />
-                  <span>Why do you want to teach on Zenius AI?</span>
+                  <span>Why do you want to teach at SMIT?</span>
                 </h4>
                 <div className="p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 text-xs sm:text-sm text-purple-950 dark:text-purple-200 leading-relaxed">
                   {viewModal.motivation || 'No motivation answer provided.'}

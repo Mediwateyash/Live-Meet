@@ -111,16 +111,24 @@ export default function Footer() {
 
           {/* Brand */}
           <div style={{ gridColumn: 'span 1' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#7C3AED' }}>
-                <GraduationCap size={20} color="white" />
+            <div className="flex items-center gap-2.5 mb-3">
+              <img
+                src="/logo.png"
+                alt="SMIT Logo"
+                className="w-9 h-9 rounded-xl object-contain shadow-sm shrink-0"
+                onError={(e) => { e.currentTarget.src = '/favicon.svg' }}
+              />
+              <div className="flex flex-col leading-none">
+                <span className="font-extrabold text-xl tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                  SMIT
+                </span>
+                <span className="text-[9px] font-semibold text-purple-600 dark:text-purple-400">
+                  Sandeep More Institute of Tech
+                </span>
               </div>
-              <span className="font-extrabold text-xl tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-                Zenius AI
-              </span>
             </div>
             <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-muted)' }}>
-              AI-powered learning: courses, live lectures, smart quizzes &amp; certificates.
+              Sandeep More Institute of Technology: Next-generation learning with courses, live lectures, smart quizzes &amp; certificates.
             </p>
             <div className="flex gap-3">
               {socialLinks.map(({ Icon, href, label }) => (
@@ -152,7 +160,7 @@ export default function Footer() {
           style={{ borderColor: 'var(--border-default)' }}
         >
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            © {new Date().getFullYear()} Zenius AI. All rights reserved.
+            © {new Date().getFullYear()} Sandeep More Institute of Technology (SMIT). All rights reserved.
           </p>
 
           {/* Mini legal links */}

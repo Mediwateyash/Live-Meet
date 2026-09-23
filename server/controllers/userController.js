@@ -35,7 +35,7 @@ export async function updateProfile(req, res, next) {
         ? raw.split(',').map(s => s.trim()).filter(Boolean)
         : undefined
 
-    const uploadedAvatar = await uploadBase64Image(avatar, 'zenius/avatars')
+    const uploadedAvatar = await uploadBase64Image(avatar, 'smit/avatars')
 
     const update = { fullName, bio, avatar: uploadedAvatar, linkedin, portfolio, phone, department }
     if (expertise !== undefined) update.expertise = expertise

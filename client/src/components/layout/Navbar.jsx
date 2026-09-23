@@ -50,13 +50,21 @@ export default function Navbar() {
       <nav aria-label="Main Navigation" className="navbar h-16 px-4 md:px-6 flex items-center justify-between gap-4 md:gap-6 backdrop-blur-md sticky top-0 z-50 border-b pt-safe" style={{ borderColor: 'rgba(124, 58, 237, 0.1)' }}>
         {/* Left: Logo + Browse */}
         <div className="flex items-center gap-4 md:gap-6 shrink-0">
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#7C3AED' }}>
-              <GraduationCap size={20} color="white" />
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
+            <img
+              src="/logo.png"
+              alt="SMIT Logo"
+              className="w-9 h-9 rounded-xl object-contain shadow-sm shrink-0 transition-transform group-hover:scale-105"
+              onError={(e) => { e.currentTarget.src = '/favicon.svg' }}
+            />
+            <div className="flex flex-col leading-none">
+              <span className="font-extrabold text-xl tracking-tight" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
+                SMIT
+              </span>
+              <span className="text-[9px] font-semibold tracking-wider uppercase text-purple-600 dark:text-purple-400">
+                Institute of Tech
+              </span>
             </div>
-            <span className="font-extrabold text-xl tracking-tight animate-fade-in" style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--text-primary)' }}>
-              Zenius AI
-            </span>
           </Link>
           <Link
             to="/browse"
@@ -185,7 +193,7 @@ export default function Navbar() {
                       />
 
                       {user?.role === 'student' && (
-                        <DropItem to="/become-instructor" icon={GraduationCap} label="Teach on Zenius" onClick={() => setProfileOpen(false)} />
+                        <DropItem to="/become-instructor" icon={GraduationCap} label="Teach at SMIT" onClick={() => setProfileOpen(false)} />
                       )}
                       <div className="border-t mt-1.5 pt-1.5" style={{ borderColor: 'var(--border-default)' }}>
                         <button
@@ -279,7 +287,7 @@ export default function Navbar() {
                       icon={Mail}
                     />
                     {user?.role === 'student' && (
-                      <MobileNavItem to="/become-instructor" label="Teach on Zenius" onClick={() => setMobileMenuOpen(false)} icon={GraduationCap} />
+                      <MobileNavItem to="/become-instructor" label="Teach at SMIT" onClick={() => setMobileMenuOpen(false)} icon={GraduationCap} />
                     )}
                   </>
                 ) : (

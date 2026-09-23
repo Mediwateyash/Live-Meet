@@ -43,10 +43,10 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        console.log('Zenius AI Service Worker registered on scope:', registration.scope);
+        console.log('SMIT Service Worker registered on scope:', registration.scope);
       })
       .catch((error) => {
-        console.error('Zenius AI Service Worker registration failed:', error);
+        console.error('SMIT Service Worker registration failed:', error);
       });
   });
 }

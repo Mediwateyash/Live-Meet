@@ -18,7 +18,7 @@ export default function Disclaimer() {
   return (
     <LegalLayout
       title="Disclaimer"
-      description="Zenius AI Disclaimer — important limitations and disclosures about the educational platform, AI-generated content, live lectures, and certificates."
+      description="Sandeep More Institute of Technology (SMIT) Disclaimer — important limitations and disclosures about the educational platform, AI-generated content, live lectures, and certificates."
       sections={SECTIONS}
       version="1.0"
       effectiveDate="June 26, 2026"
@@ -26,23 +26,23 @@ export default function Disclaimer() {
     >
       <LegalSection id="general" title="General Disclaimer">
         <p>
-          The information, content, tools, and services provided on the Zenius AI platform at{' '}
+          The information, content, tools, and services provided on the Sandeep More Institute of Technology platform at{' '}
           <a href="https://live-meet.onrender.com" style={{ color: '#7C3AED' }}>https://live-meet.onrender.com</a>{' '}
           are provided for <strong>general educational and informational purposes only</strong>.
         </p>
         <p style={{ marginTop: 10 }}>
-          While we strive to provide accurate and up-to-date content, Zenius AI makes no representations or warranties —
+          While we strive to provide accurate and up-to-date content, Sandeep More Institute of Technology makes no representations or warranties —
           express or implied — about the completeness, accuracy, reliability, suitability, or availability of any
           information or content on the Platform.
         </p>
         <LegalTodo>
-          Insert the legal entity name of the operator here, e.g., "Zenius AI Technologies Private Limited".
+          Insert the legal entity name of the operator here, e.g., "Sandeep More Institute of Technology".
         </LegalTodo>
       </LegalSection>
 
       <LegalSection id="educational" title="Educational Purpose Only">
         <LegalInfo>
-          Content on Zenius AI is strictly educational and does not constitute professional advice of any kind.
+          Content on SMIT is strictly educational and does not constitute professional advice of any kind.
         </LegalInfo>
         <p>Specifically:</p>
         <LegalList items={[
@@ -60,20 +60,20 @@ export default function Disclaimer() {
 
       <LegalSection id="ai-content" title="AI-Generated Content">
         <p>
-          Zenius AI includes an AI MCQ Generator that automatically creates multiple-choice questions from instructor-uploaded
+          SMIT includes an AI MCQ Generator that automatically creates multiple-choice questions from instructor-uploaded
           course material. Please be aware that:
         </p>
         <LegalList items={[
           'AI-generated questions may contain factual errors, omissions, or outdated information',
           'The AI may misinterpret ambiguous content in uploaded documents',
           'Generated questions should be reviewed and verified by the instructor before use in assessments',
-          'Zenius AI does not guarantee the accuracy, completeness, or educational value of AI-generated content',
+          'SMIT does not guarantee the accuracy, completeness, or educational value of AI-generated content',
           'AI-generated content does not constitute professional academic assessment design',
           'The AI Quick Quiz feature generates questions on-demand and should be treated as a study aid, not an authoritative test',
         ]} />
         <LegalInfo>
           Instructors are solely responsible for reviewing, editing, and approving AI-generated MCQs before publishing
-          them to students. Zenius AI is not liable for learning outcomes resulting from inaccurate AI-generated content.
+          them to students. SMIT is not liable for learning outcomes resulting from inaccurate AI-generated content.
         </LegalInfo>
       </LegalSection>
 
@@ -88,13 +88,13 @@ export default function Disclaimer() {
           'Instructor portfolios and LinkedIn URLs — external links to instructor profiles are provided for informational purposes only.',
         ]} />
         <p style={{ marginTop: 10 }}>
-          The inclusion of any third-party link does not constitute an endorsement by Zenius AI.
+          The inclusion of any third-party link does not constitute an endorsement by SMIT.
         </p>
       </LegalSection>
 
       <LegalSection id="accuracy" title="Accuracy of Information">
         <p>
-          Course content is created by instructors who are independent contributors to the Platform. Zenius AI does not
+          Course content is created by instructors who are independent contributors to the Platform. SMIT does not
           verify the accuracy of every piece of content published by instructors. We rely on our content moderation policies
           and community reporting to maintain quality.
         </p>
@@ -117,13 +117,13 @@ export default function Disclaimer() {
           'Security-related takedowns or updates',
         ]} />
         <p style={{ marginTop: 10 }}>
-          Zenius AI is not responsible for any losses or inconvenience caused by Platform downtime.
+          Sandeep More Institute of Technology is not responsible for any losses or inconvenience caused by Platform downtime.
         </p>
       </LegalSection>
 
       <LegalSection id="certificates" title="Certificates & Credentials">
         <p>
-          Completion certificates issued by Zenius AI are <strong>platform-generated credentials</strong> that certify
+          Completion certificates issued by Sandeep More Institute of Technology are <strong>platform-generated credentials</strong> that certify
           you have completed the course content on the Platform. They are <strong>not</strong>:
         </p>
         <LegalList items={[
@@ -134,7 +134,7 @@ export default function Disclaimer() {
           'Guaranteed to be accepted by any employer',
         ]} />
         <LegalInfo>
-          Represent your Zenius AI certificates accurately to employers as online course completion certificates from
+          Represent your SMIT certificates accurately to employers as online course completion certificates from
           an e-learning platform, not as professional or academic qualifications.
         </LegalInfo>
       </LegalSection>
@@ -145,9 +145,9 @@ export default function Disclaimer() {
           to the following disclaimers:
         </p>
         <LegalList items={[
-          'Zenius AI is not responsible for technical quality (video/audio) of external meeting platforms',
+          'SMIT is not responsible for technical quality (video/audio) of external meeting platforms',
           'WebRTC live room quality depends on your internet connection and device',
-          'Zenius AI does not guarantee that all scheduled live lectures will proceed as planned',
+          'SMIT does not guarantee that all scheduled live lectures will proceed as planned',
           'The content of live lectures is the responsibility of the presenting instructor',
           'We are not liable for any statements made by instructors or other participants during live sessions',
         ]} />
@@ -155,7 +155,7 @@ export default function Disclaimer() {
 
       <LegalSection id="liability" title="Limitation of Liability">
         <p>
-          To the fullest extent permitted by applicable law, Zenius AI and its operators, employees, and affiliates
+          To the fullest extent permitted by applicable law, Sandeep More Institute of Technology and its operators, employees, and affiliates
           shall not be liable for:
         </p>
         <LegalList items={[
